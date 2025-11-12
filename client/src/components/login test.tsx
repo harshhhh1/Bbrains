@@ -7,6 +7,7 @@ function handleSubmit(e) {
     console.log("hello " + username + " your password is : " + password);
 
     const formData = new FormData();
+
     formData.append("username", username);
     formData.append("password", password);
 
