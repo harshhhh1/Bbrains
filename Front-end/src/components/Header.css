@@ -1,0 +1,51 @@
+Header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background-color:#1a1c23;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.bb-logo{
+    height: 40px;
+    margin-left: 25px;
+}
+
+.right-section{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 150px;
+    padding-right: 10px;
+    margin-right: 10px;
+}
+
+.toggle-mode img{
+    height: 32px;
+    border-radius: 100%;
+    border: none;
+}
+
+.notification-container {
+    position: relative;
+}
+
+.notification-count{
+    position: absolute;
+    top: -10px;
+    right: -10px;
+}
+
+.notification-icon , .profile-icon {
+    border: none;
+}
+
+.notification-icon img{
+    width: 22px;
+    height: 30px;
+}
+

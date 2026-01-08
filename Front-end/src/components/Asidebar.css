@@ -1,0 +1,42 @@
+aside {
+    top: 50px;
+    left: 0;
+    bottom: 0;
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    background-color:#1a1c23;
+    width: 55px;
+    padding: 10px 0;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sec-one {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    flex: 7;
+}
+
+.sec-two {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: center;
+    flex: 0.6;
+    margin-bottom: 25px;
+    border-top: #3c3f48 solid 1px;
+}
+
+.sec-one .aside-tab {
+    /* background-color: antiquewhite; */
+    margin-top: -50px;
+    /* margin-bottom: -10px; */
+    border-radius: 10px;
+}
+
+aside img {
+    width: 30px;
+    height: 30px;
+}
