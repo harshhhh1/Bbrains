@@ -64,3 +64,14 @@ export async function checkUsername(username) {
       
     }
 }
+
+export async function signup(email,username,password) {
+        try {
+        
+    } catch (error) {
+        
+    }
+}
+export async function login(email,username,password) {
+    
+}
