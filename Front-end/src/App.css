@@ -1,6 +1,7 @@
-body{
+:root{
     margin: 0;
     padding: 0;
     background-color: rgba(18, 19, 23);
     color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
