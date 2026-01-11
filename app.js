@@ -1,6 +1,6 @@
 import express from 'express'
 import authRoutes from './routes/auth.js'
-import dashboardRoutes from './routes/dashboard.js'
+// import dashboardRoutes from './routes/dashboard.js'
 
 
 const app = express()
@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }))
 
 
 app.use("/",authRoutes)
-app.use("/dashboard",dashboardRoutes)
+// app.use("/dashboard",dashboardRoutes)
 
 app.get('/', (req, res) => {
   res.send('welcome yto learnytics!')

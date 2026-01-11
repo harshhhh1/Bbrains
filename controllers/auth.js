@@ -1,54 +1,56 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
-import {} from '../database.js';
+import { checkLoginDetails,saveUser,showAllUsers, checkUsername } from '../database.js';
 
 
 export const signup = async (req, res) => {
     try {
-        const { email, username, password, confirmpassword } = req.body;
-        if (!email || !username || !password || !confirmpassword) {
-            return res.status(400).send('All fields are required');
-        }
+        const { email, username, password } = req.body;
+
+        if (!email) return res.status(400).send("Email is required");
+        if (!username) return res.status(400).send("Username is required");
+        if (!password) return res.status(400).send("Password is required");
+
         if (!validator.isEmail(email)) {
-            return res.status(400).send('Invalid email format');
+            return res.status(400).send("Invalid email format");
         }
-        if (password !== confirmpassword) {
-            return res.status(400).send('Passwords do not match');
+
+        const usernameExists = await checkUsername(username);
+        if (usernameExists) {
+            return res.status(400).send("Username already exists");
         }
-        // const userExists = await checkUsername(username);
-        // if (userExists) {
-        //     return res.status(400).send('Username already taken');
-        // }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        // const result = await saveUser(email, username, hashedPassword);
-        // if (result && result.success) {
-        //     return res.status(201).send('Signup successful');
-        // } else {
-        //     return res.status(500).send('Error during signup');
-        // }
-        console.log(hashedPassword)
-    } catch (error) {
-        console.error("Error in signup:", error);
+        else{
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await saveUser(email, username, hashedPassword);
+
+        res.status(201).json({ message: "User registered successfully" });
     }
-    
+
+        
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Internal server error: ",err);
+    }
 };
 
 
 
 export const signin = async (req, res) => {
     const { username, password } = req.body;
-    if (!username || !password) {
-        return res.status(400).send('Username and password are required');
+
+    if (!username) {
+        return res.status(400).send("Email is required");
     }
-    const isValidUser = await checkLoginDetails(username, password);
-    if (!isValidUser) {
-        return res.status(400).send('Invalid credentials');
+    if (!password) {
+        return res.status(400).send("Password is required");
     }
-    return res.status(200).send('Login successful');
-    res.redirect('/dashboard');
+    // const userpassword=
+     const isMatch = await checkLoginDetails(username,password);
+
+    res.send(`Signin page working for email: ${username} amd has a password `);
 }
 
-// export const showallusers = async (req, res) => {
-//     res.send(showAllUsers())
-// }
+export const showallusers = async (req, res) => {
+    res.send(showAllUsers())
+}
 

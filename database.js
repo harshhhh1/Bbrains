@@ -27,8 +27,8 @@ export async function saveUser(email,username,password) {
 export async function checkLoginDetails(username,password) {
     try {
 
-        const [rows] = await db.query(`SELECT COUNT(*) as count FROM users where username=?`,[username]);
-        const hashpass = (await db.query(`Select password from users where username=?`,[username])).toString();
+        const [rows] = await db.query(`SELECT COUNT(*) as count FROM user where username=?`,[username]);
+        const hashpass = (await db.query(`Select password from user where username=?`,[username])).toString();
         const isMatch =await bcrypt.compare(password,hashpass);
         console.log(typeof password);        // should be "string"
         console.log(typeof hashpass);  // must be "string"
@@ -43,7 +43,7 @@ export async function checkLoginDetails(username,password) {
 
 export async function showAllUsers() {
     try{
-        const [users]= await db.query(`Select id, username , email, created_at from users`)
+        const [users]= await db.query(`Select id, username , email, created_at from user`)
         return users;
     }
     catch(error){
@@ -57,7 +57,7 @@ export async function listUsers() {
 
 export async function checkUsername(username) {
     try {
-        const [rows] = await db.query(`SELECT COUNT(*) as count FROM users where username=?`,[username]);
+        const [rows] = await db.query(`SELECT COUNT(*) as count FROM user where username=?`,[username]);
         return rows[0].count > 0;
     } catch (error) {
         console.error("Error in checkUsername:", error);
