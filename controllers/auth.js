@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
-import { checkLoginDetails,saveUser,showAllUsers, checkUsername } from '../database.js';
+import { saveUser,showAllUsers, checkUsername, login } from '../database.js';
 
 
 export const signup = async (req, res) => {
@@ -45,9 +45,15 @@ export const signin = async (req, res) => {
         return res.status(400).send("Password is required");
     }
     // const userpassword=
-     const isMatch = await checkLoginDetails(username,password);
+     const isMatch = await login(username,password);
 
-    res.send(`Signin page working for email: ${username} amd has a password `);
+     if(isMatch){
+        res.send(`Signin page working for email: ${username} amd has a password `);
+     }
+     else{
+        res.status(401).send("Invalid username or password");
+     }
+    
 }
 
 export const showallusers = async (req, res) => {

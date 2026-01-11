@@ -24,22 +24,6 @@ export async function saveUser(email,username,password) {
     }
 }
 
-export async function checkLoginDetails(username,password) {
-    try {
-
-        const [rows] = await db.query(`SELECT COUNT(*) as count FROM user where username=?`,[username]);
-        const hashpass = (await db.query(`Select password from user where username=?`,[username])).toString();
-        const isMatch =await bcrypt.compare(password,hashpass);
-        console.log(typeof password);        // should be "string"
-        console.log(typeof hashpass);  // must be "string"
-        console.log(hashpass);  
-        console.log(isMatch)
-        return rows[0].count > 0;
-    } catch (error) {
-        console.error("Error in CheckLoginDetails:", error);
-      
-    }
-}
 
 export async function showAllUsers() {
     try{
@@ -72,6 +56,16 @@ export async function signup(email,username,password) {
         
     }
 }
-export async function login(email,username,password) {
-    
+export async function login(username,password) {
+    try {
+        const [rows] = await db.query(`SELECT password FROM user where username=?`,[username]);
+        if (rows.length === 0) {
+            return false; // User not found
+        }
+        const hashedPassword = rows[0].password;
+        const isMatch = await bcrypt.compare(password, hashedPassword);
+        return isMatch;
+    } catch (error) {
+        console.error("Error in login:", error); 
+    }
 }
