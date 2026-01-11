@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const badgeController = require('../controllers/badge.controller');
+import * as badgeController from '../controllers/badge.controller.js';
 
 // Define your badge routes here
 router.get('/', badgeController.getBadges);
 router.post('/', badgeController.createBadge);
 
-module.exports = router;
+export default router;

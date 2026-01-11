@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express'
 const router = express.Router();
 
-const subjectController = require('../controllers/subject.controller');
+import * as subjectController from '../controllers/subject.controller.js';
 
 // Define your subject routes here
 router.get('/', subjectController.getSubjects);
 router.post('/', subjectController.createSubject);
 
-module.exports = router;
+export default router;

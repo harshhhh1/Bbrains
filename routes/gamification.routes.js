@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express'
 const router = express.Router();
 
-const gamificationController = require('../controllers/gamification.controller');
+import * as gamificationController from '../controllers/gamification.controller.js';
 
 // Define your gamification routes here
 router.get('/stats/:userId', gamificationController.getUserStats);
 router.put('/stats/:userId', gamificationController.updateUserStats);
 router.get('/levels', gamificationController.getLevels);
 
-module.exports = router;
+export default router;

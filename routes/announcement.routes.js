@@ -1,11 +1,12 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const announcementController = require('../controllers/announcement.controller');
+import * as announcementController from '../controllers/announcement.controller.js';
 
 // Define your announcement routes here
 router.get('/', announcementController.getAnnouncements);
+    
 router.post('/', announcementController.createAnnouncement);
 router.delete('/:id', announcementController.deleteAnnouncement);
 
-module.exports = router;
+export default router;

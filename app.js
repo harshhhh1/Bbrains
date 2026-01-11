@@ -1,16 +1,21 @@
 import express from 'express'
+import authRoutes from './routes/auth.js'
+import dashboardRoutes from './routes/dashboard.js'
+
+
 const app = express()
 const port = process.env.port || 5000;
 app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-import authRoutes from './routes/api/auth.js'
-// const{signup,signin}=require("./routes/api/auth")
-// const auth=require("./routes/api/auth");
 
-app.use("/api/",authRoutes),
+
+
+app.use("/",authRoutes)
+app.use("/dashboard",dashboardRoutes)
 
 app.get('/', (req, res) => {
-  res.send('Hello World')
+  res.send('welcome yto learnytics!')
 })
 
 

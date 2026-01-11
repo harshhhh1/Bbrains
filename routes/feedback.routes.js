@@ -1,10 +1,10 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const feedbackController = require('../controllers/feedback.controller');
+import * as feedbackController from '../controllers/feedback.controller.js';
 
 // Define your feedback routes here
 router.post('/', feedbackController.createFeedback);
 router.get('/', feedbackController.getFeedback);
 
-module.exports = router;
+export default router;
