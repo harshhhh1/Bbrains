@@ -19,11 +19,14 @@ export const signup = async (req, res) => {
         if (usernameExists) {
             return res.status(400).send("Username already exists");
         }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await saveUser(email, username, hashedPassword);
+        else{
+            const hashedPassword = await bcrypt.hash(password, 10);
+            await saveUser(email, username, hashedPassword);
 
         res.status(201).json({ message: "User registered successfully" });
+    }
+
+        
     } catch (err) {
         console.error(err);
         res.status(500).send("Internal server error: ",err);

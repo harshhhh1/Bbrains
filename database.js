@@ -10,6 +10,7 @@ const db = mysql.createPool(
         password: process.env.MYSQL_PASSWORD,
         database: process.env.MYSQL_NAME
     }
+    
 ).promise()
 
 export async function saveUser(email,username,password) {
@@ -57,7 +58,7 @@ export async function listUsers() {
 
 export async function checkUsername(username) {
     try {
-        const [rows] = await db.query(`SELECT COUNT(*) as count FROM users where username=?`,[username]);
+        const [rows] = await db.query(`SELECT COUNT(*) as count FROM user where username=?`,[username]);
         return rows[0].count > 0;
     } catch (error) {
         console.error("Error in checkUsername:", error);
