@@ -60,12 +60,22 @@ export async function login(username,password) {
     try {
         const [rows] = await db.query(`SELECT password FROM user where username=?`,[username]);
         if (rows.length === 0) {
-            return false; // User not found
+            return false; 
         }
         const hashedPassword = rows[0].password;
         const isMatch = await bcrypt.compare(password, hashedPassword);
+        console.log(isMatch)
         return isMatch;
     } catch (error) {
         console.error("Error in login:", error); 
+    }
+}
+
+export async function getUserData(username) {
+    try {
+        const [rows] = await db.query(`SELECT id, username, email FROM user WHERE username = ?`, [username]);
+        return rows[0];
+    } catch (error) {
+        console.error("Error in getUserData:", error);
     }
 }

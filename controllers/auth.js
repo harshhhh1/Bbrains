@@ -1,6 +1,11 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
-import { saveUser,showAllUsers, checkUsername, login } from '../database.js';
+import { saveUser, showAllUsers, checkUsername, login, getUserData } from '../database.js';
+import express from 'express';
+import cookieParser from 'cookie-parser';
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 
 export const signup = async (req, res) => {
@@ -48,6 +53,8 @@ export const signin = async (req, res) => {
      const isMatch = await login(username,password);
 
      if(isMatch){
+        res.cookie('username', username, { httpOnly: true });
+        return res.redirect('/dashboard');
         res.send(`Signin page working for email: ${username} amd has a password `);
      }
      else{
@@ -56,7 +63,17 @@ export const signin = async (req, res) => {
     
 }
 
-export const showallusers = async (req, res) => {
-    res.send(showAllUsers())
-}
+export const userdata = async (req, res) => {
+    const username = req.cookies.username;
 
+    if (!username) {
+        return res.status(401).send("Not authenticated");
+    }
+
+    const data = await getUserData(username);
+
+    res.json({
+        message: "User data retrieved successfully",
+        data
+    });
+};
