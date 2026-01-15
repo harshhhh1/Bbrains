@@ -12,10 +12,6 @@ const db = mysql.createPool(
     }
 ).promise()
 
-export async function saveUser(email,username,password) {
-    
-}
-
 
 export async function showAllUsers() {
     try{
@@ -27,7 +23,7 @@ export async function showAllUsers() {
     }
 }
 
-export async function listUsers() {
+export async function listUsers() { //blank
     
 }
 
@@ -41,7 +37,7 @@ export async function checkUsername(username) {
     }
 }
 
-export async function signup(email,username,password) {
+export async function saveUser(email,username,password) {
     try {
         const [result] = await db.query(`INSERT INTO user (email,username,password) VALUES (?,?,?)`,[email,username,password]);
         return result;
@@ -52,6 +48,7 @@ export async function signup(email,username,password) {
         console.error("Error in saveUser:", error);
     }
 }
+
 export async function login(username,password) {
     try {
         const [rows] = await db.query(`SELECT password FROM user where username=?`,[username]);
@@ -113,4 +110,32 @@ export async function getUserData(username) {
     console.error("Error in getUserData:", error);
     throw error;
   }
+}
+
+
+export async function announcement(){
+    try {
+        const [annoncements]=await db.query('select id, OP, title, content from announcement')
+        return annoncements;
+    } catch (error) {
+        console.error('error in getting announcement',error)
+    }
+}
+
+export async function postAnnouncement(op, title, content){
+    try {
+        const [result] = await db.query(`INSERT INTO announcement (OP, title, content) VALUES (?, ?, ?)`, [op, title, content]);
+        return result;
+    } catch (error) {
+        console.error('error in saving announcement',error)
+    }
+}
+
+export async function updateAnnouncement(id, title, content){
+    try {
+        const [result] = await db.query(`UPDATE announcement SET title = ?, content = ? WHERE id = ?`, [title, content, id]);
+        return result;
+    } catch (error) {
+        console.error('error in updating announcement',error)
+    }
 }

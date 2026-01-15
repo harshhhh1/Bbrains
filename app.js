@@ -1,6 +1,7 @@
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import authRoutes from './routes/auth.js'
+import announcementroutes from './routes/announcement.js'
 // import dashboardRoutes from './routes/dashboard.js'
 
 
@@ -14,6 +15,7 @@ app.use(cookieParser())
 
 
 app.use("/",authRoutes)
+app.use("/",announcementroutes)
 // app.use("/dashboard",dashboardRoutes)
 
 app.get('/', (req, res) => {
