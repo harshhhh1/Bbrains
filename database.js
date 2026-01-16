@@ -152,3 +152,12 @@ export async function getproducts(id){
         console.error('error in getting products',error)
     }
 }
+
+export async function paymentHistory(id){
+    try{
+        const result = await db.query(`select id, receiver, amount, status, note, date from payments`);
+    }
+    catch(error){
+        console.error('error in getting payment history',error)
+    }
+}
