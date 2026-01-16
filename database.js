@@ -139,3 +139,16 @@ export async function updateAnnouncement(id, title, content){
         console.error('error in updating announcement',error)
     }
 }
+
+export async function getproducts(id){
+    try {
+        if(id){
+            const result = await db.query(`select id, name, creator, description, price, stock from product where id =?`,[id]);
+        }
+        else{
+            const result = await db.query(`select id, name, creator, description, price, stock from product`);
+        }
+    } catch (error) {
+        console.error('error in getting products',error)
+    }
+}
