@@ -42,16 +42,18 @@ model User {
   submissions Submission[]
   grades      Grade[]
   roles       UserRoles[]
-  xp          Xp?
-  wallet      Wallet?
   logs        UserLogs[]
   announcements Announcement[]
-  products    Product[]    // Products created by this user
+  products    Product[]    
   cartItems   Cart[]
   orders      Order[]
   transactions TransactionHistory[]
+  leaderboards Leaderboard[] 
+  userAchievements UserAchievements[] 
+  xp          Xp?
+  wallet      Wallet?
 
-  @@map("user") // Maps to the "user" table in Postgres
+  @@map("user") 
 }
 
 model UserDetails {
@@ -183,20 +185,79 @@ model UserRoles {
 }
 
 model Xp {
-  id        Int      @id @default(autoincrement())
-  userId    String   @unique @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  xp        Decimal  @default(0)
-  level     Int      @default(0)
+  id        Int     @id @default(autoincrement())
+  userId    String  @unique @map("user_id")
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xp        Decimal @default(0)
+  level     Int     @default(1)  // Current level [file:1]
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("xp")
 }
 
+model Level {
+  id          Int     @id @default(autoincrement())
+  levelNumber Int     @unique
+  requiredXp  Decimal @db.Decimal(10, 2)
+  @@map("level")
+  
+  // Example seed data (add via Prisma Studio or script):
+  // Level 1: 0, Level 2: 100, Level 3: 300, Level 4: 600, etc.
+}
+
+model Leaderboard {
+  id           Int      @id @default(autoincrement())
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score        Decimal  @db.Decimal(10, 2)
+  category     LeaderboardCategory @default(allTime)
+  periodStart  DateTime
+  periodEnd    DateTime?
+  rank         Int?     // Computed on update
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, category, periodStart])
+  @@map("leaderboard")
+}
+
+enum LeaderboardCategory {
+  weekly
+  monthly
+  allTime
+  course
+}
+
+model Achievement {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  icon        String?  @db.VarChar(255)
+  requiredXp  Decimal  @db.Decimal(10, 2)
+  category    String?  @db.VarChar(50)  // e.g., "club", "attendance"
+  users       UserAchievements[]
+
+  @@map("achievement")
+}
+
+model UserAchievements {
+  userId       String     @map("user_id")
+  achievementId Int       @map("achievement_id")
+  unlockedAt   DateTime   @default(now()) @map("unlocked_at")
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement  Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@id([userId, achievementId])
+  @@map("user_achievements")
+}
+
+
+
 model Wallet {
   id      Int     @id @default(autoincrement())
   userId  String  @unique @map("user_id")
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pin     String  @db.VarChar(6) @default("0000")
   balance Decimal @db.Decimal(10, 2)  @default(500.00)
 
   @@map("wallet")
@@ -222,6 +283,7 @@ model Order {
   id          Int         @id @default(autoincrement())
   userId      String      @map("user_id")
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      String?     @default("pending")
   orderDate   DateTime    @default(now()) @map("order_date")
   totalAmount Decimal     @db.Decimal(10, 2) @map("total_amount")
   items       OrderItem[]

@@ -5,6 +5,9 @@ CREATE TYPE "Sex" AS ENUM ('male', 'female', 'other');
 CREATE TYPE "UserRole" AS ENUM ('student', 'teacher', 'admin');
 
 -- CreateEnum
+CREATE TYPE "LeaderboardCategory" AS ENUM ('weekly', 'monthly', 'allTime', 'course');
+
+-- CreateEnum
 CREATE TYPE "TransactionType" AS ENUM ('credit', 'debit');
 
 -- CreateEnum
@@ -146,16 +149,62 @@ CREATE TABLE "xp" (
     "id" SERIAL NOT NULL,
     "user_id" TEXT NOT NULL,
     "xp" DECIMAL(65,30) NOT NULL DEFAULT 0,
-    "level" INTEGER NOT NULL DEFAULT 0,
+    "level" INTEGER NOT NULL DEFAULT 1,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "xp_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
+CREATE TABLE "level" (
+    "id" SERIAL NOT NULL,
+    "levelNumber" INTEGER NOT NULL,
+    "requiredXp" DECIMAL(10,2) NOT NULL,
+
+    CONSTRAINT "level_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "leaderboard" (
+    "id" SERIAL NOT NULL,
+    "user_id" TEXT NOT NULL,
+    "score" DECIMAL(10,2) NOT NULL,
+    "category" "LeaderboardCategory" NOT NULL DEFAULT 'allTime',
+    "periodStart" TIMESTAMP(3) NOT NULL,
+    "periodEnd" TIMESTAMP(3),
+    "rank" INTEGER,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "leaderboard_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "achievement" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(100) NOT NULL,
+    "description" VARCHAR(255),
+    "icon" VARCHAR(255),
+    "requiredXp" DECIMAL(10,2) NOT NULL,
+    "category" VARCHAR(50),
+
+    CONSTRAINT "achievement_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "user_achievements" (
+    "user_id" TEXT NOT NULL,
+    "achievement_id" INTEGER NOT NULL,
+    "unlocked_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "user_achievements_pkey" PRIMARY KEY ("user_id","achievement_id")
+);
+
+-- CreateTable
 CREATE TABLE "wallet" (
     "id" SERIAL NOT NULL,
     "user_id" TEXT NOT NULL,
+    "pin" VARCHAR(6) NOT NULL,
     "balance" DECIMAL(10,2) NOT NULL DEFAULT 500.00,
 
     CONSTRAINT "wallet_pkey" PRIMARY KEY ("id")
@@ -179,6 +228,7 @@ CREATE TABLE "product" (
 CREATE TABLE "order" (
     "id" SERIAL NOT NULL,
     "user_id" TEXT NOT NULL,
+    "status" TEXT DEFAULT 'pending',
     "order_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "total_amount" DECIMAL(10,2) NOT NULL,
 
@@ -258,6 +308,12 @@ CREATE UNIQUE INDEX "role_name_key" ON "role"("name");
 CREATE UNIQUE INDEX "xp_user_id_key" ON "xp"("user_id");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "level_levelNumber_key" ON "level"("levelNumber");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "leaderboard_user_id_category_periodStart_key" ON "leaderboard"("user_id", "category", "periodStart");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "wallet_user_id_key" ON "wallet"("user_id");
 
 -- AddForeignKey
@@ -300,10 +356,13 @@ ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_user_id_fkey" FOREIGN KEY ("
 ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "role"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "xp" ADD CONSTRAINT "xp_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "leaderboard" ADD CONSTRAINT "leaderboard_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "wallet" ADD CONSTRAINT "wallet_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_achievements" ADD CONSTRAINT "user_achievements_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_achievements" ADD CONSTRAINT "user_achievements_achievement_id_fkey" FOREIGN KEY ("achievement_id") REFERENCES "achievement"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "product" ADD CONSTRAINT "product_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
