@@ -107,4 +107,67 @@ const getUserDataHandler = async (req, res) => {
     }
 };
 
-export { findUserByEmail, createUser, getUserDetailsByID, getUserDataHandler };
+const getUsersByRole = async (roleName) => {
+    return await prisma.user.findMany({
+        where: {
+            type: roleName // 'student' or 'teacher' from enum
+        },
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            type: true,
+            userDetails: {
+                select: {
+                    firstName: true,
+                    lastName: true,
+                    avatar: true
+                }
+            }
+        }
+    });
+};
+
+const getUserByName = async (name) => {
+    return await prisma.user.findFirst({
+        where: {
+            username: {
+                contains: name,
+                mode: 'insensitive'
+            }
+        },
+        select: {
+            id: true,
+            username: true,
+            email: true,
+            type: true,
+            userDetails: true
+        }
+    });
+};
+
+// Assuming 'createTeacher' creates a user with type 'teacher'
+// We can reuse 'createUser' but might need to enforce the role.
+// For now, let's just use the existing createUser but exposed specifically or allow type override
+const createTeacher = async (data) => {
+    return await prisma.user.create({
+        data: {
+            username: data.username,
+            email: data.email,
+            password: data.password, // Remember to hash in controller
+            collegeId: data.collegeId,
+            type: 'teacher',
+            userDetails: {
+                create: {
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    sex: data.sex,
+                    dob: new Date(data.dob),
+                    phone: data.phone
+                }
+            }
+        }
+    });
+};
+
+export { findUserByEmail, createUser, getUserDetailsByID, getUserDataHandler, getUsersByRole, getUserByName, createTeacher };
