@@ -64,11 +64,186 @@ async function main() {
 
   console.log(`✅ Seeded ${levels.length} levels!`);
 
+  console.log('🧹 Cleaning up existing data...');
+  try {
+    await prisma.product.deleteMany();
+    await prisma.assignment.deleteMany();
+    await prisma.wallet.deleteMany();
+    await prisma.userDetails.deleteMany();
+    await prisma.xp.deleteMany(); // Assuming this exists based on creation
+    await prisma.user.deleteMany();
+  } catch (error) {
+    console.warn('Warning during cleanup:');
+  }
+
   await seedColleges();
   await seedRoles();
   await seedCourses();
+  await seedUsersAndData();
 }
 
+async function seedUsersAndData() {
+  console.log('🌱 Seeding Users, Products, and Wallets...');
+
+  const college = await prisma.college.findFirst();
+  if (!college) throw new Error("No college found - seeding failed");
+
+  const course = await prisma.course.findFirst();
+  if (!course) throw new Error("No course found - seeding failed");
+
+  // Create Teacher
+  const teacher = await prisma.user.create({
+    data: {
+      username: 'Sensei_John',
+      email: 'john@teacher.com',
+      password: '$2b$10$EpIxNwllb6qH.bH.bH.bHe', // dummy hash
+      collegeId: college.id,
+      type: 'teacher',
+      userDetails: {
+        create: {
+          firstName: 'John',
+          lastName: 'Doe',
+          sex: 'male',
+          dob: new Date('1980-01-01'),
+          phone: '1234567890'
+        }
+      }
+    }
+  });
+
+  // Create Student
+  const student = await prisma.user.create({
+    data: {
+      username: 'Student_Jane',
+      email: 'jane@student.com',
+      password: '$2b$10$EpIxNwllb6qH.bH.bH.bHe',
+      collegeId: college.id,
+      type: 'student',
+      userDetails: {
+        create: {
+          firstName: 'Jane',
+          lastName: 'Smith',
+          sex: 'female',
+          dob: new Date('2000-01-01'),
+          phone: '0987654321'
+        }
+      }
+    }
+  });
+
+  // Handle Wallet (upsert to avoid constraints if auto-created)
+  await prisma.wallet.upsert({
+    where: { userId: student.id },
+    create: {
+      userId: student.id,
+      balance: 1000.00,
+      pin: '1234'
+    },
+    update: {
+      balance: 1000.00,
+      pin: '1234'
+    }
+  });
+
+  // Create Assignment
+  await prisma.assignment.create({
+    data: {
+      courseId: course.id,
+      title: 'React Basics',
+      description: 'Build a Counter App',
+      content: 'Use useState hook.',
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    }
+  });
+
+  // Create Products
+  await prisma.product.createMany({
+    data: [
+      {
+        creatorId: teacher.id,
+        name: 'Python E-Book',
+        description: 'Learn Python Fast',
+        price: 99.99,
+        stock: 100,
+        image: 'https://via.placeholder.com/150'
+      },
+      {
+        creatorId: teacher.id,
+        name: 'JavaScript E-Book',
+        description: 'Learn JavaScript Fast',
+        price: 99.99,
+        stock: 100,
+        image: 'https://via.placeholder.com/150'
+      },
+      {
+        creatorId: teacher.id,
+        name: 'Cool Sticker',
+        description: 'Laptop Sticker',
+        price: 5.00,
+        stock: 50,
+        image: 'https://via.placeholder.com/150'
+      },
+      {
+        creatorId: student.id,
+        name: 'Physics 101 Notes',
+        description: 'Comprehensive handwritten notes for Physics 101',
+        price: 14.99,
+        stock: 50,
+        image: 'https://via.placeholder.com/150'
+      },
+      {
+        creatorId: student.id,
+        name: 'Abstract Digital Art',
+        description: 'High-res abstract digital art print',
+        price: 25.00,
+        stock: 10,
+        image: 'https://via.placeholder.com/150'
+      },
+      {
+        creatorId: student.id,
+        name: 'Organic Chemistry Diagrams',
+        description: 'Detailed reaction mechanisms and notes',
+        price: 19.99,
+        stock: 30,
+        image: 'https://via.placeholder.com/150'
+      },
+      {
+        creatorId: student.id,
+        name: 'Charcoal Sketch: Campus',
+        description: 'Hand-drawn charcoal sketch of the main building',
+        price: 45.00,
+        stock: 1,
+        image: 'https://via.placeholder.com/150'
+      },
+      {
+        creatorId: student.id,
+        name: 'Calculus Cheat Sheet',
+        description: ' essential formulas for derivatives and integrals',
+        price: 9.99,
+        stock: 100,
+        image: 'https://via.placeholder.com/150'
+      },
+      {
+        creatorId: student.id,
+        name: 'Digital Portrait Commission',
+        description: 'Custom digital style portrait from your photo',
+        price: 50.00,
+        stock: 5,
+        image: 'https://via.placeholder.com/150'
+      },
+      {
+        creatorId: student.id,
+        name: 'Voxel Art Asset Pack',
+        description: 'Low-poly 3D assets for game dev',
+        price: 29.99,
+        stock: 20,
+        image: 'https://via.placeholder.com/150'
+      }
+    ]
+  });
+
+  console.log('✅ Seeded Users, Wallet, Assignments & Products');
+}
 main()
   .catch((e) => {
     console.error('❌ Seed failed:', e);
