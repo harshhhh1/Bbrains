@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import authroutes from './routes/auth.routes.js';
+import marketroutes from './routes/market.route.js';
 import dashboardroutes from './routes/dashboard.routes.js';
 dotenv.config();
 
@@ -15,6 +16,7 @@ app.use(cookieParser());
 
 app.use('/', authroutes);
 app.use('/', dashboardroutes);
+app.use('/market',marketroutes)
 
 app.get('/', (req, res) => {
   res.json({message:'Hello from the backend server!'});
