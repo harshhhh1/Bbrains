@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { findUserByEmail, createUser, getUserDetailsByID } from "../services/user.service.js";
 import dotenv from "dotenv";
 import { generateToken } from "../utils/tokengen.js";
+import { getRandomAvatar } from "../utils/randomavatar.js";
 
 dotenv.config();
 
@@ -28,7 +29,8 @@ const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await createUser(username, email, 6, hashedPassword);
+    await createUser(username, email, 45, hashedPassword,getRandomAvatar());
+    // await createUserDetails(getRandomAvatar());
 
     res.status(201).json({
       status: "success",

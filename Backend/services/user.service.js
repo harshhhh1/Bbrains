@@ -7,13 +7,24 @@ const findUserByEmail = async (email) => {
     });
 };
 
-const createUser = async (username, email, collegeId, password) => {
+const createUser = async (username, email, collegeId, password, avatar) => {
     return await prisma.user.create({
         data: {
             username,
             email,
             collegeId,
             password,
+            // Use a nested create to automatically link the UserDetails
+            userDetails: {
+                create: {
+                    avatar: avatar,
+                    firstName: "",
+                    lastName: "",
+                    sex: "other",
+                    dob: new Date("2005-07-08"), // Prisma requires a Date object
+                    phone: "7634928634"          // Use a string for phone numbers
+                }
+            }
         },
     });
 };
