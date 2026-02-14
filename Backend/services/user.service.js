@@ -30,7 +30,7 @@ const createUser = async (username, email, collegeId, password, avatar) => {
 };
 
 const getUserDetailsByID = async (id) => {
-    return await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
         where: { id },
         select: {
             id: true,
@@ -51,6 +51,9 @@ const getUserDetailsByID = async (id) => {
                     sex: true,
                     dob: true,
                     phone: true,
+                    grade: true,
+                    status: true,
+                    streak: true,
                     address: {
                         select: {
                             addressLine1: true,
@@ -85,8 +88,76 @@ const getUserDetailsByID = async (id) => {
                     level: true,
                 },
             },
+            leaderboards: {
+                where: { category: 'allTime' }, // Assuming request meant all time or specific period. Taking allTime for profile.
+                select: {
+                    rank: true,
+                    score: true
+                },
+                take: 1
+            },
+            userAchievements: {
+                select: {
+                    achievement: {
+                        select: {
+                            name: true,
+                            icon: true,
+                            description: true
+                        }
+                    }
+                }
+            }
         },
     });
+
+    if (!user) return null;
+
+    // Fetch next level info for maxXP calculation
+    const currentLevel = user.xp?.level || 1;
+    const nextLevelData = await prisma.level.findUnique({
+        where: { levelNumber: currentLevel + 1 }
+    });
+
+    // If already max level (no next level), we can treat current XP as max or handle gracefully
+    // Assuming standard behavior: maxXP is the requirement for the NEXT level.
+    // Ideally we also need previous level XP to calculate "currentXP" as strictly progress within the level,
+    // but often "currentXP" just means "total XP user has". 
+    // The prompt asks for: "currentXP" and "maxXP(xp required to obtain next level)".
+    // Usually Profile Card progress bar = (TotalXP - PrevLevelXP) / (NextLevelXP - PrevLevelXP).
+    // OR it explicitly means: currentXP = user.xp, maxXP = nextLevel.requiredXP.
+    // Let's provide raw values and let frontend compute percentage, or compute "progress".
+    // "maxXP (xp required to obtain next level)" -> This sounds like the Total XP threshold for the next level.
+
+    // Let's refine based on "currentXP" vs "totalXP". 
+    // If totalXP is the running total, currentXP might mean XP gained *towards* the next level? 
+    // I will return `currentLevelXP` (XP accumulated in this level) and `nextLevelReqXP` (XP needed for next level).
+
+    // But checking the prompt: "totalXP", "level", "currentXP", "maxXP".
+    // I'll assume:
+    // totalXP: user.xp
+    // currentXP: user.xp (or maybe relative? I'll stick to total for now unless "progress" is implied)
+    // maxXP: nextLevelData.requiredXp
+
+    // Wait, if it's for a progress bar:
+    // It's usually: Value = CurrentXP, Max = TargetXP.
+
+    const maxXP = nextLevelData?.requiredXp || 0; // 0 or null if max level reached
+
+    // Formatting the response structure
+    return {
+        ...user,
+        name: `${user.userDetails?.firstName || ''} ${user.userDetails?.lastName || ''}`.trim(),
+        className: user.userDetails?.grade,
+        avatarUrl: user.userDetails?.avatar,
+        isOnline: user.userDetails?.status, // Enum value: online, idle, dnd, offline
+        leaderboardRank: user.leaderboards?.[0]?.rank || null,
+        totalXP: user.xp?.xp || 0,
+        level: user.xp?.level || 1,
+        currentXP: user.xp?.xp || 0, // Sending total XP as current. can adjust if "relative to level" is needed.
+        maxXP: maxXP,
+        streak: user.userDetails?.streak || 0,
+        badges: user.userAchievements?.map(ua => ua.achievement) || []
+    };
 };
 
 const getUserDataHandler = async (req, res) => {
