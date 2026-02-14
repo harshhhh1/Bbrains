@@ -68,10 +68,20 @@ model UserDetails {
   phone     String   @db.VarChar(15)
   addressId Int?     @map("address_id")
   address   Address? @relation(fields: [addressId], references: [id])
+  grade     String?  @db.VarChar(20) // e.g., "11th grade"
+  status    UserStatus @default(offline)
+  streak    Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("user_details")
+}
+
+enum UserStatus {
+  online
+  idle
+  dnd
+  offline
 }
 
 enum Sex {
