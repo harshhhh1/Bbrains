@@ -1,0 +1,404 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["views"] 
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//1. ENUMS
+
+enum Sex {
+  male
+  female
+  other
+}
+
+enum UserRole {
+  student
+  teacher
+  admin
+  staff
+}
+
+enum TransactionType {
+  credit
+  debit
+}
+
+enum TransactionStatus {
+  success
+  failed
+  pending
+}
+
+enum LeaderboardCategory {
+  weekly
+  monthly
+  allTime
+  course
+}
+
+enum LogCategory {
+  AUTH        // Login, Logout, Password Change
+  ACADEMIC    // Grades, Assignments, Submissions
+  MARKET      // Buying, Selling, Products
+  FINANCE     // Wallet, Transactions
+  USER        // Profile updates
+  SYSTEM      // Admin errors or system alerts
+}
+
+//2. CORE MODELS
+
+model College {
+  id        Int      @id @default(autoincrement()) @map("college_id")
+  name      String   @db.VarChar(50)
+  addressId Int?     @map("address_id")
+  address   Address? @relation(fields: [addressId], references: [id])
+  email     String   @db.VarChar(50)
+  regNo     String   @map("reg_no") @db.VarChar(50)
+  createdAt DateTime @default(now())
+  users     User[]
+}
+
+model User {
+  id        String   @id @default(uuid()) @map("user_id")
+  collegeId Int      @map("college_id")
+  college   College  @relation(fields: [collegeId], references: [id])
+  email     String   @unique @db.VarChar(50)
+  username  String   @unique @db.VarChar(32)
+  password  String   @db.VarChar(255)
+  type      UserRole @default(student)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  userDetails UserDetails?
+  addresses   Address[]
+  enrollments Enrollment[]
+  submissions Submission[]
+  grades      Grade[]
+  roles       UserRoles[]
+  auditLogs   AuditLog[] 
+  announcements Announcement[]
+  products      Product[]    
+  cartItems     Cart[]
+  orders        Order[]
+  transactions  TransactionHistory[]
+  leaderboards  Leaderboard[] 
+  userAchievements UserAchievements[] 
+  xp            Xp?
+  wallet        Wallet?
+
+  @@map("user") 
+}
+
+model UserDetails {
+  id          Int      @id @default(autoincrement())
+  userId      String   @unique @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatar      String?  
+  firstName   String   @map("first_name") @db.VarChar(25)
+  middlename  String?
+  lastName    String   @map("last_name") @db.VarChar(25)
+  sex         Sex
+  dob         DateTime @db.Date
+  phone       String?   @db.VarChar(15)
+  addressId   Int?     @map("address_id")
+  address     Address? @relation(fields: [addressId], references: [id])
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("user_details")
+}
+
+model Address {
+  id           Int      @id @default(autoincrement())
+  userId       String?  @map("user_id")
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addressLine1 String   @map("address_line1") @db.VarChar(255)
+  addressLine2 String?  @map("address_line2") @db.VarChar(255)
+  city         String   @db.VarChar(50)
+  state        String?  @db.VarChar(100)
+  postalCode   String?  @map("postal_code") @db.VarChar(10)
+  country      String   @db.VarChar(100)
+  
+  userDetails  UserDetails[]
+  colleges     College[] 
+
+  @@map("address")
+}
+
+// 3. ACADEMIC MODELS
+
+model Course {
+  id          Int      @id @default(autoincrement()) @map("course_id")
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  enrollments Enrollment[]
+  assignments Assignment[]
+
+  @@map("course")
+}
+
+model Enrollment {
+  userId     String   @map("user_id")
+  courseId   Int      @map("course_id")
+  enrolledAt DateTime @default(now()) @map("enrolled_at")
+  grade      String?  @db.VarChar(5)
+  user       User     @relation(fields: [userId], references: [id])
+  course     Course   @relation(fields: [courseId], references: [id])
+
+  @@id([userId, courseId])
+  @@index([courseId])
+  @@map("enrollment")
+}
+
+model Assignment {
+  id          Int      @id @default(autoincrement()) @map("assignment_id")
+  courseId    Int      @map("course_id")
+  course      Course   @relation(fields: [courseId], references: [id])
+  title       String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  content     String?
+  file        String?  
+  dueDate     DateTime @map("due_date") @db.Date
+  submissions Submission[]
+  grades      Grade[]
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("assignment")
+}
+
+model Submission {
+  id           Int      @id @default(autoincrement()) @map("submission_id")
+  assignmentId Int      @map("assignment_id")
+  userId       String   @map("user_id")
+  filePath     String   @map("file_path") @db.VarChar(255)
+  submittedAt  DateTime @default(now()) @map("submitted_at")
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
+  
+  @@index([assignmentId]) // Speeds up: "Show me all submissions for Assignment 10"
+  @@index([userId])
+  @@map("submission")
+}
+
+model Grade {
+  id           Int      @id @default(autoincrement())
+  userId       String   @map("user_id")
+  assignmentId Int      @map("assignment_id")
+  grade        String   @db.VarChar(5)
+  gradedAt     DateTime @default(now()) @map("graded_at")
+  gradedBy     String   @map("checked_by") @db.VarChar(50)
+  user         User     @relation(fields: [userId], references: [id])
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  
+  @@index([assignmentId])
+  @@index([userId])
+  @@map("grade")
+}
+
+//4.ROLES
+
+model Role {
+  id          Int      @id @default(autoincrement()) @map("role_id")
+  name        String   @unique @db.VarChar(50)
+  description String?  @db.VarChar(255)
+  users       UserRoles[]
+
+  @@map("role")
+}
+
+model UserRoles {
+  userId     String   @map("user_id")
+  roleId     Int      @map("role_id")
+  assignedAt DateTime @default(now()) @map("assigned_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+//5.XP, LEVELS AND LEADERBOARD
+model Xp {
+  id        Int      @id @default(autoincrement())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  xp        Decimal  @default(0)
+  level     Int      @default(1)  
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("xp")
+}
+
+model Level {
+  id          Int      @id @default(autoincrement())
+  levelNumber Int      @unique
+  requiredXp  Decimal  @db.Decimal(10, 2)
+  @@map("level")
+}
+
+model Leaderboard {
+  id          Int      @id @default(autoincrement())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score       Decimal  @db.Decimal(10, 2)
+  category    LeaderboardCategory @default(allTime)
+  periodStart DateTime
+  periodEnd   DateTime?
+  rank        Int?     
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([category, score(sort: Desc)])
+  @@unique([userId, category, periodStart])
+  @@map("leaderboard")
+}
+
+// 6. ACHIVEMENTS
+model Achievement {
+  id          Int      @id @default(autoincrement()) @map("achivement_id")
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  icon        String?  
+  requiredXp  Decimal  @db.Decimal(10, 2)
+  category    String?  @db.VarChar(50)  
+  users       UserAchievements[]
+
+  @@map("achievement")
+}
+
+model UserAchievements {
+  userId        String   @map("user_id")
+  achievementId Int      @map("achievement_id")
+  unlockedAt    DateTime @default(now()) @map("unlocked_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@id([userId, achievementId])
+  @@map("user_achievements")
+}
+
+//7. ECONOMY & MARKET
+
+model Wallet {
+  id      Int     @id @default(autoincrement()) @map("wallet_id")
+  userId  String  @unique @map("user_id")
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pin     String  @db.VarChar(6) @default("000000")
+  balance Decimal @db.Decimal(10, 2)  @default(500.00)
+
+  @@map("wallet")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement()) @map("product_id")
+  creatorId   String   @map("creator_id")
+  creator     User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(255)
+  image       String?  @db.VarChar(255)
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int
+  createdAt   DateTime @default(now()) @map("created_at")
+  cartItems   Cart[]
+  orderItems  OrderItem[]
+
+  @@index([name])
+  @@map("product")
+}
+
+model Order {
+  id          Int      @id @default(autoincrement()) @map("order_id")
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      String?  @default("pending")
+  orderDate   DateTime @default(now()) @map("order_date")
+  totalAmount Decimal  @db.Decimal(10, 2) @map("total_amount")
+  items       OrderItem[]
+
+  @@index([userId])
+  @@map("order")
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int     @map("order_id")
+  productId Int     @map("product_id")
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_item")
+}
+
+model TransactionHistory {
+  id              Int               @id @default(autoincrement())
+  userId          String            @map("user_id")
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactionDate DateTime          @default(now()) @map("transaction_date")
+  amount          Decimal           @db.Decimal(10, 2)
+  type            TransactionType
+  status          TransactionStatus @default(pending)
+  note            String?           @db.VarChar(255)
+
+  @@index([userId, transactionDate(sort: Desc)])
+  @@map("transaction_history")
+}
+
+model Cart {
+  id        Int     @id @default(autoincrement())
+  userId    String  @map("user_id")
+  productId Int     @map("product_id")
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("cart")
+}
+
+model Announcement {
+  id          Int      @id @default(autoincrement())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String   @db.VarChar(100)
+  description String?  @db.Text
+  image       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("announcement")
+}
+
+//8. AUDITLOG
+
+model AuditLog {
+  id        Int         @id @default(autoincrement())
+  userId    String      @map("user_id")
+  user      User        @relation(fields: [userId], references: [id])
+  
+  category  LogCategory // FILTER BY THIS: "MARKET", "ACADEMIC", "USER"
+  action    String      // e.g. "PURCHASE", "UPDATE_GRADE"
+  entity    String      // e.g. "Product", "Grade"
+  entityId  String      // ID of the specific item
+  
+  change    Json?       // Stores { old: ..., new: ... }
+  reason    String?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@map("audit_log")
+  @@index([category])   // Makes filtering by View super fast
+  @@index([userId])
+}

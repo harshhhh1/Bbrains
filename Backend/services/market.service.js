@@ -194,10 +194,13 @@ const checkout = async (userId, pin) => {
             }
         });
 
-        await tx.userLogs.create({
+        await tx.auditLog.create({
             data: {
                 userId,
-                action: `Purchased order #${order.id}`
+                category: "MARKET",
+                action: "CHECKOUT",
+                entity: "Order",
+                entityId: String(order.id)
             }
         });
 

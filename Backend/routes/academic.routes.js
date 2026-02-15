@@ -1,26 +1,29 @@
 import express from 'express';
 import {
-    createAssignmentHandler,
-    getAssignmentsHandler,
-    submitAssignmentHandler,
-    getSubmissionsHandler,
-    createAnnouncementHandler,
-    getAnnouncementsHandler,
-    deleteAnnouncementHandler
+    createAssignmentHandler, getAssignmentsHandler, getAssignmentHandler,
+    updateAssignmentHandler, deleteAssignmentHandler,
+    submitAssignmentHandler, getSubmissionsHandler,
+    createAnnouncementHandler, getAnnouncementsHandler, deleteAnnouncementHandler
 } from '../controllers/academic.controller.js';
 import verifyToken from '../middleware/auth.middleware.js';
+import authorize from '../middleware/authorize.js';
 
 const router = express.Router();
 
 // Assignments
-router.post('/assignments', verifyToken, createAssignmentHandler);
-router.get('/assignments/:courseId', verifyToken, getAssignmentsHandler);
-router.post('/assignments/:id/submit', verifyToken, submitAssignmentHandler);
-router.get('/assignments/:id/submissions', verifyToken, getSubmissionsHandler);
+router.post('/assignments', verifyToken, authorize('teacher', 'admin'), createAssignmentHandler);
+router.get('/assignments', verifyToken, getAssignmentsHandler);
+router.get('/assignments/:id', verifyToken, getAssignmentHandler);
+router.put('/assignments/:id', verifyToken, authorize('teacher', 'admin'), updateAssignmentHandler);
+router.delete('/assignments/:id', verifyToken, authorize('teacher', 'admin'), deleteAssignmentHandler);
+
+// Submissions
+router.post('/submissions', verifyToken, submitAssignmentHandler);
+router.get('/submissions/:assignmentId', verifyToken, authorize('teacher', 'admin'), getSubmissionsHandler);
 
 // Announcements
-router.post('/announcements', verifyToken, createAnnouncementHandler);
+router.post('/announcements', verifyToken, authorize('teacher', 'admin'), createAnnouncementHandler);
 router.get('/announcements', verifyToken, getAnnouncementsHandler);
-router.delete('/announcements/:id', verifyToken, deleteAnnouncementHandler);
+router.delete('/announcements/:id', verifyToken, authorize('teacher', 'admin'), deleteAnnouncementHandler);
 
 export default router;

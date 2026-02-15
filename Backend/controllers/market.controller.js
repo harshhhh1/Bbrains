@@ -1,151 +1,150 @@
-import { getAllProducts, createProduct as createProductService, updateProduct, deleteProduct, findProductByName, addToCart, getCart, removeFromCart, checkout } from "../services/market.service.js"
+import {
+  getAllProducts as getProductsList, createProduct as createProductSvc, updateProduct as updateProductSvc,
+  deleteProduct as deleteProductSvc, findProductByName, addToCart, getCart,
+  removeFromCart, checkout
+} from "../services/market.service.js";
+import { sendSuccess, sendCreated, sendPaginated, sendError } from "../utils/response.js";
+import { createAuditLog } from "../utils/auditLog.js";
+import { z } from 'zod';
+import prisma from "../utils/prisma.js";
 
-const products = async (req, res) => {
+const productSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(255).optional(),
+  price: z.number().positive(),
+  stock: z.number().int().nonnegative(),
+  imageUrl: z.string().url().optional(),
+  category: z.string().max(50).optional()
+});
+
+const cartItemSchema = z.object({
+  productId: z.number().int().positive(),
+  quantity: z.number().int().positive().default(1)
+});
+
+// GET /market/products
+export const getAllProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const { products: result, total } = await getAllProducts(skip, limit);
-
-    res.json({
-      status: "success",
-      products: result,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
-      }
-    });
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+    const result = await getProductsList((page - 1) * limit, limit);
+    return sendPaginated(res, result.products, { page, limit, total: result.total });
   } catch (error) {
-    console.error("Market Controller Error:", error);
-    res.status(500).json({
-      status: "error",
-      message: "Failed to fetch products",
-      error: error.message
-    });
+    return sendError(res, 'Failed to fetch products', 500);
   }
-}
+};
 
-const createProduct = async (req, res) => {
+// GET /market/products/:id
+export const getProduct = async (req, res) => {
   try {
-    const { name, description, price, stock, image } = req.body;
-
-    const creatorId = req.user.id;
-    const result = await createProductService(name, description, price, stock, image, creatorId);
-    res.json({
-      status: "success",
-      product: result
-    });
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return sendError(res, 'Invalid product ID', 400);
+    const product = await prisma.product.findUnique({ where: { id } });
+    if (!product) return sendError(res, 'Product not found', 404);
+    return sendSuccess(res, product);
   } catch (error) {
-    console.error("Market Controller Error:", error);
-    res.status(500).json({
-      status: "error",
-      message: "Failed to create product",
-      error: error.message
-    });
+    return sendError(res, 'Failed to fetch product', 500);
   }
-}
-const editProduct = async (req, res) => {
+};
+
+// POST /market/products
+export const createProduct = async (req, res) => {
   try {
-    const { id } = req.params;
-    const data = req.body;
-    const result = await updateProduct(id, data);
-    res.json({
-      status: "success",
-      product: result
-    });
+    const validated = productSchema.parse(req.body);
+    const product = await createProductSvc(validated.name, validated.description, validated.price, validated.stock, validated.imageUrl, req.user.id);
+    await createAuditLog(req.user.id, 'MARKET', 'CREATE', 'Product', product.id);
+    return sendCreated(res, product, 'Product created');
   } catch (error) {
-    console.error("Market Controller Error:", error);
-    res.status(500).json({
-      status: "error",
-      message: "Failed to update product",
-      error: error.message
-    });
+    if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+    return sendError(res, 'Failed to create product', 500);
   }
-}
+};
 
-const removeProduct = async (req, res) => {
+// PUT /market/products/:id
+export const updateProduct = async (req, res) => {
   try {
-    const { id } = req.params;
-    await deleteProduct(id);
-    res.json({
-      status: "success",
-      message: "Product deleted successfully"
-    });
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return sendError(res, 'Invalid product ID', 400);
+    const validated = productSchema.partial().parse(req.body);
+    const product = await updateProductSvc(id, validated);
+    await createAuditLog(req.user.id, 'MARKET', 'UPDATE', 'Product', id, { after: validated });
+    return sendSuccess(res, product, 'Product updated');
   } catch (error) {
-    console.error("Market Controller Error:", error);
-    res.status(500).json({
-      status: "error",
-      message: "Failed to delete product",
-      error: error.message
-    });
+    if (error.code === 'P2025') return sendError(res, 'Product not found', 404);
+    return sendError(res, 'Failed to update product', 500);
   }
-}
+};
 
-const searchProduct = async (req, res) => {
+// DELETE /market/products/:id
+export const deleteProduct = async (req, res) => {
   try {
-    const { name } = req.query;
-    if (!name) return res.status(400).json({ message: "Product name required" });
-
-    const result = await findProductByName(name);
-    res.json({ status: "success", products: result });
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return sendError(res, 'Invalid product ID', 400);
+    await deleteProductSvc(id);
+    await createAuditLog(req.user.id, 'MARKET', 'DELETE', 'Product', id);
+    return sendSuccess(res, null, 'Product deleted');
   } catch (error) {
-    console.error("Market Controller Error:", error);
-    res.status(500).json({ status: "error", message: error.message });
+    if (error.code === 'P2025') return sendError(res, 'Product not found', 404);
+    return sendError(res, 'Failed to delete product', 500);
   }
-}
+};
 
-const addItemToCart = async (req, res) => {
+// GET /market/products/search?query=...
+export const searchProductsHandler = async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
-    const userId = req.user.id;
-
-    const result = await addToCart(userId, productId, quantity);
-    res.json({ status: "success", message: "Added to cart", cartItem: result });
+    const { query } = req.query;
+    if (!query) return sendError(res, 'Search query required', 400);
+    const products = await findProductByName(query);
+    return sendSuccess(res, products);
   } catch (error) {
-    console.error("Cart Error:", error);
-    res.status(400).json({ status: "error", message: error.message });
+    return sendError(res, 'Search failed', 500);
   }
-}
+};
 
-const getUserCart = async (req, res) => {
+// POST /market/cart
+export const addToCartHandler = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const result = await getCart(userId);
-    res.json({ status: "success", cart: result });
+    const validated = cartItemSchema.parse(req.body);
+    const cartItem = await addToCart(req.user.id, validated.productId, validated.quantity);
+    return sendCreated(res, cartItem, 'Added to cart');
   } catch (error) {
-    console.error("Cart Error:", error);
-    res.status(500).json({ status: "error", message: error.message });
+    if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+    return sendError(res, 'Failed to add to cart', 500);
   }
-}
+};
 
-const removeCartItem = async (req, res) => {
+// GET /market/cart
+export const getCartHandler = async (req, res) => {
   try {
-    const { id } = req.params;
-    const userId = req.user.id;
-    await removeFromCart(userId, id);
-    res.json({ status: "success", message: "Removed from cart" });
+    const items = await getCart(req.user.id);
+    return sendSuccess(res, items);
   } catch (error) {
-    console.error("Cart Error:", error);
-    res.status(400).json({ status: "error", message: error.message });
+    return sendError(res, 'Failed to fetch cart', 500);
   }
-}
+};
 
-const checkoutHandler = async (req, res) => {
+// DELETE /market/cart/:productId
+export const removeFromCartHandler = async (req, res) => {
+  try {
+    const productId = parseInt(req.params.productId);
+    if (isNaN(productId)) return sendError(res, 'Invalid product ID', 400);
+    await removeFromCart(req.user.id, productId);
+    return sendSuccess(res, null, 'Removed from cart');
+  } catch (error) {
+    return sendError(res, 'Failed to remove from cart', 500);
+  }
+};
+
+// POST /market/checkout
+export const checkoutHandler = async (req, res) => {
   try {
     const { pin } = req.body;
-    const userId = req.user.id;
+    if (!pin) return sendError(res, 'PIN required for checkout', 400);
 
-    if (!pin) return res.status(400).json({ message: "Wallet PIN required" });
-
-    const order = await checkout(userId, pin);
-    res.json({ status: "success", message: "Purchase successful", order });
+    const result = await checkout(req.user.id, pin);
+    await createAuditLog(req.user.id, 'MARKET', 'CHECKOUT', 'Order', 'batch');
+    return sendSuccess(res, result, 'Checkout successful');
   } catch (error) {
-    console.error("Checkout Error:", error);
-    res.status(400).json({ status: "error", message: error.message });
+    return sendError(res, error.message, 400);
   }
-}
-
-export { products, createProduct, editProduct, removeProduct, searchProduct, addItemToCart, getUserCart, removeCartItem, checkoutHandler }
+};

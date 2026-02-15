@@ -2,10 +2,7 @@
 CREATE TYPE "Sex" AS ENUM ('male', 'female', 'other');
 
 -- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('student', 'teacher', 'admin');
-
--- CreateEnum
-CREATE TYPE "LeaderboardCategory" AS ENUM ('weekly', 'monthly', 'allTime', 'course');
+CREATE TYPE "UserRole" AS ENUM ('student', 'teacher', 'admin', 'staff');
 
 -- CreateEnum
 CREATE TYPE "TransactionType" AS ENUM ('credit', 'debit');
@@ -13,21 +10,27 @@ CREATE TYPE "TransactionType" AS ENUM ('credit', 'debit');
 -- CreateEnum
 CREATE TYPE "TransactionStatus" AS ENUM ('success', 'failed', 'pending');
 
+-- CreateEnum
+CREATE TYPE "LeaderboardCategory" AS ENUM ('weekly', 'monthly', 'allTime', 'course');
+
+-- CreateEnum
+CREATE TYPE "LogCategory" AS ENUM ('AUTH', 'ACADEMIC', 'MARKET', 'FINANCE', 'USER', 'SYSTEM');
+
 -- CreateTable
-CREATE TABLE "College" (
-    "id" SERIAL NOT NULL,
+CREATE TABLE "college" (
+    "college_id" SERIAL NOT NULL,
     "name" VARCHAR(50) NOT NULL,
-    "address" VARCHAR(255) NOT NULL,
+    "address_id" INTEGER,
     "email" VARCHAR(50) NOT NULL,
     "reg_no" VARCHAR(50) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "College_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "college_pkey" PRIMARY KEY ("college_id")
 );
 
 -- CreateTable
 CREATE TABLE "user" (
-    "id" TEXT NOT NULL,
+    "user_id" TEXT NOT NULL,
     "college_id" INTEGER NOT NULL,
     "email" VARCHAR(50) NOT NULL,
     "username" VARCHAR(32) NOT NULL,
@@ -36,7 +39,7 @@ CREATE TABLE "user" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "user_pkey" PRIMARY KEY ("user_id")
 );
 
 -- CreateTable
@@ -45,10 +48,11 @@ CREATE TABLE "user_details" (
     "user_id" TEXT NOT NULL,
     "avatar" TEXT,
     "first_name" VARCHAR(25) NOT NULL,
+    "middlename" TEXT,
     "last_name" VARCHAR(25) NOT NULL,
     "sex" "Sex" NOT NULL,
     "dob" DATE NOT NULL,
-    "phone" VARCHAR(15) NOT NULL,
+    "phone" VARCHAR(15),
     "address_id" INTEGER,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -59,12 +63,12 @@ CREATE TABLE "user_details" (
 -- CreateTable
 CREATE TABLE "address" (
     "id" SERIAL NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "user_id" TEXT,
     "address_line1" VARCHAR(255) NOT NULL,
     "address_line2" VARCHAR(255),
     "city" VARCHAR(50) NOT NULL,
     "state" VARCHAR(100),
-    "postal_code" INTEGER NOT NULL,
+    "postal_code" VARCHAR(10),
     "country" VARCHAR(100) NOT NULL,
 
     CONSTRAINT "address_pkey" PRIMARY KEY ("id")
@@ -72,11 +76,11 @@ CREATE TABLE "address" (
 
 -- CreateTable
 CREATE TABLE "course" (
-    "id" SERIAL NOT NULL,
+    "course_id" SERIAL NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "description" VARCHAR(255),
 
-    CONSTRAINT "course_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "course_pkey" PRIMARY KEY ("course_id")
 );
 
 -- CreateTable
@@ -91,27 +95,28 @@ CREATE TABLE "enrollment" (
 
 -- CreateTable
 CREATE TABLE "assignment" (
-    "id" SERIAL NOT NULL,
+    "assignment_id" SERIAL NOT NULL,
     "course_id" INTEGER NOT NULL,
     "title" VARCHAR(100) NOT NULL,
     "description" VARCHAR(255),
     "content" TEXT,
+    "file" TEXT,
     "due_date" DATE NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "assignment_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "assignment_pkey" PRIMARY KEY ("assignment_id")
 );
 
 -- CreateTable
 CREATE TABLE "submission" (
-    "id" SERIAL NOT NULL,
+    "submission_id" SERIAL NOT NULL,
     "assignment_id" INTEGER NOT NULL,
     "user_id" TEXT NOT NULL,
     "file_path" VARCHAR(255) NOT NULL,
     "submitted_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "submission_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "submission_pkey" PRIMARY KEY ("submission_id")
 );
 
 -- CreateTable
@@ -128,11 +133,11 @@ CREATE TABLE "grade" (
 
 -- CreateTable
 CREATE TABLE "role" (
-    "id" SERIAL NOT NULL,
+    "role_id" SERIAL NOT NULL,
     "name" VARCHAR(50) NOT NULL,
     "description" VARCHAR(255),
 
-    CONSTRAINT "role_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "role_pkey" PRIMARY KEY ("role_id")
 );
 
 -- CreateTable
@@ -181,14 +186,14 @@ CREATE TABLE "leaderboard" (
 
 -- CreateTable
 CREATE TABLE "achievement" (
-    "id" SERIAL NOT NULL,
+    "achivement_id" SERIAL NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "description" VARCHAR(255),
-    "icon" VARCHAR(255),
+    "icon" TEXT,
     "requiredXp" DECIMAL(10,2) NOT NULL,
     "category" VARCHAR(50),
 
-    CONSTRAINT "achievement_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "achievement_pkey" PRIMARY KEY ("achivement_id")
 );
 
 -- CreateTable
@@ -202,17 +207,17 @@ CREATE TABLE "user_achievements" (
 
 -- CreateTable
 CREATE TABLE "wallet" (
-    "id" SERIAL NOT NULL,
+    "wallet_id" SERIAL NOT NULL,
     "user_id" TEXT NOT NULL,
-    "pin" VARCHAR(6) NOT NULL,
+    "pin" VARCHAR(6) NOT NULL DEFAULT '000000',
     "balance" DECIMAL(10,2) NOT NULL DEFAULT 500.00,
 
-    CONSTRAINT "wallet_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "wallet_pkey" PRIMARY KEY ("wallet_id")
 );
 
 -- CreateTable
 CREATE TABLE "product" (
-    "id" SERIAL NOT NULL,
+    "product_id" SERIAL NOT NULL,
     "creator_id" TEXT NOT NULL,
     "name" VARCHAR(100) NOT NULL,
     "description" VARCHAR(255),
@@ -221,18 +226,18 @@ CREATE TABLE "product" (
     "stock" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "product_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "product_pkey" PRIMARY KEY ("product_id")
 );
 
 -- CreateTable
 CREATE TABLE "order" (
-    "id" SERIAL NOT NULL,
+    "order_id" SERIAL NOT NULL,
     "user_id" TEXT NOT NULL,
     "status" TEXT DEFAULT 'pending',
     "order_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "total_amount" DECIMAL(10,2) NOT NULL,
 
-    CONSTRAINT "order_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "order_pkey" PRIMARY KEY ("order_id")
 );
 
 -- CreateTable
@@ -260,13 +265,14 @@ CREATE TABLE "transaction_history" (
 );
 
 -- CreateTable
-CREATE TABLE "user_logs" (
+CREATE TABLE "cart" (
     "id" SERIAL NOT NULL,
     "user_id" TEXT NOT NULL,
-    "action" VARCHAR(255) NOT NULL,
-    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "product_id" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "price" DECIMAL(10,2) NOT NULL,
 
-    CONSTRAINT "user_logs_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "cart_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -282,14 +288,18 @@ CREATE TABLE "announcement" (
 );
 
 -- CreateTable
-CREATE TABLE "cart" (
+CREATE TABLE "audit_log" (
     "id" SERIAL NOT NULL,
     "user_id" TEXT NOT NULL,
-    "product_id" INTEGER NOT NULL,
-    "quantity" INTEGER NOT NULL,
-    "price" INTEGER NOT NULL,
+    "category" "LogCategory" NOT NULL,
+    "action" TEXT NOT NULL,
+    "entity" TEXT NOT NULL,
+    "entityId" TEXT NOT NULL,
+    "change" JSONB,
+    "reason" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "cart_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "audit_log_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -302,6 +312,21 @@ CREATE UNIQUE INDEX "user_username_key" ON "user"("username");
 CREATE UNIQUE INDEX "user_details_user_id_key" ON "user_details"("user_id");
 
 -- CreateIndex
+CREATE INDEX "enrollment_course_id_idx" ON "enrollment"("course_id");
+
+-- CreateIndex
+CREATE INDEX "submission_assignment_id_idx" ON "submission"("assignment_id");
+
+-- CreateIndex
+CREATE INDEX "submission_user_id_idx" ON "submission"("user_id");
+
+-- CreateIndex
+CREATE INDEX "grade_assignment_id_idx" ON "grade"("assignment_id");
+
+-- CreateIndex
+CREATE INDEX "grade_user_id_idx" ON "grade"("user_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "role_name_key" ON "role"("name");
 
 -- CreateIndex
@@ -311,82 +336,112 @@ CREATE UNIQUE INDEX "xp_user_id_key" ON "xp"("user_id");
 CREATE UNIQUE INDEX "level_levelNumber_key" ON "level"("levelNumber");
 
 -- CreateIndex
+CREATE INDEX "leaderboard_category_score_idx" ON "leaderboard"("category", "score" DESC);
+
+-- CreateIndex
 CREATE UNIQUE INDEX "leaderboard_user_id_category_periodStart_key" ON "leaderboard"("user_id", "category", "periodStart");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "wallet_user_id_key" ON "wallet"("user_id");
 
--- AddForeignKey
-ALTER TABLE "user" ADD CONSTRAINT "user_college_id_fkey" FOREIGN KEY ("college_id") REFERENCES "College"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateIndex
+CREATE INDEX "product_name_idx" ON "product"("name");
+
+-- CreateIndex
+CREATE INDEX "order_user_id_idx" ON "order"("user_id");
+
+-- CreateIndex
+CREATE INDEX "transaction_history_user_id_transaction_date_idx" ON "transaction_history"("user_id", "transaction_date" DESC);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "cart_user_id_product_id_key" ON "cart"("user_id", "product_id");
+
+-- CreateIndex
+CREATE INDEX "audit_log_category_idx" ON "audit_log"("category");
+
+-- CreateIndex
+CREATE INDEX "audit_log_user_id_idx" ON "audit_log"("user_id");
 
 -- AddForeignKey
-ALTER TABLE "user_details" ADD CONSTRAINT "user_details_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "college" ADD CONSTRAINT "college_address_id_fkey" FOREIGN KEY ("address_id") REFERENCES "address"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user" ADD CONSTRAINT "user_college_id_fkey" FOREIGN KEY ("college_id") REFERENCES "college"("college_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "user_details" ADD CONSTRAINT "user_details_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "user_details" ADD CONSTRAINT "user_details_address_id_fkey" FOREIGN KEY ("address_id") REFERENCES "address"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "address" ADD CONSTRAINT "address_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "address" ADD CONSTRAINT "address_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "enrollment" ADD CONSTRAINT "enrollment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "enrollment" ADD CONSTRAINT "enrollment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "enrollment" ADD CONSTRAINT "enrollment_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "enrollment" ADD CONSTRAINT "enrollment_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "course"("course_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "assignment" ADD CONSTRAINT "assignment_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "course"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "assignment" ADD CONSTRAINT "assignment_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "course"("course_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "submission" ADD CONSTRAINT "submission_assignment_id_fkey" FOREIGN KEY ("assignment_id") REFERENCES "assignment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "submission" ADD CONSTRAINT "submission_assignment_id_fkey" FOREIGN KEY ("assignment_id") REFERENCES "assignment"("assignment_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "submission" ADD CONSTRAINT "submission_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "submission" ADD CONSTRAINT "submission_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "grade" ADD CONSTRAINT "grade_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "grade" ADD CONSTRAINT "grade_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "grade" ADD CONSTRAINT "grade_assignment_id_fkey" FOREIGN KEY ("assignment_id") REFERENCES "assignment"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "grade" ADD CONSTRAINT "grade_assignment_id_fkey" FOREIGN KEY ("assignment_id") REFERENCES "assignment"("assignment_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "role"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_roles" ADD CONSTRAINT "user_roles_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "role"("role_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "leaderboard" ADD CONSTRAINT "leaderboard_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "xp" ADD CONSTRAINT "xp_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_achievements" ADD CONSTRAINT "user_achievements_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "leaderboard" ADD CONSTRAINT "leaderboard_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_achievements" ADD CONSTRAINT "user_achievements_achievement_id_fkey" FOREIGN KEY ("achievement_id") REFERENCES "achievement"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_achievements" ADD CONSTRAINT "user_achievements_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "product" ADD CONSTRAINT "product_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_achievements" ADD CONSTRAINT "user_achievements_achievement_id_fkey" FOREIGN KEY ("achievement_id") REFERENCES "achievement"("achivement_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order" ADD CONSTRAINT "order_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "wallet" ADD CONSTRAINT "wallet_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order_item" ADD CONSTRAINT "order_item_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "product" ADD CONSTRAINT "product_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order_item" ADD CONSTRAINT "order_item_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "order" ADD CONSTRAINT "order_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "transaction_history" ADD CONSTRAINT "transaction_history_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "order_item" ADD CONSTRAINT "order_item_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "order"("order_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_logs" ADD CONSTRAINT "user_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "order_item" ADD CONSTRAINT "order_item_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "product"("product_id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "announcement" ADD CONSTRAINT "announcement_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "transaction_history" ADD CONSTRAINT "transaction_history_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "cart" ADD CONSTRAINT "cart_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "cart" ADD CONSTRAINT "cart_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "cart" ADD CONSTRAINT "cart_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "cart" ADD CONSTRAINT "cart_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "product"("product_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "announcement" ADD CONSTRAINT "announcement_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("user_id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -1,20 +1,28 @@
 import express from 'express';
-import { products, createProduct, editProduct, removeProduct, searchProduct, addItemToCart, getUserCart, removeCartItem, checkoutHandler } from '../controllers/market.controller.js';
+import {
+    getAllProducts, getProduct, createProduct, updateProduct, deleteProduct,
+    searchProductsHandler, addToCartHandler, getCartHandler,
+    removeFromCartHandler, checkoutHandler
+} from '../controllers/market.controller.js';
 import verifyToken from '../middleware/auth.middleware.js';
+import authorize from '../middleware/authorize.js';
+
 const router = express.Router();
 
-router.get('/', products);
-router.post('/create', verifyToken, createProduct);
-router.put('/edit/:id', verifyToken, editProduct);
-router.delete('/delete/:id', verifyToken, removeProduct);
+// Products
+router.get('/products', verifyToken, getAllProducts);
+router.get('/products/search', verifyToken, searchProductsHandler);
+router.get('/products/:id', verifyToken, getProduct);
+router.post('/products', verifyToken, authorize('teacher', 'admin'), createProduct);
+router.put('/products/:id', verifyToken, authorize('teacher', 'admin'), updateProduct);
+router.delete('/products/:id', verifyToken, authorize('admin'), deleteProduct);
 
-router.get('/search', searchProduct);
+// Cart
+router.get('/cart', verifyToken, getCartHandler);
+router.post('/cart', verifyToken, addToCartHandler);
+router.delete('/cart/:productId', verifyToken, removeFromCartHandler);
 
-// Cart Routes
-router.post('/cart/add', verifyToken, addItemToCart);
-router.get('/cart', verifyToken, getUserCart);
-router.delete('/cart/remove/:id', verifyToken, removeCartItem);
-
+// Checkout
 router.post('/checkout', verifyToken, checkoutHandler);
 
 export default router;

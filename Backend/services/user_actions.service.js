@@ -15,16 +15,16 @@ const deleteUser = async (id) => {
 
 const claimDailyRewards = async (userId) => {
     // Check if user has claimed in the last 24 hours
-    const lastClaim = await prisma.userLogs.findFirst({
+    const lastClaim = await prisma.auditLog.findFirst({
         where: {
             userId: userId,
-            action: "daily_claim",
-            timestamp: {
+            action: "DAILY_CLAIM",
+            createdAt: {
                 gte: new Date(Date.now() - 24 * 60 * 60 * 1000)
             }
         },
         orderBy: {
-            timestamp: 'desc'
+            createdAt: 'desc'
         }
     });
 
@@ -60,15 +60,18 @@ const claimDailyRewards = async (userId) => {
             create: {
                 userId: userId,
                 balance: rewardCoins,
-                pin: "0000" // Default pin from schema
+                pin: "000000"
             }
         });
 
         // 3. Log the action
-        await tx.userLogs.create({
+        await tx.auditLog.create({
             data: {
                 userId: userId,
-                action: "daily_claim"
+                category: "SYSTEM",
+                action: "DAILY_CLAIM",
+                entity: "User",
+                entityId: userId
             }
         });
 
