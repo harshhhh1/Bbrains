@@ -1,21 +1,23 @@
 import { updateUser, deleteUser, claimDailyRewards } from "../services/user_actions.service.js";
+import { sendSuccess, sendError } from "../utils/response.js";
+import { createAuditLog } from "../utils/auditLog.js";
 
 const editUser = async (req, res) => {
     try {
         const { id } = req.params;
+        // Only allow self-edit or admin
+        if (req.user.id !== id && req.user.type !== 'admin') {
+            return sendError(res, 'Not authorized to update this user', 403);
+        }
+
         const data = req.body;
         const result = await updateUser(id, data);
-        res.json({
-            status: "success",
-            user: result
-        });
+
+        await createAuditLog(req.user.id, 'USER', 'UPDATE', 'User', id, { after: data });
+        return sendSuccess(res, result, 'User updated successfully');
     } catch (error) {
         console.error("User Action Error:", error);
-        res.status(500).json({
-            status: "error",
-            message: "Failed to update user",
-            error: error.message
-        });
+        return sendError(res, "Failed to update user", 500);
     }
 }
 
@@ -23,35 +25,23 @@ const removeUser = async (req, res) => {
     try {
         const { id } = req.params;
         await deleteUser(id);
-        res.json({
-            status: "success",
-            message: "User deleted successfully"
-        });
+
+        await createAuditLog(req.user.id, 'USER', 'DELETE', 'User', id);
+        return sendSuccess(res, null, 'User deleted successfully');
     } catch (error) {
         console.error("User Action Error:", error);
-        res.status(500).json({
-            status: "error",
-            message: "Failed to delete user",
-            error: error.message
-        });
+        return sendError(res, "Failed to delete user", 500);
     }
 }
 
 const dailyClaim = async (req, res) => {
     try {
-        const userId = req.user.id; // Assuming user is authenticated
+        const userId = req.user.id;
         const result = await claimDailyRewards(userId);
-        res.json({
-            status: "success",
-            message: "Daily rewards claimed successfully",
-            rewards: result
-        });
+        return sendSuccess(res, result, 'Daily rewards claimed successfully');
     } catch (error) {
         console.error("User Action Error:", error);
-        res.status(400).json({
-            status: "error",
-            message: error.message
-        });
+        return sendError(res, error.message, 400);
     }
 }
 

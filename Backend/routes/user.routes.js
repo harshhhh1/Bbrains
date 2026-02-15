@@ -1,20 +1,43 @@
 import express from 'express';
+import {
+    getMe, getUserByUsername, getStudents, getTeachers,
+    getStudentByUsername, getTeacherByUsername,
+    addTeacher, updateTeacher, deleteTeacher, searchUser
+} from '../controllers/user_management.controller.js';
 import { editUser, removeUser, dailyClaim } from '../controllers/user_actions.controller.js';
-import { getStudents, getTeachers, getUserProfileByName, addTeacher } from '../controllers/user_management.controller.js';
+import { createDetails, getMyDetails, updateMyDetails, getUserDetails } from '../controllers/userDetails.controller.js';
 import verifyToken from '../middleware/auth.middleware.js';
+import authorize from '../middleware/authorize.js';
 
 const router = express.Router();
 
-router.put('/update/:id', verifyToken, editUser);
-router.delete('/delete/:id', verifyToken, removeUser);
-router.post('/claim-daily', verifyToken, dailyClaim);
+// Profile
+router.get('/me', verifyToken, getMe);
+router.get('/search', verifyToken, searchUser);
 
-router.post('/claim-daily', verifyToken, dailyClaim);
+// User Details
+router.post('/me/details', verifyToken, createDetails);
+router.get('/me/details', verifyToken, getMyDetails);
+router.put('/me/details', verifyToken, updateMyDetails);
+router.get('/:id/details', verifyToken, authorize('teacher', 'admin'), getUserDetails);
 
-// Management Routes
-router.get('/students', verifyToken, getStudents);
+// Student endpoints
+router.get('/students', verifyToken, authorize('teacher', 'admin', 'staff'), getStudents);
+router.get('/students/:username', verifyToken, authorize('teacher', 'admin', 'staff'), getStudentByUsername);
+
+// Teacher endpoints
 router.get('/teachers', verifyToken, getTeachers);
-router.get('/search', verifyToken, getUserProfileByName);
-router.post('/teacher/add', verifyToken, addTeacher); // Ideally restrict to admin
+router.get('/teachers/:username', verifyToken, getTeacherByUsername);
+router.post('/teachers', verifyToken, authorize('admin'), addTeacher);
+router.put('/teachers/:id', verifyToken, authorize('admin'), updateTeacher);
+router.delete('/teachers/:id', verifyToken, authorize('admin'), deleteTeacher);
+
+// User actions
+router.put('/update/:id', verifyToken, editUser);
+router.delete('/delete/:id', verifyToken, authorize('admin'), removeUser);
+router.post('/claim-daily', verifyToken, dailyClaim);
+
+// Get user by username (must be LAST due to :username param matching)
+router.get('/:username', verifyToken, getUserByUsername);
 
 export default router;
