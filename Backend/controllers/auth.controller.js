@@ -1,44 +1,57 @@
 import bcrypt from "bcrypt";
+import { z } from "zod";
 import { findUserByEmail, createUser, getUserDetailsByID } from "../services/user.service.js";
 import dotenv from "dotenv";
 import { generateToken } from "../utils/tokengen.js";
 import { getRandomAvatar } from "../utils/randomavatar.js";
+import { sendSuccess, sendCreated, sendError } from "../utils/response.js";
+import { createAuditLog } from "../utils/auditLog.js";
 
 dotenv.config();
+
+// Zod Schemas
+const registerSchema = z.object({
+  username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_]+$/, "Username must be alphanumeric with underscores"),
+  email: z.string().email("Invalid email format").max(50),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmpassword: z.string(),
+  collegeId: z.number().int().positive().optional()
+}).refine(data => data.password === data.confirmpassword, {
+  message: "Passwords do not match",
+  path: ["confirmpassword"]
+});
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required")
+});
 
 /* =========================
    REGISTER
 ========================= */
 const register = async (req, res) => {
   try {
-    const { username, email, password, confirmpassword } = req.body;
+    const validated = registerSchema.parse(req.body);
 
-    if (!username || !email || !password || !confirmpassword) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    if (password !== confirmpassword) {
-      return res.status(400).json({ message: "Passwords do not match" });
-    }
-
-    const userExists = await findUserByEmail(email);
-
+    const userExists = await findUserByEmail(validated.email);
     if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
+      return sendError(res, "User already exists", 409);
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(validated.password, 10);
+    const collegeId = validated.collegeId || 45;
 
-    await createUser(username, email, 45, hashedPassword,getRandomAvatar());
-    // await createUserDetails(getRandomAvatar());
+    const newUser = await createUser(validated.username, validated.email, collegeId, hashedPassword, getRandomAvatar());
 
-    res.status(201).json({
-      status: "success",
-      message: "User created"
-    });
+    await createAuditLog(newUser.id, 'AUTH', 'REGISTER', 'User', newUser.id);
+
+    return sendCreated(res, { id: newUser.id, username: newUser.username }, "User registered successfully");
   } catch (error) {
+    if (error.name === 'ZodError') {
+      return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+    }
     console.error(error);
-    res.status(500).json({ message: "Registration failed", error: error.message });
+    return sendError(res, "Registration failed", 500);
   }
 };
 
@@ -47,45 +60,42 @@ const register = async (req, res) => {
 ========================= */
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const validated = loginSchema.parse(req.body);
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password required" });
-    }
-
-    const user = await findUserByEmail(email);
-
+    const user = await findUserByEmail(validated.email);
     if (!user) {
-      return res.status(401).json({ message: "User not found" });
+      return sendError(res, "Invalid credentials", 401);
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
+    const isMatch = await bcrypt.compare(validated.password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return sendError(res, "Invalid credentials", 401);
     }
 
+    // Include type in JWT for RBAC
     const token = generateToken({
       id: user.id,
-      username: user.username
+      username: user.username,
+      type: user.type
     });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "development",
       sameSite: "strict"
     });
 
     const userData = await getUserDetailsByID(user.id);
 
-    res.json({
-      status: "success",
-      message: "Login successful",
-      data: userData
-    });
+    await createAuditLog(user.id, 'AUTH', 'LOGIN', 'User', user.id);
+
+    return res.redirect("/dashboard");
   } catch (error) {
+    if (error.name === 'ZodError') {
+      return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+    }
     console.error(error);
-    res.status(500).json({ message: "Login failed", error: error.message });
+    return sendError(res, "Login failed", 500);
   }
 };
 
@@ -98,10 +108,7 @@ const logout = async (req, res) => {
     sameSite: "strict"
   });
 
-  res.json({
-    status: "success",
-    message: "Logged out successfully"
-  });
+  return sendSuccess(res, null, "Logged out successfully");
 };
 
 export { register, login, logout };

@@ -1,10 +1,17 @@
 import express from 'express';
-import { transferHandler, getHistoryHandler, getWalletHandler } from '../controllers/wallet.controller.js';
+import {
+    getWalletHandler, getBalance, setupPin, changePin,
+    verifyPin, transferHandler, getHistoryHandler
+} from '../controllers/wallet.controller.js';
 import verifyToken from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-router.get('/', verifyToken, getWalletHandler);
+router.get('/me', verifyToken, getWalletHandler);
+router.get('/balance', verifyToken, getBalance);
+router.post('/setup', verifyToken, setupPin);
+router.put('/pin', verifyToken, changePin);
+router.post('/verify-pin', verifyToken, verifyPin);
 router.post('/transfer', verifyToken, transferHandler);
 router.get('/history', verifyToken, getHistoryHandler);
 
