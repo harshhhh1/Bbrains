@@ -117,9 +117,9 @@ The API will be available at `http://localhost:3000`
 
 Comprehensive documentation is available:
 
-- **[API Documentation](./API_DOCUMENTATION.md)** - Complete API reference with all endpoints
-- **[Technical Documentation](./TECHNICAL_DOCUMENTATION.md)** - Architecture, database schema, deployment
-- **[Developer Guide](./DEVELOPER_GUIDE.md)** - Setup, coding standards, contribution guide
+- **[API Documentation](https://github.com/harshhhh1/Bbrains/wiki/API-DOCUMENTATION)** - Complete API reference with all endpoints
+- **[Technical Documentation](https://github.com/harshhhh1/Bbrains/wiki)** - Architecture, database schema, deployment
+- **[Developer Guide](http://github.com/harshhhh1/Bbrains/wiki/Developer-Guide)** - Setup, coding standards, contribution guide
 
 ## API Endpoints
 
@@ -151,7 +151,7 @@ Comprehensive documentation is available:
 - `GET /wallet/history` - Transaction history
 
 ### More Endpoints
-See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for the complete list of 100+ endpoints.
+See [API_DOCUMENTATION.md](https://github.com/harshhhh1/Bbrains/wiki/API-DOCUMENTATION) for the complete list of 100+ endpoints.
 
 ## Database Schema
 
@@ -163,7 +163,7 @@ The system uses PostgreSQL with 24 main tables:
 - **Commerce:** Product, Cart, Order, OrderItem, Wallet, TransactionHistory
 - **System:** Role, AuditLog, Announcement
 
-See [TECHNICAL_DOCUMENTATION.md](./TECHNICAL_DOCUMENTATION.md) for detailed schema information.
+See [TECHNICAL_DOCUMENTATION.md](https://github.com/harshhhh1/Bbrains/wiki) for detailed schema information.
 
 ## Security Features
 
@@ -200,7 +200,7 @@ npx prisma studio
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-See [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) for detailed contribution guidelines.
+See [DEVELOPER_GUIDE.md](http://github.com/harshhhh1/Bbrains/wiki/Developer-Guide) for detailed contribution guidelines.
 
 ## Scripts
 
@@ -229,7 +229,7 @@ kill -9 <PID>
 npx prisma generate
 ```
 
-See [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) for more troubleshooting tips.
+See [DEVELOPER_GUIDE.md](http://github.com/harshhhh1/Bbrains/wiki/Developer-Guide) for more troubleshooting tips.
 
 ## License
 
@@ -239,6 +239,7 @@ This project is licensed under the ISC License.
 
 **Harsh**
 - GitHub: [@harshhhh1](https://github.com/harshhhh1)
+- Discord: [golem.uwu](https://discord.com/users/967437862888960020)
 
 ## Acknowledgments
 
