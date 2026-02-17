@@ -1,8 +1,8 @@
-# Bbrains 🎓
+# Bbrains 
 
 A comprehensive Learning Management System with integrated gamification features, marketplace functionality, and digital wallet system.
 
-## 🌟 Features
+##  Features
 
 ### Academic Management
 - Course creation and enrollment
