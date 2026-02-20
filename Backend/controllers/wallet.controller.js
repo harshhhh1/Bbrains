@@ -109,6 +109,7 @@ export const changePin = async (req, res) => {
         await createAuditLog(req.user.id, 'FINANCE', 'CHANGE_PIN', 'Wallet', wallet.id);
         return sendSuccess(res, null, 'PIN changed successfully');
     } catch (error) {
+        console.error(error)
         if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
         return sendError(res, 'Failed to change PIN', 500);
     }
