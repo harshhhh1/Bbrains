@@ -236,7 +236,7 @@ model UserAchievements {
 model Wallet {
   id      Int     @id @default(autoincrement()) @map("wallet_id")
   userId  String  @unique @map("user_id")
-  pin     String  @default("000000") @db.VarChar(6)
+  pin     String? @db.VarChar(255)
   balance Decimal @default(500.00) @db.Decimal(10, 2)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
