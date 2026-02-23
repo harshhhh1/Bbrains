@@ -81,15 +81,15 @@ const login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "development",
-      sameSite: "strict"
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax"
     });
 
     const userData = await getUserDetailsByID(user.id);
 
     await createAuditLog(user.id, 'AUTH', 'LOGIN', 'User', user.id);
 
-    return res.redirect("/dashboard");
+    return sendSuccess(res, { user: userData }, "Login successful");
   } catch (error) {
     if (error.name === 'ZodError') {
       return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));

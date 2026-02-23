@@ -23,12 +23,13 @@ export const getDashboard = async (req, res) => {
 };
 
 async function studentDashboard(userId, res) {
-    const [user, enrollments, xp, achievements, wallet, recentGrades, leaderboardPos] = await Promise.all([
+    const [user, enrollments, xp, achievements, wallet, recentGrades, leaderboardPos, announcements] = await Promise.all([
         prisma.user.findUnique({
             where: { id: userId },
             select: {
                 id: true, username: true, email: true, type: true,
-                userDetails: true
+                userDetails: { select: { avatar: true, firstName: true, lastName: true } },
+                college: { select: { name: true } }
             }
         }),
         prisma.enrollment.findMany({
@@ -55,6 +56,10 @@ async function studentDashboard(userId, res) {
         prisma.leaderboard.findFirst({
             where: { userId, category: 'allTime' },
             select: { rank: true, score: true }
+        }),
+        prisma.announcement.findMany({
+            take: 5,
+            orderBy: { createdAt: 'desc' }
         })
     ]);
 
@@ -70,7 +75,8 @@ async function studentDashboard(userId, res) {
         },
         enrollments,
         recentGrades,
-        recentAchievements: achievements
+        recentAchievements: achievements,
+        announcements
     });
 }
 
