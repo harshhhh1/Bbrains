@@ -48,8 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch (err) {
             setUser(null)
             setSessionData(null)
-            // Protect dashboard routes
-            if (pathname?.startsWith('/dashboard')) {
+            const protectedPrefixes = ['/dashboard', '/announcements', '/wallet', '/exams', '/attendance', '/payment-history']
+            if (protectedPrefixes.some((p) => pathname?.startsWith(p))) {
                 router.push('/login')
             }
         } finally {
