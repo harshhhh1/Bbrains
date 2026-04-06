@@ -89,8 +89,8 @@ const login = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax"
+      secure: true, // Always true for sameSite: none
+      sameSite: "none"
     });
 
     const userData = await getUserDetailsByID(user.id);

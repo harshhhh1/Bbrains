@@ -52,8 +52,12 @@ export function setAuthToken(token: string | null) {
   if (typeof window === "undefined") return;
   if (token) {
     localStorage.setItem("auth_token", token);
+    // Set cookie for server-side access (Expires in 30 days)
+    document.cookie = `token=${token}; path=/; max-age=2592000; SameSite=Lax; Secure`;
   } else {
     localStorage.removeItem("auth_token");
+    // Remove cookie
+    document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   }
 }
 
