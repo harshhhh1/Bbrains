@@ -81,13 +81,13 @@ function PinDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setPin(""); }}>
-      <DialogContent className="sm:max-w-md rounded-3xl border-white/10 bg-slate-950/95 backdrop-blur-2xl p-8 shadow-2xl">
+      <DialogContent className="sm:max-w-md rounded-3xl border-border bg-background/95 backdrop-blur-2xl p-8 shadow-2xl">
         <DialogHeader className="space-y-3">
           <div className="w-14 h-14 bg-brand-orange/10 rounded-2xl flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-7 h-7 text-brand-orange" />
           </div>
-          <DialogTitle className="text-2xl font-black tracking-tight text-white text-center">Confirm Purchase</DialogTitle>
-          <DialogDescription className="text-base font-medium text-white/50 text-center">{description}</DialogDescription>
+          <DialogTitle className="text-2xl font-black tracking-tight text-foreground text-center">Confirm Purchase</DialogTitle>
+          <DialogDescription className="text-base font-medium text-muted-foreground text-center">{description}</DialogDescription>
         </DialogHeader>
         <div className="py-6">
           <div className="flex justify-center">
@@ -97,7 +97,7 @@ function PinDialog({
                   <InputOTPSlot
                     key={i}
                     index={i}
-                    className="h-14 w-11 rounded-xl border-white/10 bg-white/5 text-xl font-black focus:border-brand-orange/50 focus:ring-2 focus:ring-brand-orange/20"
+                    className="h-14 w-11 rounded-xl border-border bg-muted/20 text-xl font-black focus:border-brand-orange/50 focus:ring-2 focus:ring-brand-orange/20"
                   />
                 ))}
               </InputOTPGroup>
@@ -256,11 +256,11 @@ export default function MarketPage() {
       <div className="space-y-8 animate-in fade-in duration-700">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-none flex items-center gap-4">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none flex items-center gap-4 text-foreground">
               <Store className="w-10 h-10 md:w-14 md:h-14 text-brand-orange" />
               Campus Market
             </h1>
-            <p className="text-white/40 font-medium text-lg tracking-tight">Browse and acquire verified educational products</p>
+            <p className="text-muted-foreground font-medium text-lg tracking-tight">Browse and acquire verified educational products</p>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/products">
@@ -282,12 +282,12 @@ export default function MarketPage() {
         </div>
 
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50" />
           <Input
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-14 pl-12 rounded-2xl bg-white/[0.03] border-white/5 focus:border-brand-orange/50 transition-all font-bold text-lg placeholder:text-white/10"
+            className="h-14 pl-12 rounded-2xl bg-muted/30 border-muted focus:border-brand-orange/50 transition-all font-bold text-lg placeholder:text-muted-foreground/30"
           />
         </div>
 
@@ -314,7 +314,7 @@ export default function MarketPage() {
               return (
                 <Card
                   key={product.id}
-                  className="group relative overflow-hidden rounded-2xl border-white/5 bg-white/[0.02] backdrop-blur-sm hover:border-white/10 transition-all duration-300"
+                  className="group relative overflow-hidden rounded-2xl border-muted bg-muted/[0.1] backdrop-blur-sm hover:border-brand-orange/30 transition-all duration-300"
                   style={{ animationDelay: `${idx * 30}ms` }}
                 >
                   <CardContent className="p-4 md:p-5">
@@ -340,7 +340,7 @@ export default function MarketPage() {
                         <div className="space-y-2">
                           <div className="flex items-start justify-between gap-3">
                             <Link href={`/market/${product.id}`} className="group/title">
-                              <h3 className="font-bold text-lg text-white group-hover/title:text-brand-orange transition-colors line-clamp-1">
+                              <h3 className="font-bold text-lg text-foreground group-hover/title:text-brand-orange transition-colors line-clamp-1">
                                 {product.name}
                               </h3>
                             </Link>
@@ -351,23 +351,23 @@ export default function MarketPage() {
                             </div>
                           </div>
 
-                          <p className="text-sm text-white/40 line-clamp-2 font-medium">
+                          <p className="text-sm text-muted-foreground line-clamp-2 font-medium">
                             {product.description || "No description available."}
                           </p>
 
                           <div className="flex items-center gap-4 flex-wrap">
                             <div className="flex items-center gap-1.5">
                               <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                              <span className="text-sm font-bold text-white">
+                              <span className="text-sm font-bold text-foreground">
                                 {product.rating ? product.rating.toFixed(1) : "0.0"}
                               </span>
-                              <span className="text-xs text-white/30">
+                              <span className="text-xs text-muted-foreground/50">
                                 ({product.reviewCount || 0})
                               </span>
                             </div>
 
                             <span className="text-xl font-black text-brand-orange">
-                              {product.price} <span className="text-xs text-white/30 font-bold">B-Coins</span>
+                              {product.price} <span className="text-xs text-muted-foreground/30 font-bold">B-Coins</span>
                             </span>
 
                             {isOutOfStock ? (
@@ -398,7 +398,7 @@ export default function MarketPage() {
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => removeFromCart(product.id)}>
                                 <Minus className="w-3 h-3" />
                               </Button>
-                              <span className="w-8 text-center text-sm font-black text-white">{inCart}</span>
+                              <span className="w-8 text-center text-sm font-black text-foreground">{inCart}</span>
                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => addToCart(product.id)}>
                                 <Plus className="w-3 h-3" />
                               </Button>
@@ -433,7 +433,7 @@ export default function MarketPage() {
         )}
 
         <Dialog open={showCart} onOpenChange={setShowCart}>
-          <DialogContent className="rounded-3xl border-white/10 bg-slate-950/95 backdrop-blur-2xl p-0 overflow-hidden shadow-2xl">
+          <DialogContent className="rounded-3xl border-border bg-background/95 backdrop-blur-2xl p-0 overflow-hidden shadow-2xl">
             <div className="p-6 space-y-5">
               <DialogHeader>
                 <div className="flex items-center gap-4">
@@ -441,8 +441,8 @@ export default function MarketPage() {
                     <ShoppingCart className="w-6 h-6 text-brand-orange" />
                   </div>
                   <div>
-                    <DialogTitle className="text-xl font-black tracking-tight">Your Cart</DialogTitle>
-                    <DialogDescription className="font-medium text-white/40">{cartCount} item{cartCount !== 1 ? 's' : ''}</DialogDescription>
+                    <DialogTitle className="text-xl font-black tracking-tight text-foreground">Your Cart</DialogTitle>
+                    <DialogDescription className="font-medium text-muted-foreground">{cartCount} item{cartCount !== 1 ? 's' : ''}</DialogDescription>
                   </div>
                 </div>
               </DialogHeader>
@@ -500,13 +500,13 @@ export default function MarketPage() {
         </Dialog>
 
         <AlertDialog open={showBuyConfirm} onOpenChange={setShowBuyConfirm}>
-          <AlertDialogContent className="rounded-3xl border-white/10 bg-slate-950/95 backdrop-blur-2xl p-8 shadow-2xl">
+          <AlertDialogContent className="rounded-3xl border-border bg-background/95 backdrop-blur-2xl p-8 shadow-2xl">
             <AlertDialogHeader className="space-y-4">
               <div className="w-16 h-16 bg-brand-orange/10 rounded-3xl flex items-center justify-center">
                 <Store className="w-8 h-8 text-brand-orange" />
               </div>
-              <AlertDialogTitle className="text-2xl font-black tracking-tight text-white">Confirm Purchase</AlertDialogTitle>
-              <AlertDialogDescription className="text-base font-medium text-white/40 leading-relaxed">
+              <AlertDialogTitle className="text-2xl font-black tracking-tight text-foreground">Confirm Purchase</AlertDialogTitle>
+              <AlertDialogDescription className="text-base font-medium text-muted-foreground leading-relaxed">
                 {buyProduct
                   ? `You are about to purchase ${buyProduct.name} for ${buyProduct.price * quantity} B-Coins.`
                   : `You are about to purchase ${cartCount} items for ${cartTotal} B-Coins.`}
