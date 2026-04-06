@@ -54,10 +54,8 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:8080",
-  "http://100.74.244.98:3000",
-  "http://100.74.244.98:5000",
+  "https://bbrains.vercel.app",
   process.env.CLIENT_URL,
-  process.env.SERVER_URL,
 ];
 app.use(cors({
   origin: function(origin, callback) {
