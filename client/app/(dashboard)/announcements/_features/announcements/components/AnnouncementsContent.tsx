@@ -30,6 +30,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useHasPermission } from "@/components/providers/permissions-provider";
 
 interface AnnouncementsContentProps {
   initialAnnouncements: Announcement[];
@@ -122,10 +123,8 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
     }
   };
 
-  const hasManagerRole = currentUser?.roles?.some((entry) =>
-    entry.role?.name?.toLowerCase().includes("manager")
-  ) ?? false;
-  const isStaff = currentUser?.type === "admin" || currentUser?.type === "teacher" || hasManagerRole;
+  const canCreateAnnouncement = useHasPermission("create_announcement");
+  const canManageAnnouncement = useHasPermission("manage_announcement");
 
   const handleDeleteClick = (id: string) => {
     setAnnouncementToDelete(id);
@@ -285,7 +284,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    {isStaff && (
+                    {canManageAnnouncement && (
                       <button 
                         onClick={() => handleDeleteClick(annId)}
                         className="text-muted-foreground hover:text-destructive transition-colors mr-2"
@@ -331,7 +330,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
       </div>
 
       {/* Floating Chat Bar for Teachers/Admins */}
-      {isStaff && (
+      {canCreateAnnouncement && (
         <div className="sticky bottom-6 left-0 right-0 max-w-4xl mx-auto w-full z-10 px-4 md:px-0 pointer-events-none">
           <div className="bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-xl flex flex-col gap-3 p-3 pointer-events-auto">
             {attachedImage && (
