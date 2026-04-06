@@ -441,7 +441,7 @@ export default function SettingsPage() {
               <div className="relative">
                 <Avatar className="h-28 w-28 rounded-[30px] border-4 border-white bg-white shadow-[8px_8px_0px_0px_rgba(45,45,45,0.12)] md:h-32 md:w-32">
                   <AvatarImage src={avatar || undefined} className="object-cover" />
-                  <AvatarFallback 
+                  <AvatarFallback
                     name={user?.username}
                     className="bg-hand-blue text-3xl font-bold text-white"
                   >
@@ -559,7 +559,7 @@ export default function SettingsPage() {
                   description="Update the public identity your classmates, staff, and dashboard use."
                   icon={<User className="h-5 w-5" />}
                 >
-                    <div className="grid gap-6 md:grid-cols-[200px_minmax(0,1fr)]">
+                  <div className="grid gap-6 md:grid-cols-[200px_minmax(0,1fr)]">
                     <div className="rounded-[26px] border-2 border-hand-pencil/15 bg-hand-paper p-5 text-center">
                       <Avatar className="mx-auto h-28 w-28 items-center justify-center rounded-[28px] border-4 border-white bg-white shadow-[6px_6px_0px_0px_rgba(45,45,45,0.10)]">
                         <AvatarImage src={avatarSrc} className="object-cover" />
@@ -1005,7 +1005,7 @@ function SettingsPageClassicView({
                       <div className="group relative mx-auto">
                         <Avatar className="relative z-10 h-32 w-32 items-center justify-center rounded-full border-4 border-background shadow-2xl md:h-40 md:w-40">
                           <AvatarImage src={avatar} className="object-cover" />
-                          <AvatarFallback 
+                          <AvatarFallback
                             name={previewUsername}
                             className="bg-brand-orange text-5xl font-black text-white"
                           >
@@ -1113,33 +1113,33 @@ function SettingsPageClassicView({
                           value={currentPassword}
                           onChange={(event) => setCurrentPassword(event.target.value)}
                           className="h-12 rounded-xl bg-background font-bold"
-                          placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                          placeholder="********"
                         />
                       </div>
                       <div className="space-y-2">
                         <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          New Access Key
+                          New Password
                         </label>
                         <Input
                           type="password"
                           value={newPassword}
                           onChange={(event) => setNewPassword(event.target.value)}
                           className="h-12 rounded-xl bg-background font-bold"
-                          placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                          placeholder="********"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                        Confirm Access Key
+                        Confirm New Password
                       </label>
                       <Input
                         type="password"
                         value={confirmPassword}
                         onChange={(event) => setConfirmPassword(event.target.value)}
                         className="h-12 rounded-xl bg-background font-bold"
-                        placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                        placeholder="********"
                       />
                     </div>
 
@@ -1149,7 +1149,7 @@ function SettingsPageClassicView({
                         disabled={updating || !currentPassword || !newPassword || !confirmPassword}
                         className="h-12 rounded-xl bg-brand-purple px-8 font-black text-white shadow-lg shadow-brand-purple/20 hover:bg-brand-purple/90"
                       >
-                        {updating ? <Loader2 className="h-4 w-4 animate-spin" /> : <><KeyRound className="mr-2 h-4 w-4" /> Rotate Key</>}
+                        {updating ? <Loader2 className="h-4 w-4 animate-spin" /> : <><KeyRound className="mr-2 h-4 w-4" /> Save Changes</>}
                       </Button>
                     </div>
                   </CardContent>
