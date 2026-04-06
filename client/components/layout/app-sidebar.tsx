@@ -71,7 +71,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
                         <SidebarGroupContent>
                             <SidebarMenu className={`${isCollapsed ? "space-y-2" : "space-y-1.5"}`}>
                                 {group.items.map((item) => {
-                                    const isActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
+                                    const isBaseActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
+                                    const isSubActive = item.subItems?.some(sub => pathname === sub.url || pathname.startsWith(`${sub.url}/`));
+                                    const isActive = isBaseActive || isSubActive;
                                     const isChat = item.url === "/chat";
 
                                     return (
