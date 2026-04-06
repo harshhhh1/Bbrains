@@ -1,3 +1,5 @@
+import { title } from "process";
+
 export const sidebarItems = [
     {
         "title": "Dashboard",
@@ -35,6 +37,8 @@ export const sidebarItems = [
         ]
     },
     { "title": "Tools", "url": "/tools", "icon": "Wrench", "access": ["student", "teacher", "admin", "staff", "manager", "superadmin", "bbrains_official"] },
+    { "title": "Suggestions", "url": "/suggestions", "icon": "MessageSquarePlus", "access": ["student", "teacher", "admin", "staff", "manager", "superadmin", "bbrains_official"] },
+    { "title": "Settings", "url": "/settings", "icon": "Settings", "access": ["student", "teacher", "admin", "staff", "manager", "superadmin", "bbrains_official"] },
 
     { "title": "Manage Users", "url": "/admin/users", "icon": "UserCog", "access": ["admin", "superadmin"] },
     // { "title": "Teachers", "url": "/admin/teachers", "icon": "UserCheck", "access": ["admin", "superadmin"] },
