@@ -1,16 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Hash, Search } from "lucide-react";
-import { toast } from "sonner";
-
-// Hooks
-import { useChatMessages } from "@/features/chat/hooks/useChatMessages";
-import { useNotifications } from "@/components/providers/notification-provider";
-import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload";
-import { chatApi, type ChatMemberProfile } from "@/services/api/client";
 
 // Components
 import { ChannelHeader } from "@/features/chat/components/ChannelHeader";
@@ -20,516 +12,183 @@ import { ChatSidebarRight } from "@/features/chat/components/ChatSidebarRight";
 import { ProfileDialog } from "@/features/chat/components/ProfileDialog";
 import { Memberssidebar } from "@/features/chat/components/MembersSidebar";
 
-// Data & Utils
-import { Message, Member } from "@/features/chat/data";
-import { extractMentions, mapApiMember } from "@/features/chat/utils";
-
-const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
+import { useChatController } from "./hooks/useChatController";
 
 export default function ChatPage() {
-  // Hooks
-  const { 
-    messages, 
-    loading, 
-    isConnected, 
-    sendMessage, 
-    deleteMessage, 
-    editMessage, 
+  const {
+    messages,
+    loading,
+    isConnected,
+    sendMessage,
+    deleteMessage,
+    editMessage,
     currentUserId,
     loadingMore,
     hasMore,
-    loadMore,
     searchMessages,
     searchResults,
-    isSearching
-  } = useChatMessages();
-  
-  const { markAllRead } = useNotifications();
-  const { uploadFile, isUploading } = useCloudinaryUpload();
+    isSearching,
+    isUploading,
+    message,
+    setMessage,
+    showMembers,
+    setShowMembers,
+    isMounted,
+    profileUser,
+    setProfileUser,
+    showProfile,
+    setShowProfile,
+    editingMsgId,
+    setEditingMsgId,
+    replyingMsg,
+    setReplyingMsg,
+    mentionQuery,
+    setMentionQuery,
+    mentionIndex,
+    setMentionIndex,
+    membersList,
+    pendingAttachments,
+    uploadError,
+    showSearch,
+    setShowSearch,
+    searchQuery,
+    setSearchQuery,
+    scrollRef,
+    inputRef,
+    filteredMentions,
+    handleFileSelect,
+    removeAttachment,
+    handleSend,
+    handleKeyDown,
+    handleMentionSelect,
+    handleUserClick,
+  } = useChatController();
 
-  // State
-  const [message, setMessage] = useState("");
-  const [showMembers, setShowMembers] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-    if (window.innerWidth >= 768) {
-      setShowMembers(true);
-    }
-  }, []);
-  const [profileUser, setProfileUser] = useState<Member | null>(null);
-  const [showProfile, setShowProfile] = useState(false);
-  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
-  const [replyingMsg, setReplyingMsg] = useState<{ id: string; username: string; content: string } | null>(null);
-  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
-  const [mentionIndex, setMentionIndex] = useState(0);
-  const [membersList, setMembersList] = useState<Member[]>([]);
-  const [pendingAttachments, setPendingAttachments] = useState<{ file: File; previewUrl: string }[]>([]);
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchMode, setIsSearchMode] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-
-  // Refs
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollViewportRef = useRef<HTMLDivElement>(null!);
-
-  // Current user's username for mention highlighting
-  const currentUsername = useMemo(() => {
-    // Attempt to find current user's username from messages or session
-    const own = messages.find((m) => m.user.id === currentUserId);
-    return own?.user.username ?? null;
-  }, [messages, currentUserId]);
-
-  // Fetch members from API
-  useEffect(() => {
-    const fetchMembers = async () => {
-      try {
-        const response = await chatApi.getMembers();
-        if (response.success && response.data) {
-          const members = response.data.map((m: ChatMemberProfile) => mapApiMember(m));
-          setMembersList(members);
-        }
-      } catch (error) {
-        console.error("Error fetching members:", error);
-        toast.error("Unable to load members list");
-      }
-    };
-    fetchMembers();
-  }, []);
-
-  // Helpers
-  const getDateLabel = useCallback((dateStr: string) => {
-    const date = new Date(dateStr);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    const diff = today.getTime() - d.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    return d.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
-  }, []);
-
-  const groupedMessages = useMemo(() => {
-    const groups: { label: string; messages: Message[] }[] = [];
-    let currentLabel = "";
-    messages.forEach((msg) => {
-      const label = getDateLabel(msg.createdAt);
-      if (label !== currentLabel) {
-        currentLabel = label;
-        groups.push({ label, messages: [msg] });
-      } else {
-        groups[groups.length - 1].messages.push(msg);
-      }
-    });
-    return groups;
-  }, [messages, getDateLabel]);
-
-  // Auto-scroll on new messages
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (messagesEndRef.current) {
-        const viewport = messagesEndRef.current.closest('[data-radix-scroll-area-viewport]');
-        if (viewport) {
-          viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
-        } else {
-          messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
-      }
-    }, 100);
-    if (messages.length > 0) {
-      markAllRead();
-    }
-    return () => clearTimeout(timer);
-  }, [messages.length, markAllRead]);
-
-  // Handlers
-  const handleSend = useCallback(async () => {
-    if (!message.trim() && pendingAttachments.length === 0) return;
-    if (isUploading) return;
-
-    try {
-        const uploadedAttachments: { url: string; type: string; name?: string }[] = [];
-        let failedUploads = 0;
-        
-        for (const att of pendingAttachments) {
-            const url = await uploadFile(att.file, { folder: 'chat attachments' });
-            if (url) {
-                uploadedAttachments.push({
-                    url,
-                    type: att.file.type,
-                    name: att.file.name
-                });
-            } else {
-                failedUploads += 1;
-            }
-        }
-
-        if (failedUploads > 0) {
-            const errorMsg = `${failedUploads} attachment${failedUploads > 1 ? "s" : ""} failed to upload. Please try again.`;
-            setUploadError(errorMsg);
-            toast.error(errorMsg);
-            return;
-        }
-
-        if (editingMsgId) {
-            const content = message.trim();
-            await editMessage(editingMsgId, content, extractMentions(content));
-            setEditingMsgId(null);
-        } else {
-            const content = message.trim();
-            await sendMessage(content, uploadedAttachments, extractMentions(content), replyingMsg?.id);
-        }
-        
-        setMessage("");
-        setUploadError(null);
-        setReplyingMsg(null);
-        setPendingAttachments((prev) => {
-            prev.forEach(att => URL.revokeObjectURL(att.previewUrl));
-            return [];
-        });
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to send message";
-        setUploadError(errorMessage);
-        toast.error(errorMessage);
-    }
-  }, [message, pendingAttachments, isUploading, editingMsgId, replyingMsg, uploadFile, editMessage, sendMessage]);
-
-  const handleFileSelect = useCallback((files: File[]) => {
-    const tooLarge = files.filter((f) => f.size > MAX_ATTACHMENT_BYTES);
-    const validFiles = files.filter((f) => f.size <= MAX_ATTACHMENT_BYTES);
-
-    if (tooLarge.length > 0) {
-      const tooLargeNames = tooLarge.map((f) => f.name).join(", ");
-      const errorMsg = `File must be 5MB or smaller. Remove and re-upload: ${tooLargeNames}`;
-      setUploadError(errorMsg);
-      toast.error(errorMsg);
-    } else {
-      setUploadError(null);
-    }
-
-    if (validFiles.length === 0) return;
-
-    const newPending = validFiles.map(f => ({
-      file: f,
-      previewUrl: URL.createObjectURL(f)
-    }));
-    setPendingAttachments(prev => [...prev, ...newPending]);
-  }, []);
-
-  const handleRemoveAttachment = useCallback((index: number) => {
-    setPendingAttachments(prev => {
-      const newPending = [...prev];
-      URL.revokeObjectURL(newPending[index].previewUrl);
-      newPending.splice(index, 1);
-      return newPending;
-    });
-    setUploadError(null);
-  }, []);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (mentionQuery !== null && mentionIndex >= 0) {
-        // Handled by MessageInput component mostly, but we can prevent default send here
-        if (["ArrowDown", "ArrowUp", "Enter", "Tab"].includes(e.key)) {
-            // Let the MessageInput's own suggestions handle these
-            return;
-        }
-    }
-    
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-    if (e.key === "Escape") {
-        if (editingMsgId) {
-            setEditingMsgId(null);
-            setMessage("");
-        }
-        if (replyingMsg) setReplyingMsg(null);
-        setMentionQuery(null);
-    }
-  }, [mentionQuery, mentionIndex, editingMsgId, replyingMsg, handleSend]);
-
-  const onDetectMention = useCallback((val: string) => {
-    const active = document.activeElement as (HTMLInputElement | null);
-    const cursorPos =
-      active && typeof active.selectionStart === "number"
-        ? active.selectionStart
-        : val.length;
-    const textBeforeCursor = val.slice(0, cursorPos);
-    const match = textBeforeCursor.match(/@(\w*)$/);
-    if (match) {
-      setMentionQuery(match[1]);
-      setMentionIndex(0);
-    } else {
-      setMentionQuery(null);
-    }
-  }, []);
-
-  const onMentionSelect = useCallback((username: string) => {
-    const input = document.querySelector('input[aria-label="Message input"]') as HTMLInputElement;
-    const cursorPos = input?.selectionStart || 0;
-    const textBeforeCursor = message.slice(0, cursorPos);
-    const textAfterCursor = message.slice(cursorPos);
-    const beforeMention = textBeforeCursor.replace(/@(\w*)$/, "");
-    const newMessage = `${beforeMention}@${username} ${textAfterCursor}`;
-    setMessage(newMessage);
-    setMentionQuery(null);
-    setTimeout(() => {
-      const newPos = beforeMention.length + username.length + 2;
-      input?.focus();
-      input?.setSelectionRange(newPos, newPos);
-    }, 0);
-  }, [message]);
-
-  const handleOpenProfile = useCallback((userId: string) => {
-    const member = membersList.find(m => m.id === userId);
-    if (member) {
-        setProfileUser(member);
-        setShowProfile(true);
-    }
-  }, [membersList]);
-
-  const handleReply = useCallback((msg: Message) => {
-    setReplyingMsg({ 
-        id: msg.id, 
-        username: msg.user.username, 
-        content: msg.content 
-    });
-    setEditingMsgId(null);
-  }, []);
-
-  const handleEdit = useCallback((id: string, content: string) => {
-    setEditingMsgId(id);
-    setMessage(content);
-    setReplyingMsg(null);
-  }, []);
-
-  const handleCopy = useCallback((content: string) => {
-    navigator.clipboard.writeText(content);
-    toast.success("Copied to clipboard");
-  }, []);
-
-  const onEmojiSelect = useCallback((emoji: { emoji: string }) => setMessage(prev => prev + emoji.emoji), []);
-  const onCancelEdit = useCallback(() => {
-    setEditingMsgId(null);
-    setMessage("");
-  }, []);
-  const onCancelReply = useCallback(() => setReplyingMsg(null), []);
-const onToggleMembers = useCallback(() => setShowMembers(!showMembers), [showMembers]);
-
-  const onMembersSidebarClose = useCallback(() => setShowMembers(false), []);
-  const onMembersSidebarOpenProfile = useCallback((userId: string) => {
-    handleOpenProfile(userId);
-    setShowMembers(false);
-  }, [handleOpenProfile]);
-
-  const onSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    if (query.trim()) {
-      setIsSearchMode(true);
-      searchMessages(query);
-    } else {
-      setIsSearchMode(false);
-    }
-  }, [searchMessages]);
-
-  const onClearSearch = useCallback(() => {
-    setSearchQuery("");
-    setIsSearchMode(false);
-  }, []);
-
-  const onOpenMobileSearch = useCallback(() => {
-    setIsMobileSearchOpen(prev => !prev);
-  }, []);
-
-  const handleScroll = useCallback(() => {
-    if (scrollViewportRef.current && hasMore && !loadingMore && !isSearchMode) {
-      if (scrollViewportRef.current.scrollTop === 0) {
-        loadMore();
-      }
-    }
-  }, [hasMore, loadingMore, loadMore, isSearchMode]);
-
-  useEffect(() => {
-    const viewport = scrollViewportRef.current;
-    if (!viewport) return;
-    
-    viewport.addEventListener('scroll', handleScroll);
-    return () => viewport.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+  if (!isMounted) return null;
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-card md:rounded-xl md:border md:shadow-sm">
-      <ChannelHeader 
-        channelName="Global Chat"
-        showMembers={showMembers}
-        messageCount={messages.length}
-        isConnected={isConnected}
-        onToggleMembers={onToggleMembers}
-        onSearch={onSearch}
-        searchResults={searchResults}
-        isSearching={isSearching}
-        onClearSearch={onClearSearch}
-        searchQuery={searchQuery}
-        onOpenSearch={onOpenMobileSearch}
-        isSearchOpen={isMobileSearchOpen}
-      />
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-background">
+      {/* Main Chat Area */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <ChannelHeader
+          isConnected={isConnected}
+          onToggleMembers={() => setShowMembers(!showMembers)}
+          showSearch={showSearch}
+          setShowSearch={setShowSearch}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          onSearch={searchMessages}
+        />
 
-      <div className="flex flex-1 min-h-0">
-        <div className="flex-1 flex flex-col min-w-0">
-          <ScrollArea className="flex-1 p-4 pb-4" containerRef={scrollViewportRef}>
-            <div
-              className={
-                loading || messages.length === 0
-                  ? "min-h-full"
-                  : "min-h-full flex flex-col justify-end"
-              }
-            >
-              <div className="space-y-1">
-                {isSearchMode ? (
-                  isSearching ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                      <span className="ml-2 text-muted-foreground text-sm">Searching...</span>
-                    </div>
-                  ) : searchResults.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                      <Search className="w-10 h-10 mb-2" />
-                      <p className="text-sm font-medium">No results found</p>
-                      <p className="text-xs">Try a different search term</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Search className="w-4 h-4" />
-                        <span>{searchResults.length} results for &quot;{searchQuery}&quot;</span>
-                      </div>
-                      {searchResults.map((msg) => (
-                        <MessageItem 
-                          key={msg.id}
-                          msg={msg}
-                          currentUserId={currentUserId}
-                          currentUsername={currentUsername}
-                          onReply={handleReply}
-                          onCopy={handleCopy}
-                          onEdit={handleEdit}
-                          onDelete={deleteMessage}
-                          onOpenProfile={handleOpenProfile}
-                        />
-                      ))}
-                    </div>
-                  )
-                ) : loading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-                    <span className="ml-2 text-muted-foreground text-sm">Loading messages...</span>
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                    <Hash className="w-10 h-10 mb-2" />
-                    <p className="text-sm font-medium">No messages yet</p>
-                    <p className="text-xs">Be the first to say something!</p>
-                  </div>
-                ) : (
-                  <>
-                    {loadingMore && (
-                      <div className="flex items-center justify-center py-4">
-                        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-                        <span className="ml-2 text-muted-foreground text-xs">Loading older messages...</span>
-                      </div>
-                    )}
-                    {groupedMessages.map((group) => (
-                      <div key={group.label}>
-                        <div className="flex items-center gap-3 my-2">
-                          <Separator className="flex-1" />
-                          <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
-                            {isMounted ? group.label : "Loading..."}
-                          </span>
-                          <Separator className="flex-1" />
-                        </div>
-                        <div className="space-y-1">
-                            {group.messages.map((msg) => (
-                                <MessageItem 
-                                    key={msg.id}
-                                    msg={msg}
-                                    currentUserId={currentUserId}
-                                    currentUsername={currentUsername}
-                                    onReply={handleReply}
-                                    onCopy={handleCopy}
-                                    onEdit={handleEdit}
-                                    onDelete={deleteMessage}
-                                    onOpenProfile={handleOpenProfile}
-                                />
-                            ))}
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-              <div ref={messagesEndRef} className="h-px w-full" />
+        {isSearching && searchResults ? (
+          <ScrollArea className="flex-1 px-4">
+            <div className="py-4">
+              <h3 className="text-sm font-medium text-muted-foreground mb-4 px-2">
+                Search Results ({searchResults.length})
+              </h3>
+              {searchResults.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No messages found matching your search.</p>
+              ) : (
+                <div className="space-y-6">
+                  {searchResults.map((msg) => (
+                    <MessageItem
+                      key={`search-${msg.id}`}
+                      message={msg}
+                      isCurrentUser={msg.userId === currentUserId}
+                      onReply={() => setReplyingMsg({ id: msg.id, username: msg.user?.username || 'Unknown', content: msg.content })}
+                      onEdit={() => {
+                        setEditingMsgId(msg.id);
+                        setMessage(msg.content);
+                      }}
+                      onDelete={() => deleteMessage(msg.id)}
+                      onUserClick={handleUserClick}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </ScrollArea>
-
-          <MessageInput 
-            message={message}
-            channelName="Global Chat"
-            members={membersList}
-            editingMessageId={editingMsgId}
-            replyingMessage={replyingMsg}
-            pendingAttachments={pendingAttachments}
-            isUploading={isUploading}
-            uploadError={uploadError}
-            onChange={(val) => {
-                setMessage(val);
-                onDetectMention(val);
-            }}
-            onSend={handleSend}
-            onKeyDown={handleKeyDown}
-            onEmojiSelect={onEmojiSelect}
-            onCancelEdit={onCancelEdit}
-            onCancelReply={onCancelReply}
-            onFileSelect={handleFileSelect}
-            onRemoveAttachment={handleRemoveAttachment}
-            onMentionSelect={onMentionSelect}
-            mentionQuery={mentionQuery}
-            mentionIndex={mentionIndex}
-            setMentionIndex={setMentionIndex}
-          />
-        </div>
-
-        {isMounted && showMembers && (
-          <>
-            <ChatSidebarRight 
-              members={membersList} 
-              currentUserId={currentUserId || ""} 
-              onSelectUser={(user) => handleOpenProfile(user.id)} 
-            />
-
-            <div className="md:hidden">
-              <div 
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-90 animate-in fade-in duration-300"
-                onClick={onMembersSidebarClose}
-              />
-              <Memberssidebar
-                members={membersList}
-                currentUserId={currentUserId || ""}
-                onClose={onMembersSidebarClose}
-                onOpenProfile={onMembersSidebarOpenProfile}
-              />
+        ) : (
+          <ScrollArea className="flex-1 px-4" ref={scrollRef}>
+            {loadingMore && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {!hasMore && messages.length > 0 && (
+              <div className="py-8 text-center">
+                <p className="text-sm text-muted-foreground">This is the beginning of the chat history.</p>
+                <Separator className="my-4 mx-auto max-w-[200px]" />
+              </div>
+            )}
+            <div className="space-y-6 py-6">
+              {loading ? (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-brand-purple" />
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex h-full flex-col items-center justify-center text-center text-muted-foreground space-y-4 py-20">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 text-muted-foreground/50" />
+                  </div>
+                  <p>No messages yet. Be the first to say hello!</p>
+                </div>
+              ) : (
+                messages.map((msg) => (
+                  <MessageItem
+                    key={msg.id}
+                    message={msg}
+                    isCurrentUser={msg.userId === currentUserId}
+                    onReply={() => setReplyingMsg({ id: msg.id, username: msg.user?.username || 'Unknown', content: msg.content })}
+                    onEdit={() => {
+                      setEditingMsgId(msg.id);
+                      setMessage(msg.content);
+                    }}
+                    onDelete={() => deleteMessage(msg.id)}
+                    onUserClick={handleUserClick}
+                  />
+                ))
+              )}
             </div>
-          </>
+          </ScrollArea>
         )}
+
+        {/* Input Area */}
+        <MessageInput
+          message={message}
+          setMessage={setMessage}
+          isConnected={isConnected}
+          editingMsgId={editingMsgId}
+          setEditingMsgId={setEditingMsgId}
+          replyingMsg={replyingMsg}
+          setReplyingMsg={setReplyingMsg}
+          handleSend={handleSend}
+          handleKeyDown={handleKeyDown}
+          inputRef={inputRef}
+          mentionQuery={mentionQuery}
+          setMentionQuery={setMentionQuery}
+          mentionIndex={mentionIndex}
+          setMentionIndex={setMentionIndex}
+          filteredMentions={filteredMentions}
+          handleMentionSelect={handleMentionSelect}
+          isUploading={isUploading}
+          pendingAttachments={pendingAttachments}
+          handleFileSelect={handleFileSelect}
+          removeAttachment={removeAttachment}
+          uploadError={uploadError}
+        />
       </div>
 
+      {/* Right Sidebar - Members */}
+      {showMembers && (
+        <Memberssidebar membersList={membersList} onUserClick={handleUserClick} />
+      )}
+
+      {/* Profile Dialog */}
       <ProfileDialog 
-        open={showProfile}
-        onOpenChange={setShowProfile}
-        member={profileUser}
+        profileUser={profileUser}
+        showProfile={showProfile}
+        setShowProfile={setShowProfile}
       />
     </div>
   );

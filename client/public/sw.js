@@ -1,4 +1,4 @@
-/* eslint-disable no-restricted-globals */
+
 const CACHE_NAME = 'bbrains-pwa-v1'
 const PRECACHE_URLS = ['/offline', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest']
 
