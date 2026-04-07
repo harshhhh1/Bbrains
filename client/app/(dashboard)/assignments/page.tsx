@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import React from "react"
 import { DashboardContent } from "@/components/dashboard-content"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -17,175 +17,66 @@ import {
 } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { assignmentApi, dashboardApi, gradeApi, type Assignment } from "@/services/api/client"
-import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload"
-import { Calendar, CheckCircle2, Clock, Download, Eye, FileText, Loader2, Search, Upload, X } from "lucide-react"
-import { toast } from "sonner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Calendar, CheckCircle2, Clock, Download, Eye, FileText, Loader2, Search, Upload, X } from "lucide-react"
+
 import { TeacherAssignmentManager } from "@/features/assignments/components/TeacherAssignmentManager"
 import { TeacherGradingView } from "@/features/grading/components/TeacherGradingView"
 import { ChatImagePreview } from "@/components/chat-image-preview"
 
-function fmtDate(value: string) {
-  return new Date(value).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
-}
-
-function isImageFile(filename: string): boolean {
-  const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"]
-  return imageExtensions.some((ext) => filename.toLowerCase().endsWith(ext))
-}
-
-function getImageMimeType(filename: string): string {
-  if (filename.toLowerCase().endsWith(".png")) return "image/png"
-  if (filename.toLowerCase().endsWith(".gif")) return "image/gif"
-  if (filename.toLowerCase().endsWith(".webp")) return "image/webp"
-  return "image/jpeg"
-}
-
-function getStatusBadgeVariant(status?: string): "default" | "secondary" | "destructive" | "outline" {
-  switch (status?.toLowerCase()) {
-    case "graded":
-    case "completed":
-      return "default"
-    case "submitted":
-    case "pending":
-      return "outline"
-    case "overdue":
-      return "destructive"
-    default:
-      return "secondary"
-  }
-}
+import { fmtDate, isImageFile, getImageMimeType, getStatusBadgeVariant } from "./utils"
+import { useAssignments } from "./hooks/useAssignments"
+import { AssignmentCard } from "./components"
 
 export default function AssignmentsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [userRole, setUserRole] = useState<string | null>(null)
-  const [assignments, setAssignments] = useState<Assignment[]>([])
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [submitAssignment, setSubmitAssignment] = useState<Assignment | null>(null)
-  const [viewAssignment, setViewAssignment] = useState<Assignment | null>(null)
-  const [submissionComment, setSubmissionComment] = useState("")
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null)
+  const {
+    searchQuery,
+    setSearchQuery,
+    userRole,
+    assignments,
+    loading,
+    submitting,
+    submitAssignment,
+    setSubmitAssignment,
+    viewAssignment,
+    setViewAssignment,
+    submissionComment,
+    setSubmissionComment,
+    selectedFile,
+    filePreviewUrl,
+    handleFileSelect,
+    clearFileSelection,
+    handleSubmit,
+    filteredAssignments,
+  } = useAssignments()
 
-  const { uploadFile } = useCloudinaryUpload()
-
-  const loadAssignments = useCallback(async () => {
-    try {
-      setLoading(true)
-      const [userResponse, assignmentResponse, gradesResponse, submissionsResponse] = await Promise.all([
-        dashboardApi.getUser(),
-        assignmentApi.getAssignments(),
-        gradeApi.getMyGrades(),
-        assignmentApi.getMySubmissions(),
-      ])
-
-      if (userResponse.success && userResponse.data) {
-        setUserRole(userResponse.data.type)
-      }
-
-      if (assignmentResponse.success && assignmentResponse.data) {
-        let enrichedAssignments = assignmentResponse.data
-
-        const gradesMap = gradesResponse.success && gradesResponse.data
-          ? new Map(gradesResponse.data.map((g) => [g.assignmentId, g]))
-          : new Map()
-
-        const submissionsMap = submissionsResponse.success && submissionsResponse.data
-          ? new Map(submissionsResponse.data.map((s) => [s.assignmentId, s]))
-          : new Map()
-
-        enrichedAssignments = enrichedAssignments.map((a) => {
-          const hasGrade = gradesMap.has(a.id)
-          const hasSubmission = submissionsMap.has(a.id)
-          const submission = submissionsMap.get(a.id)
-
-          return {
-            ...a,
-            grade: gradesMap.get(a.id),
-            submission: hasSubmission
-              ? {
-                  id: submission.id,
-                  filePath: submission.filePath,
-                  content: submission.content,
-                  submittedAt: submission.submittedAt,
-                }
-              : undefined,
-            status: hasGrade ? "graded" : hasSubmission ? "submitted" : a.status || "incomplete",
-          }
-        })
-
-        setAssignments(enrichedAssignments)
-      }
-    } catch (error) {
-      console.error(error)
-      toast.error("Failed to load your assignments")
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void loadAssignments()
-  }, [loadAssignments])
-
-  const filteredAssignments = useMemo(() => {
-    return assignments.filter((assignment) => {
-      if (!searchQuery.trim()) return true
-      const query = searchQuery.toLowerCase()
-      return (
-        assignment.title.toLowerCase().includes(query) ||
-        assignment.course?.name?.toLowerCase().includes(query)
-      )
-    })
-  }, [assignments, searchQuery])
-
-  const { activeAssignments, previousAssignments } = useMemo(() => {
-    const active = filteredAssignments.filter(
-      (a) => a.status !== "graded" && a.status !== "completed"
-    )
-    const previous = filteredAssignments.filter(
-      (a) => a.status === "graded" || a.status === "completed"
-    )
-    return { activeAssignments: active, previousAssignments: previous }
-  }, [filteredAssignments])
-
-  if (loading && !userRole) {
+  if (loading) {
     return (
-      <DashboardContent className="space-y-6">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading assignments...
+      <DashboardContent>
+        <div className="flex h-[80vh] items-center justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
         </div>
       </DashboardContent>
     )
   }
 
-  if (userRole === "teacher") {
+  if (userRole === "teacher" || userRole === "admin") {
     return (
-      <DashboardContent className="space-y-6">
-        <Tabs defaultValue="manage" className="flex-col space-y-6">
-          <div className="space-y-4">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Assignments</h1>
-              <p className="text-muted-foreground">
-                Manage assignments and grade student submissions.
-              </p>
-            </div>
-            <TabsList>
-              <TabsTrigger value="manage">Manage</TabsTrigger>
-              <TabsTrigger value="grade">Grade</TabsTrigger>
-            </TabsList>
-          </div>
-          <TabsContent value="manage">
+      <DashboardContent className="max-w-[1400px]">
+        <div className="mb-6">
+          <h1 className="text-3xl font-black tracking-tight text-foreground">Assignment Management</h1>
+          <p className="text-muted-foreground font-medium mt-1">Create assignments and grade student submissions.</p>
+        </div>
+
+        <Tabs defaultValue="manage" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 max-w-[400px] mb-8">
+            <TabsTrigger value="manage">Manage Assignments</TabsTrigger>
+            <TabsTrigger value="grade">Grade Submissions</TabsTrigger>
+          </TabsList>
+          <TabsContent value="manage" className="mt-0">
             <TeacherAssignmentManager />
           </TabsContent>
-          <TabsContent value="grade">
+          <TabsContent value="grade" className="mt-0">
             <TeacherGradingView />
           </TabsContent>
         </Tabs>
@@ -193,408 +84,277 @@ export default function AssignmentsPage() {
     )
   }
 
-  function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    setSelectedFile(file)
-
-    if (isImageFile(file.name)) {
-      const url = URL.createObjectURL(file)
-      setFilePreviewUrl(url)
-    } else {
-      setFilePreviewUrl(null)
-    }
-  }
-
-  async function handleFileSubmit() {
-    if (!selectedFile || !submitAssignment) return
-
-    setSubmitting(true)
-    const loadingToast = toast.loading("Uploading your assignment...")
-
-    try {
-      const fileUrl = await uploadFile(selectedFile, { folder: 'assignments' })
-      if (!fileUrl) {
-        throw new Error("Upload failed")
-      }
-
-      const payload = {
-        assignmentId: submitAssignment.id,
-        content: submissionComment || `Submitted file: ${selectedFile.name}`,
-        fileUrl,
-      }
-
-      const response = await assignmentApi.submitAssignment(payload)
-      if (!response.success) {
-        throw new Error(response.message || "Submission failed")
-      }
-
-      toast.success("Assignment submitted successfully", { id: loadingToast })
-      setSubmitAssignment(null)
-      setSelectedFile(null)
-      setSubmissionComment("")
-      setFilePreviewUrl(null)
-      await loadAssignments()
-    } catch (error) {
-      console.error(error)
-      toast.error(error instanceof Error ? error.message : "Submission failed", { id: loadingToast })
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  function renderAssignmentCard(assignment: Assignment, isPrevious: boolean = false) {
-    return (
-      <Card key={assignment.id} className={`border-border/60 ${isPrevious ? "opacity-80" : ""}`}>
-        <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-2 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">{assignment.course?.name || "General"}</Badge>
-              <Badge variant={getStatusBadgeVariant(assignment.status)}>
-                {assignment.status || "incomplete"}
-              </Badge>
-              {assignment.grade && (
-                <Badge variant="default" className="bg-green-600 text-white">
-                  Grade: {assignment.grade.grade}
-                </Badge>
-              )}
-            </div>
-            <div>
-              <p className="font-semibold text-foreground">{assignment.title}</p>
-              <p className="text-sm text-muted-foreground">
-                {assignment.description || "No description provided."}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              Due {fmtDate(assignment.dueDate)}
-            </div>
-          </div>
-
-          <div className="flex gap-2 shrink-0">
-            <Button
-              variant="outline"
-              className="rounded-2xl"
-              onClick={() => setViewAssignment(assignment)}
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              View Details
-            </Button>
-            {!assignment.submission && !isPrevious && (
-              <Button
-                className="rounded-2xl"
-                onClick={() => setSubmitAssignment(assignment)}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                Submit Work
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+  const upcomingAssignments = filteredAssignments.filter((a) => !a.submission)
+  const previousAssignments = filteredAssignments.filter((a) => a.submission)
 
   return (
-    <DashboardContent className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <DashboardContent className="space-y-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Assignments</h1>
-          <p className="text-muted-foreground">
-            Submit coursework, track pending work, and upload files from one place.
-          </p>
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">Assignments</h1>
+          <p className="mt-2 text-lg text-muted-foreground">Keep track of your homework and submissions.</p>
         </div>
-
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <div className="relative w-full md:w-[300px]">
+          <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
           <Input
-            className="rounded-2xl pl-9"
             placeholder="Search assignments..."
+            className="pl-10"
             value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading assignments...
-        </div>
-      ) : activeAssignments.length === 0 && previousAssignments.length === 0 ? (
-        <Card className="border-dashed border-border/70">
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            No assignments matched your search.
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          {activeAssignments.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-brand-orange" />
-                <h2 className="text-lg font-semibold text-foreground">Active Assignments</h2>
-              </div>
-              {activeAssignments.map((assignment) => renderAssignmentCard(assignment))}
-            </div>
-          )}
-
-          {previousAssignments.length > 0 && (
-            <div className="space-y-4 mt-8">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-                <h2 className="text-lg font-semibold text-foreground">Previous Assignments</h2>
-              </div>
-              {previousAssignments.map((assignment) => renderAssignmentCard(assignment, true))}
-            </div>
-          )}
-        </>
-      )}
-
-      <Dialog open={!!viewAssignment} onOpenChange={() => setViewAssignment(null)}>
-        <DialogContent className="rounded-[32px] sm:max-w-140 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{viewAssignment?.title}</DialogTitle>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <Badge variant="secondary">{viewAssignment?.course?.name || "General"}</Badge>
-              {viewAssignment?.grade && (
-                <Badge variant="default" className="bg-green-600 text-white">
-                  Grade: {viewAssignment.grade.grade}
-                </Badge>
-              )}
-            </div>
-            <DialogDescription>
-              {viewAssignment?.course?.name || "General"} {viewAssignment?.grade ? `• Grade: ${viewAssignment.grade.grade}` : ''}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 mt-4">
-            <div>
-              <h4 className="text-sm font-medium mb-1">Description</h4>
-              <p className="text-sm text-muted-foreground">
-                {viewAssignment?.description || "No description provided."}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              Due {fmtDate(viewAssignment?.dueDate || "")}
-            </div>
-
-            {viewAssignment?.file && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">Attached File</h4>
-                {isImageFile(viewAssignment.file) ? (
-                  <ChatImagePreview
-                    attachment={{
-                      url: viewAssignment.file,
-                      type: getImageMimeType(viewAssignment.file),
-                      name: "Assignment File",
-                    }}
-                  />
-                ) : (
-                  <div className="flex items-center justify-between p-2 rounded-md bg-muted/50">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      <span className="text-sm truncate">
-                        {viewAssignment.file.split("/").pop()?.split("?")[0] || "Assignment file"}
-                      </span>
-                    </div>
-                    <a
-                      href={viewAssignment.file}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0"
-                    >
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                    </a>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {viewAssignment?.submission && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">Your Submission</h4>
-                <div className="p-3 rounded-lg bg-muted/50 space-y-2">
-                  {viewAssignment.submission.content && (
-                    <p className="text-sm text-muted-foreground">
-                      {viewAssignment.submission.content}
-                    </p>
-                  )}
-                  {viewAssignment.submission.filePath && (
-                    <>
-                      {isImageFile(viewAssignment.submission.filePath) ? (
-                        <ChatImagePreview
-                          attachment={{
-                            url: viewAssignment.submission.filePath,
-                            type: getImageMimeType(viewAssignment.submission.filePath),
-                            name: "Submitted File",
-                          }}
-                        />
-                      ) : (
-                        <div className="flex items-center justify-between p-2 rounded-md bg-background/50">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                            <span className="text-sm truncate">
-                              {viewAssignment.submission.content || "Submitted file"}
-                            </span>
-                          </div>
-                          <a
-                            href={viewAssignment.submission.filePath}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="shrink-0"
-                          >
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </a>
-                        </div>
-                      )}
-                    </>
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    Submitted: {fmtDate(viewAssignment.submission.submittedAt)}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {viewAssignment?.grade && (
-              <div>
-                <h4 className="text-sm font-medium mb-2">Grade Details</h4>
-                <div className="p-3 rounded-lg bg-muted/50 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-green-600 text-white">
-                      {viewAssignment.grade.grade}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Graded by {viewAssignment.grade.gradedBy} on{" "}
-                      {fmtDate(viewAssignment.grade.gradedAt)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+      <div className="space-y-6">
+        <div>
+          <h2 className="mb-4 text-2xl font-bold tracking-tight">Upcoming ({upcomingAssignments.length})</h2>
+          <div className="grid gap-4">
+            {upcomingAssignments.length > 0 ? (
+              upcomingAssignments.map((assignment) => (
+                <AssignmentCard
+                  key={assignment.id}
+                  assignment={assignment}
+                  isPrevious={false}
+                  setViewAssignment={setViewAssignment}
+                  setSubmitAssignment={setSubmitAssignment}
+                />
+              ))
+            ) : (
+              <Card className="border-border/60 bg-muted/20 border-dashed">
+                <CardContent className="flex flex-col items-center justify-center p-12 text-muted-foreground">
+                  <CheckCircle2 className="mb-4 h-12 w-12 text-brand-mint" />
+                  <p className="text-lg font-semibold">You're all caught up!</p>
+                  <p className="text-sm">No pending assignments found.</p>
+                </CardContent>
+              </Card>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
 
+        <div>
+          <h2 className="mb-4 text-2xl font-bold tracking-tight text-muted-foreground">
+            Previous ({previousAssignments.length})
+          </h2>
+          <div className="grid gap-4">
+            {previousAssignments.length > 0 ? (
+              previousAssignments.map((assignment) => (
+                <AssignmentCard
+                  key={assignment.id}
+                  assignment={assignment}
+                  isPrevious={true}
+                  setViewAssignment={setViewAssignment}
+                  setSubmitAssignment={setSubmitAssignment}
+                />
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground italic pl-2">No previous assignments yet.</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Submit Assignment Drawer */}
       <Drawer
-        direction="right"
         open={!!submitAssignment}
         onOpenChange={(open) => {
-          if (!open && !submitting) {
+          if (!open) {
             setSubmitAssignment(null)
-            setSelectedFile(null)
+            clearFileSelection()
             setSubmissionComment("")
-            setFilePreviewUrl(null)
           }
         }}
       >
-        <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-xl before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
-          <div className="flex h-dvh max-h-dvh flex-col overflow-hidden">
-            <DrawerHeader className="border-b border-border/60 p-6 text-left">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-2">
-                  <DrawerTitle className="text-xl font-bold">Submit Assignment</DrawerTitle>
-                  <DrawerDescription>
-                    Upload your completed work for{" "}
-                    <span className="font-semibold text-foreground">
-                      {submitAssignment?.title}
-                    </span>
-                    .
-                  </DrawerDescription>
-                </div>
-                <DrawerClose asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </DrawerClose>
-              </div>
-            </DrawerHeader>
+        <DrawerContent className="mx-auto max-w-2xl px-6 py-8">
+          <DrawerHeader className="px-0">
+            <DrawerTitle className="text-2xl">Submit Assignment</DrawerTitle>
+            <DrawerDescription className="text-base">
+              You are submitting work for <strong>{submitAssignment?.title}</strong>
+            </DrawerDescription>
+          </DrawerHeader>
 
-            <div className="flex-1 space-y-4 overflow-y-auto p-6">
-              <div>
-                <label className="text-sm font-medium">
-                  Submission Comment (Optional)
-                </label>
-                <Textarea
-                  placeholder="Add any notes about your submission..."
-                  value={submissionComment}
-                  onChange={(e) => setSubmissionComment(e.target.value)}
-                  className="mt-2 rounded-xl"
-                  rows={4}
-                  disabled={submitting}
-                />
-              </div>
-
-              <label
-                htmlFor="assignment-file"
-                className="flex min-h-40 cursor-pointer flex-col items-center justify-center rounded-[28px] border-2 border-dashed border-border/70 p-6 text-center transition hover:border-brand-orange/40 hover:bg-brand-orange/5"
-              >
-                <FileText className="mb-3 h-8 w-8 text-brand-orange" />
-                <p className="text-sm font-medium text-foreground">Click to choose a file</p>
-                {selectedFile && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Selected: {selectedFile.name}
-                  </p>
-                )}
-                {!selectedFile && (
-                  <p className="text-xs text-muted-foreground">
-                    PDF, image, or archive formats work well here.
-                  </p>
-                )}
-                <input
-                  id="assignment-file"
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                  disabled={submitting}
-                />
+          <div className="my-6 space-y-6">
+            <div className="space-y-3">
+              <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Your Answer / Comments
               </label>
+              <Textarea
+                placeholder="Type your response or comments here..."
+                className="min-h-[150px] resize-none border-2 bg-muted/30 p-4 text-base"
+                value={submissionComment}
+                onChange={(e) => setSubmissionComment(e.target.value)}
+              />
+            </div>
 
-              {filePreviewUrl && selectedFile && (
-                <ChatImagePreview
-                  attachment={{
-                    url: filePreviewUrl,
-                    type: getImageMimeType(selectedFile.name),
-                    name: selectedFile.name,
-                  }}
-                />
-              )}
-
-              {submitting && (
-                <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Uploading your file...
+            <div className="space-y-3">
+              <label className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Attachment (Optional)
+              </label>
+              {!selectedFile ? (
+                <div className="group relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/60 bg-muted/30 py-12 transition-colors hover:border-brand-orange/50 hover:bg-brand-orange/5">
+                  <div className="rounded-full bg-brand-orange/10 p-4 text-brand-orange transition-transform group-hover:scale-110">
+                    <Upload className="h-8 w-8" />
+                  </div>
+                  <p className="mt-4 text-lg font-bold text-foreground">Click to upload file</p>
+                  <p className="text-sm text-muted-foreground">PDF, Word, Images up to 10MB</p>
+                  <input
+                    type="file"
+                    className="absolute inset-0 cursor-pointer opacity-0"
+                    onChange={handleFileSelect}
+                  />
+                </div>
+              ) : (
+                <div className="relative flex items-center justify-between rounded-xl border-2 border-brand-orange/20 bg-brand-orange/5 p-4">
+                  <div className="flex items-center gap-4 overflow-hidden">
+                    <div className="rounded-lg bg-brand-orange/20 p-3 text-brand-orange">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-foreground">{selectedFile.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearFileSelection}
+                    className="shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
                 </div>
               )}
             </div>
-
-            <DrawerFooter className="border-t border-border/60 bg-background/95 p-6 sm:flex-row sm:justify-end">
-              <DrawerClose asChild>
-                <Button variant="ghost" disabled={submitting}>
-                  Cancel
-                </Button>
-              </DrawerClose>
-              <Button
-                className="rounded-2xl"
-                onClick={handleFileSubmit}
-                disabled={!selectedFile || submitting}
-              >
-                <Upload className="mr-2 h-4 w-4" />
-                {submitting ? "Submitting..." : "Submit Assignment"}
-              </Button>
-            </DrawerFooter>
           </div>
+
+          <DrawerFooter className="flex-row gap-4 px-0">
+            <DrawerClose asChild>
+              <Button variant="outline" className="flex-1 rounded-xl h-12 text-base font-bold">
+                Cancel
+              </Button>
+            </DrawerClose>
+            <Button
+              className="flex-1 rounded-xl h-12 bg-brand-orange text-base font-bold text-white shadow-lg hover:bg-brand-orange/90"
+              onClick={handleSubmit}
+              disabled={submitting || (!submissionComment.trim() && !selectedFile)}
+            >
+              {submitting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
+              {submitting ? "Submitting..." : "Submit Work"}
+            </Button>
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
+
+      {/* View Assignment Dialog */}
+      <Dialog open={!!viewAssignment} onOpenChange={(open) => !open && setViewAssignment(null)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
+          {viewAssignment && (
+            <div className="flex flex-col h-full">
+              <div className="bg-muted p-8 border-b">
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge variant="secondary" className="bg-background">{viewAssignment.course?.name || "General"}</Badge>
+                  <Badge variant={getStatusBadgeVariant(viewAssignment.status)}>
+                    {viewAssignment.status || "incomplete"}
+                  </Badge>
+                </div>
+                <DialogTitle className="text-3xl font-black leading-tight mb-2">
+                  {viewAssignment.title}
+                </DialogTitle>
+                <div className="flex items-center gap-4 text-sm font-medium text-muted-foreground">
+                  <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4"/> Due {fmtDate(viewAssignment.dueDate)}</span>
+                  <span className="flex items-center gap-1.5"><Clock className="w-4 h-4"/> Posted {fmtDate(viewAssignment.createdAt)}</span>
+                </div>
+              </div>
+
+              <div className="p-8 space-y-8 bg-background">
+                <div className="space-y-4">
+                  <h4 className="font-bold uppercase tracking-widest text-xs text-muted-foreground">Instructions</h4>
+                  <div className="prose prose-sm dark:prose-invert max-w-none text-base">
+                    <p className="whitespace-pre-wrap">{viewAssignment.description}</p>
+                  </div>
+                </div>
+
+                {viewAssignment.attachmentUrl && (
+                  <div className="space-y-4">
+                    <h4 className="font-bold uppercase tracking-widest text-xs text-muted-foreground">Attached Material</h4>
+
+                    {isImageFile(viewAssignment.attachmentUrl) ? (
+                      <div className="overflow-hidden rounded-2xl border-2 border-border/50">
+                        <ChatImagePreview
+                          url={viewAssignment.attachmentUrl}
+                          mimeType={getImageMimeType(viewAssignment.attachmentUrl)}
+                          className="w-full h-auto object-cover max-h-[400px]"
+                        />
+                      </div>
+                    ) : (
+                      <a
+                        href={viewAssignment.attachmentUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center gap-4 rounded-2xl border-2 border-border/50 bg-muted/30 p-4 transition-colors hover:bg-muted/50 hover:border-primary/50 group"
+                      >
+                        <div className="rounded-xl bg-primary/10 p-3 text-primary group-hover:scale-110 transition-transform">
+                          <FileText className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-foreground truncate">Reference Material</p>
+                          <p className="text-sm text-muted-foreground">Click to view/download attachment</p>
+                        </div>
+                        <Download className="w-5 h-5 text-muted-foreground group-hover:text-primary" />
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {viewAssignment.submission && (
+                  <div className="mt-8 rounded-2xl border-2 border-brand-mint/20 bg-brand-mint/5 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <CheckCircle2 className="w-5 h-5 text-brand-mint" />
+                      <h4 className="font-bold text-brand-mint">Your Submission</h4>
+                    </div>
+                    <div className="space-y-4">
+                      <p className="text-sm font-medium text-foreground bg-background p-4 rounded-xl border">
+                        {viewAssignment.submission.content || "No comments provided."}
+                      </p>
+
+                      {viewAssignment.submission.fileUrl && (
+                        <a
+                          href={viewAssignment.submission.fileUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 text-sm font-bold text-brand-orange hover:underline bg-brand-orange/10 px-4 py-2 rounded-lg"
+                        >
+                          <FileText className="h-4 w-4" />
+                          View Submitted File
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {viewAssignment.grade && (
+                  <div className="mt-8 rounded-2xl border-2 border-green-500/20 bg-green-500/5 p-6">
+                    <h4 className="font-bold text-green-600 mb-4 flex items-center gap-2">
+                      <div className="bg-green-100 p-1.5 rounded-md">Grade Received</div>
+                    </h4>
+                    <div className="flex items-end gap-2 mb-4">
+                      <span className="text-5xl font-black text-green-600">{viewAssignment.grade.grade}</span>
+                      <span className="text-xl font-bold text-green-600/50 pb-1">/ 100</span>
+                    </div>
+                    {viewAssignment.grade.feedback && (
+                      <div className="bg-background rounded-xl p-4 border border-green-500/20">
+                        <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">Teacher Feedback</p>
+                        <p className="text-sm italic text-foreground">"{viewAssignment.grade.feedback}"</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardContent>
   )
 }

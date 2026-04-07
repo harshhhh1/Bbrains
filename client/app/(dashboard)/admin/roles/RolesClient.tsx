@@ -27,7 +27,7 @@ export function RolesClient({ initialRoles, initialUsers }: RolesClientProps) {
 
     const handleEditRole = (role: Role) => {
         setEditRole(role)
-        const permNames = (role.permissions || []).map((p: string | {permission?: string}) => typeof p === 'string' ? p : p.permission || '')
+        const permNames = (role.permissions || []).map((p: any) => typeof p === 'string' ? p : p.permission || '')
         setSelectedPerms(permNames)
         setShowRoleDialog(true)
     }
