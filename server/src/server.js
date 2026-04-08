@@ -111,6 +111,8 @@ app.use("/config", configRouter);
 app.use("/suggestions", suggestionRouter);
 app.use("/superadmin", superadminRoutes);
 app.use("/assessments", assessmentRouter);
+app.use("/razorpay", (await import("./modules/razorpay/razorpay.routes.js")).default);
+app.use("/fee", (await import("./modules/fee/fee.routes.js")).default);
 
 
 app.use((req, res) => {

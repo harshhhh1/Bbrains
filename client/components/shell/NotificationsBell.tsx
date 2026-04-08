@@ -19,8 +19,21 @@ import { useRouter } from "next/navigation"
 import { useNotifications } from "@/components/providers/notification-provider"
 
 export function NotificationsBell() {
+    const [mounted, setMounted] = React.useState(false)
     const { notifications, unreadCount, markRead, markAllRead } = useNotifications()
     const router = useRouter()
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) {
+        return (
+            <Button variant="ghost" size="icon" className="relative group">
+                <Bell className="h-5 w-5" />
+            </Button>
+        )
+    }
 
     const handleMarkRead = async (id: number, relatedId?: string, type?: string) => {
         try {
