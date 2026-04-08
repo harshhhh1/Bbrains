@@ -1,6 +1,8 @@
 import prisma from "../../utils/prisma.js";
 import { sendError, sendSuccess } from "../../utils/response.js";
 import { z } from "zod";
+import { createNotification, createNotifications } from "../notification/notification.service.js";
+import { sendPushNotification } from "../../lib/push.js";
 
 const DEFAULT_CHAT_ROOM = "default";
 const MAX_CHAT_ID_LENGTH = 120;
@@ -22,13 +24,14 @@ const createMessageSchema = z.object({
     content: z.string().max(MAX_MESSAGE_LENGTH).optional().default(""),
     chatId: z.string().trim().min(1).max(MAX_CHAT_ID_LENGTH).optional(),
     mentions: z.array(z.string().trim().min(1).max(64)).max(50).optional(),
+    mentionedUserIds: z.array(z.string().trim().min(1).max(128)).max(50).optional(),
     replyTo: z.string().trim().min(1).max(100).optional().nullable(),
     attachments: z.array(attachmentSchema).max(10).optional(),
 }).superRefine((payload, ctx) => {
     const hasText = String(payload.content || "").trim().length > 0;
     const hasAttachments = Array.isArray(payload.attachments) && payload.attachments.length > 0;
 
-    if (!hasText && !hasAttachments) {
+        if (!hasText && !hasAttachments) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["content"],
@@ -36,11 +39,7 @@ const createMessageSchema = z.object({
         });
     }
 });
-
-const updateMessageSchema = z.object({
-    content: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
-    mentions: z.array(z.string().trim().min(1).max(64)).max(50).optional(),
-});
+console.log('[Chat] createMessageSchema defined, checking chatId normalization...');
 
 const normalizeChatId = (value, req = null) => {
     const defaultRoom = req?.user?.collegeId ? `global_${req.user.collegeId}` : DEFAULT_CHAT_ROOM;
@@ -57,6 +56,16 @@ const normalizeMentions = (mentions = []) => {
     return Array.from(new Set(
         mentions
             .map((entry) => String(entry ?? "").trim().replace(/^@/, "").toLowerCase())
+            .filter(Boolean)
+    ));
+};
+
+const normalizeMentionedUserIds = (mentionedUserIds = []) => {
+    if (!Array.isArray(mentionedUserIds)) return [];
+
+    return Array.from(new Set(
+        mentionedUserIds
+            .map((entry) => String(entry ?? "").trim())
             .filter(Boolean)
     ));
 };
@@ -97,13 +106,111 @@ const normalizeMessageRecord = (msg) => {
         avatar: details.avatar || msg.avatar,
         role: user?.type || msg.role,
         content: msg.content,
-        mentions: msg.mentions,
+        mentions: Array.isArray(msg.mentions) ? msg.mentions : msg.mentions || [],
+        mentionedUserIds: Array.isArray(msg.mentionedUserIds) ? msg.mentionedUserIds : msg.mentionedUserIds || [],
         replyToMessageId: msg.replyTo,
-        attachments: msg.attachments,
+        attachments: Array.isArray(msg.attachments) ? msg.attachments : msg.attachments || [],
         createdAt: msg.createdAt,
         updatedAt: msg.updatedAt
     };
 };
+
+async function resolveMentionTargets({ chatId, collegeId, mentions = [], mentionedUserIds = [], actorUserId }) {
+    const normalizedNames = normalizeMentions(mentions);
+    const normalizedIds = normalizeMentionedUserIds(mentionedUserIds);
+    if (normalizedNames.length === 0 && normalizedIds.length === 0) {
+        return [];
+    }
+
+    const recentChatMembers = await prisma.chatMessage.findMany({
+        where: { chatId },
+        select: { userId: true },
+        distinct: ["userId"],
+    });
+
+    const allowedUserIds = new Set(recentChatMembers.map((entry) => entry.userId));
+    if (allowedUserIds.size === 0 && collegeId) {
+        const collegeUsers = await prisma.user.findMany({
+            where: { collegeId },
+            select: { id: true },
+        });
+        collegeUsers.forEach((entry) => allowedUserIds.add(entry.id));
+    }
+
+    const users = await prisma.user.findMany({
+        where: {
+            ...(collegeId ? { collegeId } : {}),
+            OR: [
+                ...(normalizedIds.length > 0 ? [{ id: { in: normalizedIds } }] : []),
+                ...(normalizedNames.length > 0 ? [{ username: { in: normalizedNames } }] : []),
+            ],
+        },
+        select: {
+            id: true,
+            username: true,
+        },
+    });
+
+    return users
+        .filter((user) => user.id !== actorUserId)
+        .filter((user) => allowedUserIds.size === 0 || allowedUserIds.has(user.id))
+        .map((user) => ({
+            id: user.id,
+            username: user.username,
+        }));
+}
+
+async function dispatchMentionNotifications({
+    actor,
+    chatId,
+    message,
+    mentionTargets,
+    replyTargetUserId,
+}) {
+    const baseUrl = `/chat#msg-${message.id}`;
+    const previewText = String(message.content || "").slice(0, 100);
+
+    if (mentionTargets.length > 0) {
+        const payloads = mentionTargets.map((target) => ({
+            userId: target.id,
+            actorId: actor.id,
+            title: `@${actor.username} mentioned you`,
+            message: previewText,
+            type: "mention",
+            relatedId: message.id,
+            messageId: message.id,
+            channelId: chatId,
+            entityUrl: baseUrl,
+        }));
+
+        await createNotifications(payloads);
+
+        await Promise.all(
+            mentionTargets.map((target) =>
+                sendPushNotification(target.id, {
+                    title: `@${actor.username} mentioned you`,
+                    body: previewText,
+                    url: baseUrl,
+                    tag: `mention-${message.id}`,
+                })
+            )
+        );
+    }
+
+    if (replyTargetUserId && replyTargetUserId !== actor.id && !mentionTargets.some((target) => target.id === replyTargetUserId)) {
+        await createNotification({
+            userId: replyTargetUserId,
+            actorId: actor.id,
+            title: `${actor.displayName} replied to you`,
+            message: previewText,
+            type: "reply",
+            relatedId: message.id,
+            messageId: message.id,
+            channelId: chatId,
+            entityUrl: baseUrl,
+        });
+    }
+}
 
 export const getChatMessages = async (req, res) => {
     try {
@@ -118,7 +225,7 @@ export const getChatMessages = async (req, res) => {
                 lt: new Date(before)
             };
         }
-        
+
         const messages = await prisma.chatMessage.findMany({
             where: whereClause,
             include: {
@@ -136,17 +243,12 @@ export const getChatMessages = async (req, res) => {
                     }
                 }
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
             take: limit
         });
-        
-        // Reverse so they are in chronological order
+
         messages.reverse();
-
-        // Normalize for frontend - use live user data if available, fallback to denormalized
-        const normalized = messages.map(normalizeMessageRecord);
-
-        return sendSuccess(res, normalized);
+        return sendSuccess(res, messages.map(normalizeMessageRecord));
     } catch (error) {
         console.error("Failed to fetch chat messages:", error);
         return sendError(res, "Failed to fetch chat messages", 500);
@@ -232,9 +334,8 @@ export const getChatMembers = async (req, res) => {
             },
             orderBy: { username: "asc" }
         });
-        
-        const members = users.map(normalizeProfile);
-        return sendSuccess(res, members);
+
+        return sendSuccess(res, users.map(normalizeProfile));
     } catch (error) {
         console.error("Failed to fetch chat members:", error);
         return sendError(res, "Failed to fetch chat members", 500);
@@ -243,30 +344,43 @@ export const getChatMembers = async (req, res) => {
 
 export const createChatMessage = async (req, res) => {
     try {
+        console.log('[Chat] Message request body:', JSON.stringify(req.body));
         const validated = createMessageSchema.parse(req.body ?? {});
         const content = String(validated.content || "").trim();
         const chatId = normalizeChatId(validated.chatId, req);
-        const mentions = normalizeMentions(validated.mentions);
         const replyTo = validated.replyTo ? String(validated.replyTo).trim() : null;
         const attachments = validated.attachments || [];
         const userId = req.user.id;
 
-        // Fetch user profile for denormalized storage
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: { userDetails: true }
+            include: {
+                userDetails: true,
+                enrollments: {
+                    select: { grade: true },
+                    take: 5,
+                },
+                roles: {
+                    select: {
+                        role: {
+                            select: { name: true },
+                        },
+                    },
+                },
+            }
         });
 
         if (!user) return sendError(res, "User not found", 404);
-
         const profile = normalizeProfile(user);
 
+        let parentMessage = null;
         if (replyTo) {
-            const parentMessage = await prisma.chatMessage.findUnique({
+            parentMessage = await prisma.chatMessage.findUnique({
                 where: { id: replyTo },
                 select: {
                     id: true,
                     chatId: true,
+                    userId: true,
                 },
             });
             if (!parentMessage) return sendError(res, "Reply target was not found", 404);
@@ -274,6 +388,22 @@ export const createChatMessage = async (req, res) => {
                 return sendError(res, "Replies must stay within the same chat room", 400);
             }
         }
+
+        const mentionTargets = await resolveMentionTargets({
+            chatId,
+            collegeId: req.user?.collegeId,
+            mentions: validated.mentions,
+            mentionedUserIds: validated.mentionedUserIds,
+            actorUserId: userId,
+        });
+
+        const mentions = mentionTargets.length > 0
+            ? mentionTargets.map((target) => target.username.toLowerCase())
+            : normalizeMentions(validated.mentions);
+
+        const mentionedUserIds = mentionTargets.length > 0
+            ? mentionTargets.map((target) => target.id)
+            : normalizeMentionedUserIds(validated.mentionedUserIds);
 
         const message = await prisma.chatMessage.create({
             data: {
@@ -285,9 +415,18 @@ export const createChatMessage = async (req, res) => {
                 avatar: profile.avatar,
                 role: profile.type,
                 mentions,
+                mentionedUserIds,
                 replyTo,
                 attachments
             }
+        });
+
+        await dispatchMentionNotifications({
+            actor: profile,
+            chatId,
+            message,
+            mentionTargets,
+            replyTargetUserId: parentMessage?.userId || null,
         });
 
         return sendSuccess(res, message, "Message sent", 201);
@@ -309,7 +448,6 @@ export const updateChatMessageById = async (req, res) => {
     try {
         const messageId = String(req.params.id || "");
         const validated = updateMessageSchema.parse(req.body ?? {});
-        const mentions = normalizeMentions(validated.mentions);
 
         if (!messageId) return sendError(res, "Message ID is required", 400);
 
@@ -318,6 +456,7 @@ export const updateChatMessageById = async (req, res) => {
             select: {
                 id: true,
                 userId: true,
+                chatId: true,
             },
         });
         if (!existingMessage) return sendError(res, "Message not found", 404);
@@ -325,11 +464,24 @@ export const updateChatMessageById = async (req, res) => {
             return sendError(res, "You can only edit your own messages", 403);
         }
 
+        const mentionTargets = await resolveMentionTargets({
+            chatId: existingMessage.chatId,
+            collegeId: req.user?.collegeId,
+            mentions: validated.mentions,
+            mentionedUserIds: validated.mentionedUserIds,
+            actorUserId: req.user.id,
+        });
+
         const updated = await prisma.chatMessage.update({
             where: { id: messageId },
             data: {
                 content: validated.content,
-                mentions,
+                mentions: mentionTargets.length > 0
+                    ? mentionTargets.map((target) => target.username.toLowerCase())
+                    : normalizeMentions(validated.mentions),
+                mentionedUserIds: mentionTargets.length > 0
+                    ? mentionTargets.map((target) => target.id)
+                    : normalizeMentionedUserIds(validated.mentionedUserIds),
                 updatedAt: new Date(),
             },
         });
@@ -411,11 +563,9 @@ export const getMyChatProfile = async (req, res) => {
         });
 
         if (!user) return sendError(res, "User not found", 404);
-
         return sendSuccess(res, normalizeProfile(user));
     } catch (error) {
         console.error("Failed to fetch my chat profile:", error);
         return sendError(res, "Failed to fetch profile", 500);
     }
 };
-

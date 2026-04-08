@@ -31,3 +31,47 @@ self.addEventListener('fetch', (event) => {
     return
   }
 })
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return
+
+  const payload = event.data.json()
+  const title = payload?.title || 'Bbrains'
+  const body = payload?.body || ''
+  const icon = payload?.icon || '/icon-192.png'
+  const badge = payload?.badge || '/icon-192.png'
+  const url = payload?.data?.url || payload?.url || '/chat'
+  const tag = payload?.tag
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon,
+      badge,
+      tag,
+      data: { url },
+    })
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+
+  const targetUrl = event.notification?.data?.url || '/chat'
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const matchingClient = clients.find((client) => 'focus' in client)
+
+      if (matchingClient) {
+        matchingClient.focus()
+        if ('navigate' in matchingClient) {
+          return matchingClient.navigate(targetUrl)
+        }
+        return undefined
+      }
+
+      return self.clients.openWindow(targetUrl)
+    })
+  )
+})
