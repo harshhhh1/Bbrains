@@ -3,17 +3,16 @@
 import { useState, useRef, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, Hash, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2, Hash, Search, X, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 
-// Hooks
 import { useChatMessages } from "@/features/chat/hooks/useChatMessages";
 import { useNotifications } from "@/components/providers/notification-provider";
 import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload";
-import { markChatSeen } from "@/hooks/use-chat-unread-count";
-import { chatApi, type ChatMemberProfile } from "@/services/api/client";
+import { chatApi, type ChatMemberProfile, type ChatMentionUser } from "@/services/api/client";
 
-// Components
 import { ChannelHeader } from "@/features/chat/components/ChannelHeader";
 import { MessageItem } from "@/features/chat/components/MessageItem";
 import { MessageInput } from "@/features/chat/components/MessageInput";
@@ -21,34 +20,40 @@ import { ChatSidebarRight } from "@/features/chat/components/ChatSidebarRight";
 import { ProfileDialog } from "@/features/chat/components/ProfileDialog";
 import { Memberssidebar } from "@/features/chat/components/MembersSidebar";
 
-// Data & Utils
 import { Message, Member } from "@/features/chat/data";
 import { extractMentions, mapApiMember } from "@/features/chat/utils";
 
 const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024;
 
+type SelectedMention = {
+  id: string;
+  username: string;
+};
+
 export default function ChatPage() {
-  // Hooks
-  const { 
-    messages, 
-    loading, 
-    isConnected, 
-    sendMessage, 
-    deleteMessage, 
-    editMessage, 
+  const {
+    messages,
+    loading,
+    isConnected,
+    sendMessage,
+    deleteMessage,
+    editMessage,
     currentUserId,
+    currentUserProfile,
+    chatRoomId,
     loadingMore,
     hasMore,
     loadMore,
     searchMessages,
+    ensureMessageVisible,
     searchResults,
-    isSearching
+    isSearching,
+    lastIncomingMessage,
   } = useChatMessages();
-  
-  const { markAllRead } = useNotifications();
+
+  const { markChannelRead, registerIncomingChatNotification } = useNotifications();
   const { uploadFile, isUploading } = useCloudinaryUpload();
 
-  // State
   const [message, setMessage] = useState("");
   const [showMembers, setShowMembers] = useState<boolean | null>(null);
   const isMounted = useSyncExternalStore(
@@ -63,31 +68,32 @@ export default function ChatPage() {
   const [replyingMsg, setReplyingMsg] = useState<{ id: string; username: string; content: string } | null>(null);
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionIndex, setMentionIndex] = useState(0);
+  const [mentionSuggestions, setMentionSuggestions] = useState<ChatMentionUser[]>([]);
   const [membersList, setMembersList] = useState<Member[]>([]);
+  const [mentionedUsers, setMentionedUsers] = useState<SelectedMention[]>([]);
   const [pendingAttachments, setPendingAttachments] = useState<{ file: File; previewUrl: string }[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [hasNewMessages, setHasNewMessages] = useState(false);
 
-  // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null!);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+  const shouldStickToBottomRef = useRef(true);
+  const lastMessageIdRef = useRef<string | null>(null);
 
-  // Current user's username for mention highlighting
   const currentUsername = useMemo(() => {
-    // Attempt to find current user's username from messages or session
-    const own = messages.find((m) => m.user.id === currentUserId);
-    return own?.user.username ?? null;
-  }, [messages, currentUserId]);
+    return currentUserProfile?.username ?? messages.find((m) => m.user.id === currentUserId)?.user.username ?? null;
+  }, [currentUserId, currentUserProfile, messages]);
 
-  // Fetch members from API
   useEffect(() => {
     const fetchMembers = async () => {
       try {
         const response = await chatApi.getMembers();
         if (response.success && response.data) {
-          const members = response.data.map((m: ChatMemberProfile) => mapApiMember(m));
+          const members = response.data.map((member: ChatMemberProfile) => mapApiMember(member));
           setMembersList(members);
         }
       } catch (error) {
@@ -95,122 +101,197 @@ export default function ChatPage() {
         toast.error("Unable to load members list");
       }
     };
-    fetchMembers();
+
+    void fetchMembers();
   }, []);
 
-  // Helpers
+  useEffect(() => {
+    if (!mentionQuery) {
+      setMentionSuggestions([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchMentionSuggestions = async () => {
+      try {
+        const response = await chatApi.searchUsers(mentionQuery, chatRoomId);
+        if (!cancelled) {
+          setMentionSuggestions(response.success && response.data ? response.data : []);
+          setMentionIndex(0);
+        }
+      } catch {
+        if (!cancelled) {
+          setMentionSuggestions([]);
+        }
+      }
+    };
+
+    void fetchMentionSuggestions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [chatRoomId, mentionQuery]);
+
+  useEffect(() => {
+    if (!isMobileSearchOpen) return;
+    const timer = window.setTimeout(() => {
+      mobileSearchInputRef.current?.focus();
+    }, 80);
+
+    return () => window.clearTimeout(timer);
+  }, [isMobileSearchOpen]);
+
+  useEffect(() => {
+    if (!chatRoomId || messages.length === 0) return;
+    void markChannelRead(chatRoomId);
+  }, [chatRoomId, markChannelRead, messages.length]);
+
+  useEffect(() => {
+    if (!lastIncomingMessage) return;
+    if (lastIncomingMessage.user.id === currentUserId) return;
+
+    const mentionedCurrentUser = lastIncomingMessage.mentionedUserIds?.includes(currentUserId);
+    if (mentionedCurrentUser && document.visibilityState !== "visible") {
+      registerIncomingChatNotification(chatRoomId, "mention");
+    }
+  }, [chatRoomId, currentUserId, lastIncomingMessage, registerIncomingChatNotification]);
+
   const getDateLabel = useCallback((dateStr: string) => {
     const date = new Date(dateStr);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    const diff = today.getTime() - d.getTime();
+    const currentDate = new Date(date);
+    currentDate.setHours(0, 0, 0, 0);
+    const diff = today.getTime() - currentDate.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     if (days === 0) return "Today";
     if (days === 1) return "Yesterday";
-    return d.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+    return currentDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
   }, []);
 
   const groupedMessages = useMemo(() => {
     const groups: { label: string; messages: Message[] }[] = [];
     let currentLabel = "";
-    messages.forEach((msg) => {
-      const label = getDateLabel(msg.createdAt);
+    messages.forEach((chatMessage) => {
+      const label = getDateLabel(chatMessage.createdAt);
       if (label !== currentLabel) {
         currentLabel = label;
-        groups.push({ label, messages: [msg] });
+        groups.push({ label, messages: [chatMessage] });
       } else {
-        groups[groups.length - 1].messages.push(msg);
+        groups[groups.length - 1].messages.push(chatMessage);
       }
     });
     return groups;
-  }, [messages, getDateLabel]);
+  }, [getDateLabel, messages]);
 
-  // Auto-scroll on new messages
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (messagesEndRef.current) {
-        const viewport = messagesEndRef.current.closest('[data-radix-scroll-area-viewport]');
-        if (viewport) {
-          viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
-        } else {
-          messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
-      }
-    }, 100);
-    if (messages.length > 0) {
-      markAllRead();
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    const viewport = scrollViewportRef.current;
+    if (!viewport) return;
+    viewport.scrollTo({ top: viewport.scrollHeight, behavior });
+    setHasNewMessages(false);
+  }, []);
+
+  const updateStickiness = useCallback(() => {
+    const viewport = scrollViewportRef.current;
+    if (!viewport) return;
+
+    const distanceFromBottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight;
+    const isNearBottom = distanceFromBottom <= 100;
+    shouldStickToBottomRef.current = isNearBottom;
+    if (isNearBottom) {
+      setHasNewMessages(false);
     }
-    return () => clearTimeout(timer);
-  }, [messages.length, markAllRead]);
+  }, []);
 
   useEffect(() => {
-    if (!currentUserId) return
+    if (messages.length === 0) return;
 
-    const latestMessageTimestamp = messages[messages.length - 1]?.createdAt ?? new Date().toISOString()
-    markChatSeen(currentUserId, latestMessageTimestamp)
-  }, [currentUserId, messages]);
+    const latestMessageId = messages[messages.length - 1]?.id ?? null;
+    const latestMessageChanged = latestMessageId !== lastMessageIdRef.current;
+    lastMessageIdRef.current = latestMessageId;
 
-  // Handlers
+    if (!latestMessageChanged) {
+      return;
+    }
+
+    if (shouldStickToBottomRef.current || messages.length <= 1) {
+      window.setTimeout(() => {
+        scrollToBottom(messages.length <= 1 ? "auto" : "smooth");
+      }, 80);
+      return;
+    }
+
+    setHasNewMessages(true);
+  }, [messages, scrollToBottom]);
+
   const handleSend = useCallback(async () => {
     if (!message.trim() && pendingAttachments.length === 0) return;
     if (isUploading) return;
 
     try {
-        const uploadedAttachments: { url: string; type: string; name?: string }[] = [];
-        let failedUploads = 0;
-        
-        for (const att of pendingAttachments) {
-            const url = await uploadFile(att.file, { folder: 'chat attachments' });
-            if (url) {
-                uploadedAttachments.push({
-                    url,
-                    type: att.file.type,
-                    name: att.file.name
-                });
-            } else {
-                failedUploads += 1;
-            }
-        }
+      const uploadedAttachments: { url: string; type: string; name?: string }[] = [];
+      let failedUploads = 0;
 
-        if (failedUploads > 0) {
-            const errorMsg = `${failedUploads} attachment${failedUploads > 1 ? "s" : ""} failed to upload. Please try again.`;
-            setUploadError(errorMsg);
-            toast.error(errorMsg);
-            return;
-        }
-
-        if (editingMsgId) {
-            const content = message.trim();
-            await editMessage(editingMsgId, content, extractMentions(content));
-            setEditingMsgId(null);
+      for (const attachment of pendingAttachments) {
+        const url = await uploadFile(attachment.file, { folder: "chat attachments" });
+        if (url) {
+          uploadedAttachments.push({
+            url,
+            type: attachment.file.type,
+            name: attachment.file.name,
+          });
         } else {
-            const content = message.trim();
-            await sendMessage(content, uploadedAttachments, extractMentions(content), replyingMsg?.id);
+          failedUploads += 1;
         }
-        
-        setMessage("");
-        setUploadError(null);
-        setReplyingMsg(null);
-        setPendingAttachments((prev) => {
-            prev.forEach(att => URL.revokeObjectURL(att.previewUrl));
-            return [];
-        });
+      }
+
+      if (failedUploads > 0) {
+        const errorMsg = `${failedUploads} attachment${failedUploads > 1 ? "s" : ""} failed to upload. Please try again.`;
+        setUploadError(errorMsg);
+        toast.error(errorMsg);
+        return;
+      }
+
+      const content = message.trim();
+      const mentionIds = mentionedUsers.map((user) => user.id);
+      const mentions = extractMentions(content);
+
+      if (editingMsgId) {
+        await editMessage(editingMsgId, content, mentions, mentionIds);
+        setEditingMsgId(null);
+      } else {
+        await sendMessage(content, uploadedAttachments, mentions, replyingMsg?.id, mentionIds);
+      }
+
+      setMessage("");
+      setMentionQuery(null);
+      setMentionSuggestions([]);
+      setMentionIndex(0);
+      setMentionedUsers([]);
+      setUploadError(null);
+      setReplyingMsg(null);
+      setPendingAttachments((prev) => {
+        prev.forEach((attachment) => URL.revokeObjectURL(attachment.previewUrl));
+        return [];
+      });
+      shouldStickToBottomRef.current = true;
+      window.setTimeout(() => scrollToBottom("smooth"), 80);
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to send message";
-        setUploadError(errorMessage);
-        toast.error(errorMessage);
+      const errorMessage = error instanceof Error ? error.message : "Failed to send message";
+      setUploadError(errorMessage);
+      toast.error(errorMessage);
     }
-  }, [message, pendingAttachments, isUploading, editingMsgId, replyingMsg, uploadFile, editMessage, sendMessage]);
+  }, [editMessage, editingMsgId, isUploading, mentionedUsers, message, pendingAttachments, replyingMsg, scrollToBottom, sendMessage, uploadFile]);
 
   const handleFileSelect = useCallback((files: File[]) => {
-    const tooLarge = files.filter((f) => f.size > MAX_ATTACHMENT_BYTES);
-    const validFiles = files.filter((f) => f.size <= MAX_ATTACHMENT_BYTES);
+    const tooLarge = files.filter((file) => file.size > MAX_ATTACHMENT_BYTES);
+    const validFiles = files.filter((file) => file.size <= MAX_ATTACHMENT_BYTES);
 
     if (tooLarge.length > 0) {
-      const tooLargeNames = tooLarge.map((f) => f.name).join(", ");
-      const errorMsg = `File must be 5MB or smaller. Remove and re-upload: ${tooLargeNames}`;
+      const tooLargeNames = tooLarge.map((file) => file.name).join(", ");
+      const errorMsg = `File must be 10MB or smaller. Remove and re-upload: ${tooLargeNames}`;
       setUploadError(errorMsg);
       toast.error(errorMsg);
     } else {
@@ -219,91 +300,94 @@ export default function ChatPage() {
 
     if (validFiles.length === 0) return;
 
-    const newPending = validFiles.map(f => ({
-      file: f,
-      previewUrl: URL.createObjectURL(f)
+    const newPending = validFiles.map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
     }));
-    setPendingAttachments(prev => [...prev, ...newPending]);
+    setPendingAttachments((prev) => [...prev, ...newPending]);
   }, []);
 
   const handleRemoveAttachment = useCallback((index: number) => {
-    setPendingAttachments(prev => {
-      const newPending = [...prev];
-      URL.revokeObjectURL(newPending[index].previewUrl);
-      newPending.splice(index, 1);
-      return newPending;
+    setPendingAttachments((prev) => {
+      const next = [...prev];
+      URL.revokeObjectURL(next[index].previewUrl);
+      next.splice(index, 1);
+      return next;
     });
     setUploadError(null);
   }, []);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (mentionQuery !== null && mentionIndex >= 0) {
-        // Handled by MessageInput component mostly, but we can prevent default send here
-        if (["ArrowDown", "ArrowUp", "Enter", "Tab"].includes(e.key)) {
-            // Let the MessageInput's own suggestions handle these
-            return;
-        }
+  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void handleSend();
     }
-    
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-    if (e.key === "Escape") {
-        if (editingMsgId) {
-            setEditingMsgId(null);
-            setMessage("");
-        }
-        if (replyingMsg) setReplyingMsg(null);
-        setMentionQuery(null);
-    }
-  }, [mentionQuery, mentionIndex, editingMsgId, replyingMsg, handleSend]);
 
-  const onDetectMention = useCallback((val: string) => {
-    const active = document.activeElement as (HTMLInputElement | null);
-    const cursorPos =
-      active && typeof active.selectionStart === "number"
-        ? active.selectionStart
-        : val.length;
-    const textBeforeCursor = val.slice(0, cursorPos);
+    if (event.key === "Escape") {
+      if (editingMsgId) {
+        setEditingMsgId(null);
+        setMessage("");
+      }
+      if (replyingMsg) setReplyingMsg(null);
+      setMentionQuery(null);
+      setMentionSuggestions([]);
+    }
+  }, [editingMsgId, handleSend, replyingMsg]);
+
+  const detectMention = useCallback((value: string) => {
+    const active = document.activeElement as HTMLInputElement | null;
+    const cursorPos = active && typeof active.selectionStart === "number" ? active.selectionStart : value.length;
+    const textBeforeCursor = value.slice(0, cursorPos);
     const match = textBeforeCursor.match(/@(\w*)$/);
+
     if (match) {
       setMentionQuery(match[1]);
       setMentionIndex(0);
     } else {
       setMentionQuery(null);
+      setMentionSuggestions([]);
     }
+
+    const activeMentions = extractMentions(value).map((entry) => entry.toLowerCase());
+    setMentionedUsers((prev) => prev.filter((user) => activeMentions.includes(user.username.toLowerCase())));
   }, []);
 
-  const onMentionSelect = useCallback((username: string) => {
-    const input = document.querySelector('input[aria-label="Message input"]') as HTMLInputElement;
+  const handleMentionSelect = useCallback((user: ChatMentionUser) => {
+    const input = document.querySelector('input[aria-label="Message input"]') as HTMLInputElement | null;
     const cursorPos = input?.selectionStart || 0;
     const textBeforeCursor = message.slice(0, cursorPos);
     const textAfterCursor = message.slice(cursorPos);
     const beforeMention = textBeforeCursor.replace(/@(\w*)$/, "");
-    const newMessage = `${beforeMention}@${username} ${textAfterCursor}`;
-    setMessage(newMessage);
+    const nextMessage = `${beforeMention}@${user.username} ${textAfterCursor}`;
+
+    setMessage(nextMessage);
     setMentionQuery(null);
-    setTimeout(() => {
-      const newPos = beforeMention.length + username.length + 2;
+    setMentionSuggestions([]);
+    setMentionedUsers((prev) => {
+      const filtered = prev.filter((entry) => entry.id !== user.id);
+      return [...filtered, { id: user.id, username: user.username }];
+    });
+
+    window.setTimeout(() => {
+      const newPos = beforeMention.length + user.username.length + 2;
       input?.focus();
       input?.setSelectionRange(newPos, newPos);
     }, 0);
   }, [message]);
 
   const handleOpenProfile = useCallback((userId: string) => {
-    const member = membersList.find(m => m.id === userId);
+    const member = membersList.find((item) => item.id === userId);
     if (member) {
-        setProfileUser(member);
-        setShowProfile(true);
+      setProfileUser(member);
+      setShowProfile(true);
     }
   }, [membersList]);
 
-  const handleReply = useCallback((msg: Message) => {
-    setReplyingMsg({ 
-        id: msg.id, 
-        username: msg.user.username, 
-        content: msg.content 
+  const handleReply = useCallback((chatMessage: Message) => {
+    setReplyingMsg({
+      id: chatMessage.id,
+      username: chatMessage.user.username,
+      content: chatMessage.content,
     });
     setEditingMsgId(null);
   }, []);
@@ -311,18 +395,78 @@ export default function ChatPage() {
   const handleEdit = useCallback((id: string, content: string) => {
     setEditingMsgId(id);
     setMessage(content);
+    detectMention(content);
     setReplyingMsg(null);
-  }, []);
+  }, [detectMention]);
 
   const handleCopy = useCallback((content: string) => {
     navigator.clipboard.writeText(content);
     toast.success("Copied to clipboard");
   }, []);
 
-  const onEmojiSelect = useCallback((emoji: { emoji: string }) => setMessage(prev => prev + emoji.emoji), []);
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+    if (query.trim()) {
+      setIsSearchMode(true);
+      void searchMessages(query);
+    } else {
+      setIsSearchMode(false);
+    }
+  }, [searchMessages]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery("");
+    setIsSearchMode(false);
+    setIsMobileSearchOpen(false);
+  }, []);
+
+  const handleOpenMobileSearch = useCallback(() => {
+    setIsMobileSearchOpen((prev) => !prev);
+  }, []);
+
+  const handleSelectSearchResult = useCallback(async (chatMessage: Message) => {
+    const loaded = await ensureMessageVisible(chatMessage.id, chatMessage.createdAt);
+    if (!loaded) {
+      toast.error("Unable to locate that message in the current history");
+      return;
+    }
+
+    setIsSearchMode(false);
+    setIsMobileSearchOpen(false);
+
+    window.setTimeout(() => {
+      const target = document.getElementById(`msg-${chatMessage.id}`);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 120);
+  }, [ensureMessageVisible]);
+
+  const handleScroll = useCallback(() => {
+    updateStickiness();
+
+    if (scrollViewportRef.current && hasMore && !loadingMore && !isSearchMode) {
+      if (scrollViewportRef.current.scrollTop === 0) {
+        void loadMore();
+      }
+    }
+  }, [hasMore, isSearchMode, loadMore, loadingMore, updateStickiness]);
+
+  useEffect(() => {
+    const viewport = scrollViewportRef.current;
+    if (!viewport) return;
+
+    viewport.addEventListener("scroll", handleScroll);
+    updateStickiness();
+
+    return () => viewport.removeEventListener("scroll", handleScroll);
+  }, [handleScroll, updateStickiness]);
+
+  const onEmojiSelect = useCallback((emoji: { emoji: string }) => setMessage((prev) => prev + emoji.emoji), []);
   const onCancelEdit = useCallback(() => {
     setEditingMsgId(null);
     setMessage("");
+    setMentionedUsers([]);
   }, []);
   const onCancelReply = useCallback(() => setReplyingMsg(null), []);
   const onToggleMembers = useCallback(() => {
@@ -335,68 +479,75 @@ export default function ChatPage() {
     setShowMembers(false);
   }, [handleOpenProfile]);
 
-  const onSearch = useCallback((query: string) => {
-    setSearchQuery(query);
-    if (query.trim()) {
-      setIsSearchMode(true);
-      searchMessages(query);
-    } else {
-      setIsSearchMode(false);
-    }
-  }, [searchMessages]);
-
-  const onClearSearch = useCallback(() => {
-    setSearchQuery("");
-    setIsSearchMode(false);
-  }, []);
-
-  const onOpenMobileSearch = useCallback(() => {
-    setIsMobileSearchOpen(prev => !prev);
-  }, []);
-
-  const handleScroll = useCallback(() => {
-    if (scrollViewportRef.current && hasMore && !loadingMore && !isSearchMode) {
-      if (scrollViewportRef.current.scrollTop === 0) {
-        loadMore();
-      }
-    }
-  }, [hasMore, loadingMore, loadMore, isSearchMode]);
-
-  useEffect(() => {
-    const viewport = scrollViewportRef.current;
-    if (!viewport) return;
-    
-    viewport.addEventListener('scroll', handleScroll);
-    return () => viewport.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
-
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-card md:rounded-xl md:border md:shadow-sm">
-        <ChannelHeader 
-          channelName="Global Chat"
-          showMembers={membersPanelOpen}
+      <ChannelHeader
+        channelName="Global Chat"
+        showMembers={membersPanelOpen}
         messageCount={messages.length}
         isConnected={isConnected}
         onToggleMembers={onToggleMembers}
-        onSearch={onSearch}
-        searchResults={searchResults}
-        isSearching={isSearching}
-        onClearSearch={onClearSearch}
+        onSearch={handleSearchChange}
+        onClearSearch={handleClearSearch}
         searchQuery={searchQuery}
-        onOpenSearch={onOpenMobileSearch}
-        isSearchOpen={isMobileSearchOpen}
+        onOpenSearch={handleOpenMobileSearch}
       />
 
-      <div className="flex flex-1 min-h-0">
-        <div className="flex-1 flex flex-col min-w-0">
-          <ScrollArea className="flex-1 p-4 pb-4" containerRef={scrollViewportRef}>
-            <div
-              className={
-                loading || messages.length === 0
-                  ? "min-h-full"
-                  : "min-h-full flex flex-col justify-end"
-              }
+      {isMobileSearchOpen && (
+        <div className="border-b border-border bg-card px-3 py-3 sm:hidden">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              ref={mobileSearchInputRef}
+              value={searchQuery}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              placeholder="Search this chat..."
+              className="pl-10 pr-10"
+            />
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="mt-3 max-h-64 overflow-y-auto space-y-2">
+            {searchQuery.trim() ? (
+              isSearching ? (
+                <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Searching...
+                </div>
+              ) : searchResults.length === 0 ? (
+                <div className="py-6 text-center text-sm text-muted-foreground">No messages found.</div>
+              ) : (
+                searchResults.map((chatMessage) => (
+                  <button
+                    key={`mobile-search-${chatMessage.id}`}
+                    onClick={() => void handleSelectSearchResult(chatMessage)}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-left"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-medium">{chatMessage.user.name}</span>
+                      <span className="text-[11px] text-muted-foreground">{chatMessage.timestamp}</span>
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{chatMessage.content}</p>
+                  </button>
+                ))
+              )
+            ) : (
+              <div className="py-6 text-center text-sm text-muted-foreground">Type to search messages in this channel.</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-1 min-h-0">
+        <div className="flex-1 flex flex-col min-w-0 relative">
+          <ScrollArea className="flex-1 p-4 pb-4" containerRef={scrollViewportRef}>
+            <div className={loading || messages.length === 0 ? "min-h-full" : "min-h-full flex flex-col justify-end"}>
               <div className="space-y-1">
                 {isSearchMode ? (
                   isSearching ? (
@@ -416,18 +567,18 @@ export default function ChatPage() {
                         <Search className="w-4 h-4" />
                         <span>{searchResults.length} results for &quot;{searchQuery}&quot;</span>
                       </div>
-                      {searchResults.map((msg) => (
-                        <MessageItem 
-                          key={msg.id}
-                          msg={msg}
-                          currentUserId={currentUserId}
-                          currentUsername={currentUsername}
-                          onReply={handleReply}
-                          onCopy={handleCopy}
-                          onEdit={handleEdit}
-                          onDelete={deleteMessage}
-                          onOpenProfile={handleOpenProfile}
-                        />
+                      {searchResults.map((chatMessage) => (
+                        <button
+                          key={`search-${chatMessage.id}`}
+                          onClick={() => void handleSelectSearchResult(chatMessage)}
+                          className="w-full rounded-lg border border-border bg-background/70 px-4 py-3 text-left hover:bg-muted/40"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-sm font-medium">{chatMessage.user.name}</span>
+                            <span className="text-[11px] text-muted-foreground">{chatMessage.timestamp}</span>
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{chatMessage.content}</p>
+                        </button>
                       ))}
                     </div>
                   )
@@ -460,19 +611,19 @@ export default function ChatPage() {
                           <Separator className="flex-1" />
                         </div>
                         <div className="space-y-1">
-                            {group.messages.map((msg) => (
-                                <MessageItem 
-                                    key={msg.id}
-                                    msg={msg}
-                                    currentUserId={currentUserId}
-                                    currentUsername={currentUsername}
-                                    onReply={handleReply}
-                                    onCopy={handleCopy}
-                                    onEdit={handleEdit}
-                                    onDelete={deleteMessage}
-                                    onOpenProfile={handleOpenProfile}
-                                />
-                            ))}
+                          {group.messages.map((chatMessage) => (
+                            <MessageItem
+                              key={chatMessage.id}
+                              msg={chatMessage}
+                              currentUserId={currentUserId}
+                              currentUsername={currentUsername}
+                              onReply={handleReply}
+                              onCopy={handleCopy}
+                              onEdit={handleEdit}
+                              onDelete={deleteMessage}
+                              onOpenProfile={handleOpenProfile}
+                            />
+                          ))}
                         </div>
                       </div>
                     ))}
@@ -483,27 +634,40 @@ export default function ChatPage() {
             </div>
           </ScrollArea>
 
-          <MessageInput 
+          {hasNewMessages && !isSearchMode && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-24 z-20 flex justify-center px-4">
+              <Button
+                type="button"
+                onClick={() => scrollToBottom("smooth")}
+                className="pointer-events-auto rounded-full shadow-lg"
+              >
+                <ArrowDown className="mr-2 h-4 w-4" />
+                New messages
+              </Button>
+            </div>
+          )}
+
+          <MessageInput
             message={message}
             channelName="Global Chat"
-            members={membersList}
             editingMessageId={editingMsgId}
             replyingMessage={replyingMsg}
             pendingAttachments={pendingAttachments}
+            mentionSuggestions={mentionSuggestions}
             isUploading={isUploading}
             uploadError={uploadError}
-            onChange={(val) => {
-                setMessage(val);
-                onDetectMention(val);
+            onChange={(value) => {
+              setMessage(value);
+              detectMention(value);
             }}
-            onSend={handleSend}
+            onSend={() => void handleSend()}
             onKeyDown={handleKeyDown}
             onEmojiSelect={onEmojiSelect}
             onCancelEdit={onCancelEdit}
             onCancelReply={onCancelReply}
             onFileSelect={handleFileSelect}
             onRemoveAttachment={handleRemoveAttachment}
-            onMentionSelect={onMentionSelect}
+            onMentionSelect={handleMentionSelect}
             mentionQuery={mentionQuery}
             mentionIndex={mentionIndex}
             setMentionIndex={setMentionIndex}
@@ -512,14 +676,14 @@ export default function ChatPage() {
 
         {isMounted && membersPanelOpen && (
           <>
-            <ChatSidebarRight 
-              members={membersList} 
-              currentUserId={currentUserId || ""} 
-              onSelectUser={(user) => handleOpenProfile(user.id)} 
+            <ChatSidebarRight
+              members={membersList}
+              currentUserId={currentUserId || ""}
+              onSelectUser={(user) => handleOpenProfile(user.id)}
             />
 
             <div className="md:hidden">
-              <div 
+              <div
                 className="fixed inset-0 bg-black/40 backdrop-blur-sm z-90 animate-in fade-in duration-300"
                 onClick={onMembersSidebarClose}
               />
@@ -534,7 +698,7 @@ export default function ChatPage() {
         )}
       </div>
 
-      <ProfileDialog 
+      <ProfileDialog
         open={showProfile}
         onOpenChange={setShowProfile}
         member={profileUser}
