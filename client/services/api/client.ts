@@ -656,6 +656,20 @@ export interface Assignment {
   };
 }
 
+export interface FeeSummaryResponse {
+  student: any;
+  totalFee: number;
+  totalPaid: number;
+  remainingAmount: number;
+  feeTransactions: any[];
+}
+
+export const feeApi = {
+  getSummary: async (): Promise<ApiResponse<FeeSummaryResponse>> => {
+    return api.get<FeeSummaryResponse>('/fee/summary');
+  },
+};
+
 export const dashboardApi = {
   getDashboard: async (): Promise<ApiResponse<DashboardData>> => {
     const token = await getAuthToken();
