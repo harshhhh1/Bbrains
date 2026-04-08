@@ -110,7 +110,8 @@ export const verifyRazorpayPayment = async (req, res) => {
     }
     
     console.error('Error verifying Razorpay payment:', error);
-    return sendError(res, 'Failed to verify payment', 500);
+    console.error('Stack:', error.stack);
+    return sendError(res, 'Failed to verify payment: ' + error.message, 500);
   }
 };
 

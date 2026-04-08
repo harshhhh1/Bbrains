@@ -158,6 +158,8 @@ export default function FeesPage() {
 
       const verifyData = await verifyResponse.json();
 
+      console.log("Verification response:", verifyResponse.status, verifyData);
+
       if (!verifyData.success) {
         throw new Error(verifyData.message || "Payment verification failed");
       }
