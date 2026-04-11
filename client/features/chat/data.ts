@@ -17,7 +17,9 @@ export interface Message {
     editedAt?: string | null
     replyTo?: { messageId: string; username: string; content: string } | null | string
     mentions?: string[]
+    mentionedUserIds?: string[]
     attachments?: { url: string; type: string; name?: string }[]
+    optimistic?: boolean
 }
 
 export interface Member {
@@ -44,6 +46,7 @@ export interface ApiMessage {
     role: string
     content: string
     mentions: string[]
+    mentionedUserIds?: string[]
     attachments?: { url: string; type: string; name?: string }[]
     replyToMessageId?: string | null
     editedAt?: string | null

@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
-import { AdminAssignment } from "../_types";
+import { AdminAssignment } from "../types";
 
 interface AssignmentsTableProps {
   assignments: AdminAssignment[];

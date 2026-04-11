@@ -56,11 +56,13 @@ model User {
   xp                 Xp?
   attendances        Attendance[]         @relation("userAttendance")
   markedAttendances  Attendance[]         @relation("markerAttendance")
-  notifications      Notification[]
+  notifications      Notification[]      @relation("NotificationRecipient")
+  notificationActors Notification[]      @relation("NotificationActor")
   suggestions        Suggestion[]
   streak             Streak?
   preference         UserPreference?
   chatMessages       ChatMessage[]
+  pushSubscriptions  PushSubscription[]
   classTeacherCourse Course?              @relation("CourseClassTeacher")
   assessments        Assessment[]         @relation("AssessmentCreator")
   assessmentResults  AssessmentResult[]   @relation("AssessmentStudent")
@@ -647,15 +649,23 @@ model UserPreference {
 model Notification {
   id        Int       @id @default(autoincrement())
   userId    String    @map("user_id")
+  actorId   String?   @map("actor_id")
   title     String    @db.VarChar(100)
   message   String?
   type      String    @db.VarChar(50) // mention, system, chat, announcement, achievement, attendance, grade
   relatedId String?   @map("related_id")
+  messageId String?   @map("message_id")
+  channelId String?   @map("channel_id") @db.VarChar(120)
+  entityUrl String?   @map("entity_url") @db.VarChar(255)
+  read      Boolean   @default(false)
   readAt    DateTime?
   createdAt DateTime  @default(now()) @map("created_at")
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?     @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([userId, readAt])
+  @@index([userId, read, type])
+  @@index([userId, channelId, read])
   @@map("notification")
 }
 
@@ -693,11 +703,26 @@ model ChatMessage {
   role        String?
   content     String   @db.Text
   mentions    Json?    @default("[]")
+  mentionedUserIds Json? @default("[]") @map("mentioned_user_ids")
   replyTo     String?  @map("reply_to")
   attachments Json?    @default("[]")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([chatId, createdAt(sort: Desc)])
   @@map("chat_messages")
+}
+
+model PushSubscription {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  endpoint  String   @unique @db.Text
+  p256dh    String   @db.Text
+  auth      String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("push_subscriptions")
 }

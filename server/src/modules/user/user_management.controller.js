@@ -586,12 +586,89 @@ export const deleteTeacher = async (req, res) => {
 // GET /users/search?name=...
 export const searchUser = async (req, res) => {
     try {
-        const { name } = req.query;
-        if (!name) return sendError(res, "Name query parameter required", 400);
+        const query = String(req.query.q || req.query.name || "").trim();
+        const channelId = String(req.query.channelId || "").trim() || (req.user.collegeId ? `global_${req.user.collegeId}` : "default");
 
-        const result = await getUserByName(name, req.user.collegeId);
-        if (!result) return sendError(res, "User not found", 404);
-        return sendSuccess(res, result);
+        if (!query) {
+            return sendSuccess(res, []);
+        }
+
+        const recentChatMembers = await prisma.chatMessage.findMany({
+            where: { chatId: channelId },
+            select: {
+                userId: true,
+                createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+            distinct: ["userId"],
+        });
+
+        const activityRank = new Map(
+            recentChatMembers.map((entry, index) => [entry.userId, index])
+        );
+
+        const users = await prisma.user.findMany({
+            where: {
+                collegeId: req.user.collegeId,
+                OR: [
+                    {
+                        username: {
+                            contains: query,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        userDetails: {
+                            is: {
+                                firstName: {
+                                    contains: query,
+                                    mode: "insensitive",
+                                },
+                            },
+                        },
+                    },
+                    {
+                        userDetails: {
+                            is: {
+                                lastName: {
+                                    contains: query,
+                                    mode: "insensitive",
+                                },
+                            },
+                        },
+                    },
+                ],
+            },
+            select: {
+                id: true,
+                username: true,
+                userDetails: {
+                    select: {
+                        avatar: true,
+                        firstName: true,
+                        lastName: true,
+                    },
+                },
+            },
+            take: 20,
+        });
+
+        const results = users
+            .map((user) => ({
+                id: user.id,
+                username: user.username,
+                displayName: `${user.userDetails?.firstName || ""} ${user.userDetails?.lastName || ""}`.trim() || user.username,
+                avatarUrl: user.userDetails?.avatar || "",
+                rank: activityRank.has(user.id) ? activityRank.get(user.id) : Number.MAX_SAFE_INTEGER,
+            }))
+            .sort((a, b) => {
+                if (a.rank !== b.rank) return a.rank - b.rank;
+                return a.username.localeCompare(b.username);
+            })
+            .slice(0, 8)
+            .map(({ rank: _rank, ...user }) => user);
+
+        return sendSuccess(res, results);
     } catch (error) {
         return sendError(res, 'Search failed', 500);
     }

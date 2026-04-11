@@ -17,20 +17,42 @@ import { formatDistanceToNow } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useNotifications } from "@/components/providers/notification-provider"
+import { usePushNotifications } from "@/hooks/usePushNotifications"
+import { toast } from "sonner"
+import type { Notification } from "@/services/api/client"
 
 export function NotificationsBell() {
+    const [mounted, setMounted] = React.useState(false)
     const { notifications, unreadCount, markRead, markAllRead } = useNotifications()
+    const { isSupported, isSubscribed, subscribe, unsubscribe, permissionState } = usePushNotifications()
     const router = useRouter()
 
-    const handleMarkRead = async (id: number, relatedId?: string, type?: string) => {
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    if (!mounted) {
+        return (
+            <Button variant="ghost" size="icon" className="relative group">
+                <Bell className="h-5 w-5" />
+            </Button>
+        )
+    }
+
+    const handleMarkRead = async (notification: Notification) => {
         try {
-            await markRead(id)
+            await markRead(notification.id)
             
             // Navigate based on type
-            if (type === 'attendance') router.push('/dashboard')
-            else if (type === 'announcement') router.push('/announcements')
-            else if (type === 'chat') router.push(`/chat?id=${relatedId}`)
-            // Add more navigation logic as needed
+            if (notification.entityUrl) {
+                router.push(notification.entityUrl)
+            } else if (notification.type === 'attendance') {
+                router.push('/dashboard')
+            } else if (notification.type === 'announcement') {
+                router.push('/announcements')
+            } else if (notification.type === 'chat' || notification.type === 'mention' || notification.type === 'reply') {
+                router.push('/chat')
+            }
         } catch (error) {
             console.error("Failed to mark notification as read:", error)
         }
@@ -50,9 +72,27 @@ export function NotificationsBell() {
             case 'achievement': return <Trophy className="h-4 w-4 text-yellow-500" />
             case 'announcement': return <Megaphone className="h-4 w-4 text-brand-orange" />
             case 'chat': return <MessageSquare className="h-4 w-4 text-green-500" />
+            case 'mention': return <MessageSquare className="h-4 w-4 text-brand-orange" />
+            case 'reply': return <MessageSquare className="h-4 w-4 text-cyan-500" />
             case 'grade': return <GraduationCap className="h-4 w-4 text-purple-500" />
             case 'system': return <Settings className="h-4 w-4 text-gray-500" />
             default: return <Info className="h-4 w-4 text-muted-foreground" />
+        }
+    }
+
+    const handlePushToggle = async () => {
+        try {
+            if (isSubscribed) {
+                await unsubscribe()
+                toast.success("Browser notifications disabled")
+            } else {
+                const didSubscribe = await subscribe()
+                if (didSubscribe) {
+                    toast.success("Browser notifications enabled")
+                }
+            }
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to update notification permissions")
         }
     }
 
@@ -72,17 +112,36 @@ export function NotificationsBell() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80 p-0 shadow-2xl">
                 <div className="flex items-center justify-between p-4 border-b border-border">
-                    <h3 className="font-bold text-sm">Notifications</h3>
-                    {unreadCount > 0 && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-7 text-[10px] uppercase font-bold tracking-wider"
-                            onClick={handleMarkAllRead}
-                        >
-                            Mark all as read
-                        </Button>
-                    )}
+                    <div>
+                        <h3 className="font-bold text-sm">Notifications</h3>
+                        <p className="text-[11px] text-muted-foreground">
+                            {isSupported
+                                ? (isSubscribed ? "Browser alerts enabled" : `Browser alerts ${permissionState === "denied" ? "blocked" : "disabled"}`)
+                                : "Push not supported on this browser"}
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {isSupported && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-[10px] uppercase font-bold tracking-wider"
+                                onClick={handlePushToggle}
+                            >
+                                {isSubscribed ? "Disable" : "Enable"}
+                            </Button>
+                        )}
+                        {unreadCount > 0 && (
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-7 text-[10px] uppercase font-bold tracking-wider"
+                                onClick={handleMarkAllRead}
+                            >
+                                Mark all as read
+                            </Button>
+                        )}
+                    </div>
                 </div>
                 
                 <ScrollArea className="h-[350px]">
@@ -102,7 +161,7 @@ export function NotificationsBell() {
                                         "p-4 transition-colors cursor-pointer hover:bg-muted/50 flex gap-3",
                                         !n.readAt && "bg-brand-orange/5"
                                     )}
-                                    onClick={() => handleMarkRead(n.id, n.relatedId, n.type)}
+                                    onClick={() => handleMarkRead(n)}
                                 >
                                     <div className={cn(
                                         "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border border-border bg-background shadow-sm"

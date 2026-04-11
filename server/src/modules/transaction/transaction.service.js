@@ -239,7 +239,7 @@ const resolveFinanceOwner = async (tx, actor) => {
         };
     }
 
-    const collegeAdmin = await tx.user.findFirst({
+    let financeOwner = await tx.user.findFirst({
         where: {
             collegeId: actor.collegeId,
             type: 'admin',
@@ -254,11 +254,28 @@ const resolveFinanceOwner = async (tx, actor) => {
         },
     });
 
-    if (!collegeAdmin) {
-        throw new Error('No admin account is available for this college to receive fee income');
+    // Fallback to SuperAdmin if no college admin exists
+    if (!financeOwner) {
+        financeOwner = await tx.user.findFirst({
+            where: {
+                type: 'superadmin',
+            },
+            orderBy: {
+                createdAt: 'asc',
+            },
+            select: {
+                id: true,
+                username: true,
+                type: true,
+            },
+        });
     }
 
-    return collegeAdmin;
+    if (!financeOwner) {
+        throw new Error('No admin or superadmin account is available to receive fee income');
+    }
+
+    return financeOwner;
 };
 
 const assertSalaryPermissions = (actor, target) => {

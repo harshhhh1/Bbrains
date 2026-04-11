@@ -1,5 +1,5 @@
 import { AuditLogClient } from "./AuditLogClient"
-import { fetchAuditLogs } from "./data"
+import { fetchAuditLogs } from "./lib/api"
 
 export default async function AuditLogPage() {
     const initialLogs = await fetchAuditLogs()

@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getSidebarGroups, resolveRole } from "./sidebarData"
 import type { Role } from "./sidebarData"
 import { UserProfileCard } from "../user-profile-card"
-import { useChatUnreadCount } from "@/hooks/use-chat-unread-count"
+import { useNotifications } from "../providers/notification-provider"
 
 interface AppSidebarProps {
     user?: {
@@ -38,8 +38,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
     const pathname = usePathname()
     const { state } = useSidebar()
     const isCollapsed = state === "collapsed"
-    const isChatRoute = pathname === "/chat" || pathname.startsWith("/chat/")
-    const { unreadCount: chatUnreadCount } = useChatUnreadCount(user?.id, isChatRoute)
+    const { chatUnreadTotal } = useNotifications()
 
     const [showProfileCard, setShowProfileCard] = useState(false)
 
@@ -91,14 +90,14 @@ export function AppSidebar({ user }: AppSidebarProps) {
                                                     >
                                                         <div className="relative">
                                                             <item.icon className={`${isCollapsed ? "h-5.5 w-5.5" : "h-5 w-5"} shrink-0 ${isActive ? "text-white" : ""}`} />
-                                                            {isChat && chatUnreadCount > 0 && isCollapsed && (
+                                    {isChat && chatUnreadTotal > 0 && isCollapsed && (
                                                                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-800" />
                                                             )}
                                                         </div>
                                                         <span className="text-[13px] group-data-[collapsible=icon]:hidden flex-1">{item.title}</span>
-                                                        {isChat && chatUnreadCount > 0 && !isCollapsed && (
+                                                        {isChat && chatUnreadTotal > 0 && !isCollapsed && (
                                                             <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
-                                                                {chatUnreadCount}
+                                                                {chatUnreadTotal > 99 ? "99+" : chatUnreadTotal}
                                                             </span>
                                                         )}
                                                     </Link>

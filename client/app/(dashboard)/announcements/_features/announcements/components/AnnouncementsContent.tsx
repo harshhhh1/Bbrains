@@ -38,12 +38,14 @@ interface AnnouncementsContentProps {
 }
 
 export function AnnouncementsContent({ initialAnnouncements, currentUser }: AnnouncementsContentProps) {
+  const ANNOUNCEMENTS_PAGE_SIZE = 10;
   const searchParams = useSearchParams();
   const highlightedId = searchParams.get('id');
   const highlightRef = useRef<HTMLDivElement>(null);
   
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
   const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(ANNOUNCEMENTS_PAGE_SIZE);
   const [newAnnouncementTitle, setNewAnnouncementTitle] = useState("");
   const [newAnnouncement, setNewAnnouncement] = useState("");
   const [posting, setPosting] = useState(false);
@@ -92,6 +94,12 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
       return matchesQuery && matchesCollege;
     }
   );
+  const visibleAnnouncements = filteredAnnouncements.slice(0, visibleCount);
+  const hasMoreAnnouncements = filteredAnnouncements.length > visibleCount;
+
+  useEffect(() => {
+    setVisibleCount(ANNOUNCEMENTS_PAGE_SIZE);
+  }, [searchQuery]);
 
   const handlePost = async () => {
     if (!newAnnouncementTitle.trim() || !newAnnouncement.trim()) return;
@@ -109,6 +117,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
       
       if (response.success && response.data) {
         setAnnouncements([response.data, ...announcements]);
+        setVisibleCount((current) => Math.max(current, ANNOUNCEMENTS_PAGE_SIZE));
         setNewAnnouncementTitle("");
         setNewAnnouncement("");
         setAttachedImage("");
@@ -125,6 +134,10 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
 
   const canCreateAnnouncement = useHasPermission("create_announcement");
   const canManageAnnouncement = useHasPermission("manage_announcement");
+  const mobileComposerOffset = "calc(4rem + env(safe-area-inset-bottom, 0px) + 0.75rem)";
+  const contentBottomPadding = canCreateAnnouncement
+    ? "calc(15rem + 4rem + env(safe-area-inset-bottom, 0px))"
+    : "8rem";
 
   const handleDeleteClick = (id: string) => {
     setAnnouncementToDelete(id);
@@ -190,7 +203,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
 
   return (
     <div className="relative min-h-[calc(100vh-8rem)] flex flex-col">
-      <div className="max-w-4xl mx-auto w-full pb-32">
+      <div className="max-w-4xl mx-auto w-full" style={{ paddingBottom: contentBottomPadding }}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
             <h2 className="text-3xl font-extrabold tracking-tight">Announcements</h2>
@@ -210,7 +223,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
 
         <div className="space-y-6">
           {filteredAnnouncements.length > 0 ? (
-            filteredAnnouncements.map((announcement, index) => {
+            visibleAnnouncements.map((announcement, index) => {
               const annId = String(announcement.id);
               const isHighlighted = annId === highlightedId && showHighlight;
               return (
@@ -319,9 +332,13 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
             </div>
           )}
 
-          {filteredAnnouncements.length > 0 && (
+          {hasMoreAnnouncements && (
             <div className="flex justify-center py-6">
-              <button className="flex items-center gap-2 text-sm font-bold text-primary hover:bg-primary/5 px-6 py-3 rounded-xl transition-colors">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((current) => current + ANNOUNCEMENTS_PAGE_SIZE)}
+                className="flex items-center gap-2 text-sm font-bold text-primary hover:bg-primary/5 px-6 py-3 rounded-xl transition-colors"
+              >
                 Load Previous Announcements
               </button>
             </div>
@@ -331,7 +348,10 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
 
       {/* Floating Chat Bar for Teachers/Admins */}
       {canCreateAnnouncement && (
-        <div className="sticky bottom-6 left-0 right-0 max-w-4xl mx-auto w-full z-10 px-4 md:px-0 pointer-events-none">
+        <div
+          className="sticky left-0 right-0 max-w-4xl mx-auto w-full z-10 px-4 md:px-0 pointer-events-none md:bottom-6"
+          style={{ bottom: mobileComposerOffset }}
+        >
           <div className="bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-xl flex flex-col gap-3 p-3 pointer-events-auto">
             {attachedImage && (
               <div className="relative w-full max-w-xs h-32 mb-1 rounded-xl overflow-hidden border border-border ml-1 mt-1">

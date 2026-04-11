@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Course } from "../_types";
+import { Course } from "../types";
 
 interface AcademicsDialogProps {
   open: boolean;
