@@ -589,6 +589,7 @@ export interface ChatMessageRecord {
   role: string;
   content: string;
   mentions: string[];
+  mentionedUserIds?: string[];
   replyToMessageId?: string | null;
   replyTo?: string | null;
   attachments: ChatAttachment[];
@@ -608,6 +609,13 @@ export interface ChatMemberProfile {
   grade: string;
   roles: string[];
   type: string;
+}
+
+export interface ChatMentionUser {
+  id: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string;
 }
 
 export interface Assignment {
@@ -655,6 +663,20 @@ export interface Assignment {
     submissions?: number;
   };
 }
+
+export interface FeeSummaryResponse {
+  student: any;
+  totalFee: number;
+  totalPaid: number;
+  remainingAmount: number;
+  feeTransactions: any[];
+}
+
+export const feeApi = {
+  getSummary: async (): Promise<ApiResponse<FeeSummaryResponse>> => {
+    return api.get<FeeSummaryResponse>('/fee/summary');
+  },
+};
 
 export const dashboardApi = {
   getDashboard: async (): Promise<ApiResponse<DashboardData>> => {
@@ -1076,25 +1098,48 @@ export const streakApi = {
 export interface Notification {
   id: number;
   userId: string;
+  actorId?: string | null;
   title: string;
   message?: string;
   type: string;
   relatedId?: string;
+  messageId?: string | null;
+  channelId?: string | null;
+  entityUrl?: string | null;
+  read?: boolean;
   readAt?: string;
   createdAt: string;
+}
+
+export interface NotificationUnreadCount {
+  count: number;
+  total: number;
+  byChannel: Record<string, number>;
 }
 
 export const notificationApi = {
   getNotifications: async (unreadOnly = false): Promise<ApiResponse<{ notifications: Notification[]; unreadCount: number }>> => {
     return api.get(`/notifications?unreadOnly=${unreadOnly}`);
   },
+  subscribePush: async (subscription: PushSubscriptionJSON): Promise<ApiResponse<{ endpoint: string }>> => {
+    return api.post('/notifications/subscribe', subscription);
+  },
+  unsubscribePush: async (endpoint: string): Promise<ApiResponse<void>> => {
+    return makeRequest<void>('/notifications/unsubscribe', {
+      method: 'DELETE',
+      body: JSON.stringify({ endpoint }),
+    });
+  },
   markRead: async (id: number): Promise<ApiResponse<void>> => {
     return api.post(`/notifications/mark-read/${id}`, {});
+  },
+  markChannelRead: async (channelId: string): Promise<ApiResponse<void>> => {
+    return api.post('/notifications/mark-read', { channelId });
   },
   markAllRead: async (): Promise<ApiResponse<void>> => {
     return api.post('/notifications/mark-all-read', {});
   },
-  getUnreadCount: async (): Promise<ApiResponse<{ count: number }>> => {
+  getUnreadCount: async (): Promise<ApiResponse<NotificationUnreadCount>> => {
     return api.get('/notifications/unread-count');
   },
 };
@@ -1430,25 +1475,34 @@ export const chatApi = {
     content: string,
     attachments: ChatAttachment[] = [],
     mentions: string[] = [],
-    replyTo?: string
+    replyTo?: string,
+    mentionedUserIds: string[] = []
   ): Promise<ApiResponse<ChatMessageRecord>> => {
     return api.post<ChatMessageRecord>('/chat/messages', {
       content,
       attachments,
       mentions,
-      replyTo
+      replyTo,
+      mentionedUserIds,
     });
   },
   deleteMessage: async (id: string): Promise<ApiResponse<void>> => {
     return api.delete<void>(`/chat/messages/${id}`);
   },
-  editMessage: async (id: string, content: string, mentions: string[] = []): Promise<ApiResponse<ChatMessageRecord>> => {
-    return api.put<ChatMessageRecord>(`/chat/messages/${id}`, { content, mentions });
+  editMessage: async (id: string, content: string, mentions: string[] = [], mentionedUserIds: string[] = []): Promise<ApiResponse<ChatMessageRecord>> => {
+    return api.put<ChatMessageRecord>(`/chat/messages/${id}`, { content, mentions, mentionedUserIds });
   },
-  searchMessages: async (query: string, limit = 50): Promise<ApiResponse<ChatMessageRecord[]>> => {
+  searchMessages: async (query: string, limit = 50, chatId?: string): Promise<ApiResponse<ChatMessageRecord[]>> => {
     const params = new URLSearchParams();
     params.append('q', query);
     params.append('limit', String(limit));
+    if (chatId) params.append('chatId', chatId);
     return api.get<ChatMessageRecord[]>(`/chat/messages/search?${params.toString()}`);
+  },
+  searchUsers: async (query: string, channelId?: string): Promise<ApiResponse<ChatMentionUser[]>> => {
+    const params = new URLSearchParams();
+    params.append('q', query);
+    if (channelId) params.append('channelId', channelId);
+    return api.get<ChatMentionUser[]>(`/user/search?${params.toString()}`);
   }
 };

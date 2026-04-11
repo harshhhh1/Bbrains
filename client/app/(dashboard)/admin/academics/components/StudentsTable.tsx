@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Pencil, Trash2 } from "lucide-react";
-import { Student } from "../_types";
+import { Student } from "../types";
 
 interface StudentsTableProps {
   students: Student[];
@@ -25,7 +25,6 @@ export function StudentsTable({ students, search, onDelete }: StudentsTableProps
     const fullName = `${s.firstName || ""} ${s.lastName || ""}`.toLowerCase();
     const username = s.username.toLowerCase();
     const email = s.email.toLowerCase();
-    // Use any property that might be relevant for search
     return fullName.includes(searchLower) || username.includes(searchLower) || email.includes(searchLower);
   });
 
@@ -56,7 +55,7 @@ export function StudentsTable({ students, search, onDelete }: StudentsTableProps
                   <div className="flex items-center gap-2">
                     <Avatar className="w-8 h-8">
                       {avatar ? (
-                        <img src={avatar} alt={`${firstName} ${lastName}`} />
+                        <AvatarImage src={avatar} alt={`${firstName} ${lastName}`} />
                       ) : (
                         <AvatarFallback className="bg-primary/10 text-primary text-xs">
                           {firstName.charAt(0)}{lastName.charAt(0) || student.username.charAt(0)}
