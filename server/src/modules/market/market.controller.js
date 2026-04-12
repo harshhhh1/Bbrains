@@ -7,6 +7,8 @@ import { sendSuccess, sendCreated, sendPaginated, sendError } from "../../utils/
 import { createAuditLog } from "../../utils/auditLog.js";
 import { z } from 'zod';
 import prisma from "../../utils/prisma.js";
+import { deleteFromCloudinary } from '../../utils/cloudinary.js';
+import { createNotification } from "../notification/notification.service.js";
 
 const approvalSchema = z.object({
   status: z.enum(['approved', 'rejected']),
@@ -183,6 +185,20 @@ export const updateProduct = async (req, res) => {
     if (updateData.imageUrl) {
       updateData.image = updateData.imageUrl;
       delete updateData.imageUrl;
+
+      // Cleanup old image
+      if (product.image && product.image !== updateData.image) {
+        deleteFromCloudinary(product.image).catch(err => 
+          console.error('Failed to cleanup old product image from Cloudinary:', err)
+        );
+      }
+    }
+
+    // Handle fileUrl cleanup for digital products if updated
+    if (updateData.fileUrl && product.metadata?.fileUrl && product.metadata.fileUrl !== updateData.fileUrl) {
+      deleteFromCloudinary(product.metadata.fileUrl).catch(err => 
+        console.error('Failed to cleanup old product file from Cloudinary:', err)
+      );
     }
 
     const updated = await updateProductSvc(id, updateData);
@@ -247,6 +263,19 @@ export const deleteProduct = async (req, res) => {
 
         if (!isCreator && !isAdmin) {
             return sendError(res, 'Unauthorized to delete this product', 403);
+        }
+
+        if (product.image) {
+            deleteFromCloudinary(product.image).catch(err => 
+                console.error('Failed to cleanup product image from Cloudinary:', err)
+            );
+        }
+
+        // Cleanup digital file if exists in metadata
+        if (product.metadata?.fileUrl) {
+            deleteFromCloudinary(product.metadata.fileUrl).catch(err => 
+                console.error('Failed to cleanup product file from Cloudinary:', err)
+            );
         }
 
         await deleteProductSvc(id);
@@ -379,6 +408,17 @@ export const approveProduct = async (req, res) => {
       'Product', id,
       null,
       validated.reason || null
+    );
+
+    // Send notification to creator
+    await createNotification(
+      product.creatorId,
+      validated.status === 'approved' ? 'Product Approved! 🎉' : 'Product Action Required',
+      validated.status === 'approved' 
+        ? `Great news! Your product "${product.name}" has been approved and is now live.`
+        : `Your product "${product.name}" was not approved. Reason: ${validated.reason || 'No detail provided.'}`,
+      'market',
+      String(product.id)
     );
 
     return sendSuccess(res, updated, `Product ${validated.status}`);

@@ -143,15 +143,15 @@ export default function AdminInstitutionPage() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <Link href="/profile" className="block">
+              <Link href="/settings" className="block">
                 <Card className="border-border/60 shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
                   <CardContent className="flex items-start justify-between gap-4 p-5">
                     <div>
                       <div className="flex items-center gap-2 text-primary">
                         <UserRound className="size-4" />
-                        <span className="text-xs font-semibold uppercase tracking-[0.16em]">Admin Profile</span>
+                        <span className="text-xs font-semibold uppercase tracking-[0.16em]">Admin Settings</span>
                       </div>
-                      <p className="mt-2 text-base font-semibold text-foreground">Open profile</p>
+                      <p className="mt-2 text-base font-semibold text-foreground">Open settings</p>
                     </div>
                     <ArrowUpRight className="size-4 text-muted-foreground" />
                   </CardContent>

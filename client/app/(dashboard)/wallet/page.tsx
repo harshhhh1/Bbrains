@@ -32,7 +32,7 @@ export default function WalletPage() {
     try {
       const [walletRes, txnRes, userRes] = await Promise.all([
         walletApi.getWallet(),
-        transactionApi.getMyTransactions(),
+        transactionApi.getMyTransactions({ limit: 100 }),
         dashboardApi.getUser(),
       ]);
 

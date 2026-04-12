@@ -108,7 +108,7 @@ const normalizeMessageRecord = (msg) => {
         content: msg.content,
         mentions: Array.isArray(msg.mentions) ? msg.mentions : msg.mentions || [],
         mentionedUserIds: Array.isArray(msg.mentionedUserIds) ? msg.mentionedUserIds : msg.mentionedUserIds || [],
-        replyToMessageId: msg.replyTo,
+        replyTo: msg.replyTo,
         attachments: Array.isArray(msg.attachments) ? msg.attachments : msg.attachments || [],
         createdAt: msg.createdAt,
         updatedAt: msg.updatedAt
@@ -247,8 +247,23 @@ export const getChatMessages = async (req, res) => {
             take: limit
         });
 
+        const parentIds = messages.map(m => m.replyTo).filter(Boolean);
+        const parents = await prisma.chatMessage.findMany({
+            where: { id: { in: parentIds } },
+            select: { id: true, username: true, content: true }
+        });
+        const parentMap = Object.fromEntries(parents.map(p => [p.id, p]));
+
         messages.reverse();
-        return sendSuccess(res, messages.map(normalizeMessageRecord));
+        const results = messages.map(m => {
+            const norm = normalizeMessageRecord(m);
+            if (m.replyTo && parentMap[m.replyTo]) {
+                norm.replyToDetails = parentMap[m.replyTo];
+            }
+            return norm;
+        });
+
+        return sendSuccess(res, results);
     } catch (error) {
         console.error("Failed to fetch chat messages:", error);
         return sendError(res, "Failed to fetch chat messages", 500);
@@ -293,7 +308,22 @@ export const searchChatMessages = async (req, res) => {
             take: limit
         });
 
-        return sendSuccess(res, messages.reverse().map(normalizeMessageRecord));
+        const parentIds = messages.map(m => m.replyTo).filter(Boolean);
+        const parents = await prisma.chatMessage.findMany({
+            where: { id: { in: parentIds } },
+            select: { id: true, username: true, content: true }
+        });
+        const parentMap = Object.fromEntries(parents.map(p => [p.id, p]));
+
+        const results = messages.reverse().map(m => {
+            const norm = normalizeMessageRecord(m);
+            if (m.replyTo && parentMap[m.replyTo]) {
+                norm.replyToDetails = parentMap[m.replyTo];
+            }
+            return norm;
+        });
+
+        return sendSuccess(res, results);
     } catch (error) {
         console.error("Failed to search chat messages:", error);
         return sendError(res, "Failed to search chat messages", 500);

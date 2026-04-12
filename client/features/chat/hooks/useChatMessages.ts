@@ -37,6 +37,10 @@ type ChatRealtimeMessage = {
     mentioned_user_ids?: string[]
     mentionedUserIds?: string[]
     attachments?: ChatAttachment[]
+    replyToDetails?: {
+        username: string
+        content: string
+    }
 }
 
 const formatMessage = (msg: ChatMessageRecord | ChatRealtimeMessage): ChatMessageDisplay => {
@@ -72,7 +76,11 @@ const formatMessage = (msg: ChatMessageRecord | ChatRealtimeMessage): ChatMessag
         date: date.toLocaleDateString(),
         createdAt: date.toISOString(),
         editedAt,
-        replyTo: replyTo ? { messageId: String(replyTo), username: '', content: String(replyTo) } : undefined,
+        replyTo: replyTo ? { 
+            messageId: String(replyTo), 
+            username: ('replyToDetails' in msg ? msg.replyToDetails?.username : '') || '', 
+            content: ('replyToDetails' in msg ? msg.replyToDetails?.content : String(replyTo)) || String(replyTo)
+        } : undefined,
         mentions: msg.mentions || [],
         mentionedUserIds,
         attachments: msg.attachments || [],

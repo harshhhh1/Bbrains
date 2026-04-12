@@ -673,3 +673,23 @@ export const searchUser = async (req, res) => {
         return sendError(res, 'Search failed', 500);
     }
 };
+export const checkUsernameAvailability = async (req, res) => {
+    try {
+        const { username } = req.params;
+        if (!username || username.trim().length <= 2) {
+            return sendSuccess(res, { available: false, message: 'Username must be more than 2 characters' });
+        }
+
+        const existing = await findUserByUsername(username);
+        
+        // If username exists and belongs to someone else, it's NOT available
+        if (existing && existing.id !== req.user.id) {
+            return sendSuccess(res, { available: false, message: 'Username is already taken' });
+        }
+
+        return sendSuccess(res, { available: true });
+    } catch (error) {
+        console.error('checkUsernameAvailability error:', error);
+        return sendError(res, 'Failed to check username', 500);
+    }
+};

@@ -1,17 +1,19 @@
 import prisma from "../../utils/prisma.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import { createNotification } from "../notification/notification.service.js";
 
 const transferFunds = async (senderId, recipientEmail, amount, note, pin) => {
     return await prisma.$transaction(async (tx) => {
-        // 1. Verify Sender Wallet & PIN
+        // ... [OMITTED PART 1 - SENDER VERIF]
         const senderWallet = await tx.wallet.findUnique({
-            where: { userId: senderId }
+            where: { userId: senderId },
+            include: { user: { select: { username: true } } }
         });
 
         if (!senderWallet) throw new Error("Sender wallet not found");
         
-        // Use bcrypt.compare for hashed PINs, or direct comparison for legacy plain-text PINs
+        // ... [OMITTED PART 2 - PIN/BALANCE]
         let pinMatch = false;
         if (senderWallet.pin && senderWallet.pin.length > 6) {
             pinMatch = await bcrypt.compare(pin, senderWallet.pin);
@@ -77,6 +79,16 @@ const transferFunds = async (senderId, recipientEmail, amount, note, pin) => {
                 primaryRecord: false,
                 note: `Received from ${senderWallet.id}: ${note || ''}`
             }
+        });
+
+        // 5. Send Notification to Recipient
+        await createNotification({
+            userId: recipientWallet.userId,
+            actorId: senderId,
+            title: 'Money Received! 💰',
+            message: `You received ₹${amount} from @${senderWallet.user.username}.${note ? ` Note: ${note}` : ""}`,
+            type: 'finance',
+            relatedId: String(creditTx.id)
         });
 
         return { debitTx, creditTx };

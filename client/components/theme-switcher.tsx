@@ -7,13 +7,12 @@ import {
   DropdownMenu, 
   DropdownMenuTrigger, 
   DropdownMenuContent, 
-  DropdownMenuItem,
-  DropdownMenuSeparator
+  DropdownMenuItem
 } from "@/components/ui/dropdown-menu"
-import { Moon, Sun, Palette, Check, Lock } from "lucide-react"
+import { Moon, Sun, Check } from "lucide-react"
 
 export function ThemeSwitcher() {
-  const { themes, hasThemeAccess, addTheme, currentTheme, setTheme, isLoaded } = useTheme()
+  const { themes, currentTheme, setTheme, isLoaded } = useTheme()
   
   if (!isLoaded) {
     return (
@@ -21,14 +20,6 @@ export function ThemeSwitcher() {
         <Sun className="h-4 w-4 animate-pulse" />
       </Button>
     )
-  }
-
-  const handlePurchaseTheme = async (themeId: string) => {
-    // TODO: Implement actual purchase flow using wallet/market system
-    // For now, simulate purchase by adding theme to user's collection
-    if (confirm(`Unlock ${themeId} theme?\nThis would normally cost some coins.`)) {
-      addTheme(themeId)
-    }
   }
 
   const activeThemeDef = themes.find(t => t.id === currentTheme)
@@ -50,7 +41,6 @@ export function ThemeSwitcher() {
           System Themes
         </div>
         {themes
-          .filter(t => t.isBuiltIn)
           .map(theme => (
             <DropdownMenuItem 
               key={theme.id}
@@ -64,46 +54,6 @@ export function ThemeSwitcher() {
               {currentTheme === theme.id && <Check className="h-4 w-4 text-brand-purple" />}
             </DropdownMenuItem>
           ))}
-        
-        <DropdownMenuSeparator />
-        
-        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-          <Palette className="h-3 w-3" />
-          Premium Themes
-        </div>
-        
-        {themes
-          .filter(theme => !theme.isBuiltIn)
-          .map(theme => {
-            const hasAccess = hasThemeAccess(theme.id)
-            const isActive = currentTheme === theme.id
-            
-            return (
-              <DropdownMenuItem 
-                key={theme.id}
-                onClick={() => {
-                  if (hasAccess) {
-                    setTheme(theme.id)
-                  } else {
-                    handlePurchaseTheme(theme.id)
-                  }
-                }}
-                className="flex items-center justify-between"
-              >
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="h-3 w-3 rounded-full border border-border" 
-                    style={{ backgroundColor: theme.variables['--primary'] }}
-                  />
-                  <span className={!hasAccess ? "text-muted-foreground" : ""}>{theme.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {!hasAccess && <Lock className="h-3 w-3 text-muted-foreground" />}
-                  {isActive && <Check className="h-4 w-4 text-brand-purple" />}
-                </div>
-              </DropdownMenuItem>
-            )
-          })}
       </DropdownMenuContent>
     </DropdownMenu>
   )

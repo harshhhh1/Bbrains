@@ -1,16 +1,25 @@
 "use client"
 
+import React, { useState, useRef } from "react"
 import Link from "next/link"
+import * as LucideIcons from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getSidebarGroups, resolveRole } from "./sidebarData"
 import type { Role } from "./sidebarData"
-import React from "react"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
 interface MobileBottomNavProps {
     user?: {
         id?: string;
         email?: string;
+        avatar?: string | null;
         imageUrl?: string;
         firstName?: string;
         lastName?: string;
@@ -29,122 +38,152 @@ interface MobileBottomNavProps {
 export function MobileBottomNav({ user }: MobileBottomNavProps) {
     const pathname = usePathname()
     const router = useRouter()
+    const [openMenu, setOpenMenu] = useState<string | null>(null)
+    const longPressTimer = useRef<NodeJS.Timeout | null>(null)
+    const isLongPress = useRef(false)
 
     const userRoles = user?.roles || [user?.appRole || user?.type || "student"].filter(Boolean)
     const resolvedRoles = resolveRole(userRoles) as Role[]
     const navItems = getSidebarGroups(resolvedRoles).flatMap(g => g.items)
 
-    return (
-        <div
-            className="md:hidden fixed bottom-0 left-0 right-0 z-[var(--z-bottom-nav)] pb-safe"
-            style={{
-                background: "linear-gradient(180deg, rgba(255,255,255,0.82) 0%, rgba(255,255,255,0.92) 100%)",
-                backdropFilter: "blur(24px) saturate(180%)",
-                WebkitBackdropFilter: "blur(24px) saturate(180%)",
-                borderTop: "1px solid rgba(0,0,0,0.06)",
-                boxShadow: "0 -4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.6)",
-            }}
-        >
-            <div className="hidden dark:block absolute inset-0 pointer-events-none"
-                style={{
-                    background: "linear-gradient(180deg, rgba(30,30,40,0.85) 0%, rgba(20,20,30,0.95) 100%)",
-                }}
-            />
+    const getInitials = () => {
+        if (!user) return "U"
+        return (user.username || "U")[0].toUpperCase()
+    }
 
-            <div className="relative z-10 flex h-16">
+    const avatarSrc = user?.avatar || user?.imageUrl || undefined;
+
+    return (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-[var(--z-bottom-nav)] pb-safe bg-background/80 backdrop-blur-xl border-t border-border shadow-[0_-1px_10px_rgba(0,0,0,0.05)] dark:shadow-none">
+            <div className="relative flex h-16 px-2">
                 <Link
-                    href="/profile"
-                    className="flex flex-col items-center justify-center w-16 h-full gap-0.5 shrink-0 select-none touch-manipulation"
+                    href="/settings"
+                    className="flex flex-col items-center justify-center w-16 h-full gap-1 shrink-0 select-none touch-manipulation"
                 >
                     <div
-                        className="rounded-full"
-                        style={{
-                            padding: "2px",
-                            border: pathname.startsWith("/profile")
-                                ? "2px solid #6C5CE7"
-                                : "2px solid transparent",
-                            transform: pathname.startsWith("/profile") ? "scale(1.1)" : "scale(1)",
-                            boxShadow: pathname.startsWith("/profile")
-                                ? "0 2px 8px rgba(108,92,231,0.25)"
-                                : "none",
-                            transition: "all 280ms cubic-bezier(0.34, 1.56, 0.64, 1)",
-                        }}
+                        className={cn(
+                            "rounded-full p-[2px] transition-all duration-300",
+                            (pathname.startsWith("/settings") || pathname.startsWith("/profile"))
+                                ? "border-2 border-primary scale-110 shadow-[0_2px_8px_rgba(var(--primary),0.25)]"
+                                : "border-2 border-transparent scale-100"
+                        )}
                     >
                         <Avatar className="w-6 h-6 rounded-full border border-background">
-                            <AvatarImage src={user?.imageUrl || undefined} className="object-cover" />
-                            <AvatarFallback className="bg-brand-purple text-white font-black text-[10px] uppercase">
-                                {user?.firstName?.[0] || user?.username?.[0] || "U"}
+                            <AvatarImage src={avatarSrc} className="object-cover" />
+                            <AvatarFallback className="bg-primary text-primary-foreground font-black text-[10px] uppercase">
+                                {getInitials()}
                             </AvatarFallback>
                         </Avatar>
                     </div>
                     <span
-                        className="text-[10px] font-black uppercase tracking-tighter"
-                        style={{
-                            color: pathname.startsWith("/profile") ? "#6C5CE7" : "var(--muted-foreground, #9ca3af)",
-                            opacity: pathname.startsWith("/profile") ? 1 : 0.6,
-                            transition: "all 280ms cubic-bezier(0.34, 1.56, 0.64, 1)",
-                        }}
+                        className={cn(
+                            "text-[10px] font-black uppercase tracking-tighter transition-all duration-300",
+                            (pathname.startsWith("/settings") || pathname.startsWith("/profile"))
+                                ? "text-primary opacity-100"
+                                : "text-muted-foreground opacity-60"
+                        )}
                     >You</span>
                 </Link>
 
                 <div className="w-px h-8 bg-border/40 self-center shrink-0" />
 
-                <div className="flex-1 flex items-center overflow-x-auto scrollbar-hide"
-                    style={{
-                        overscrollBehaviorX: "contain",
-                        WebkitOverflowScrolling: "touch",
-                    }}
-                >
+                <div className="flex-1 flex items-center overflow-x-auto scrollbar-hide px-2">
                     {navItems.map((item) => {
+                        const hasSubItems = item.subItems && item.subItems.length > 0
                         const isActive = pathname === item.url ||
-                            (item.url !== "/dashboard" && pathname.startsWith(`${item.url}/`))
-                        const Icon = item.icon
+                            (item.url !== "/dashboard" && pathname.startsWith(String(item.url)))
+                        const Icon = item.icon || (LucideIcons as any).Circle || (LucideIcons as any).HelpCircle;
+                        const url = String(item.url)
 
-                        return (
-                            <button
-                                key={item.url}
-                                type="button"
-                                className="flex flex-col items-center justify-center shrink-0 h-full gap-0.5 select-none touch-manipulation"
-                                style={{ width: 64 }}
-                                onClick={() => router.push(item.url)}
+                        const startTimer = () => {
+                            isLongPress.current = false
+                            longPressTimer.current = setTimeout(() => {
+                                if (hasSubItems) {
+                                    isLongPress.current = true
+                                    setOpenMenu(url)
+                                    if (window.navigator.vibrate) window.navigator.vibrate(50)
+                                }
+                            }, 800)
+                        }
+
+                        const endTimer = () => {
+                            if (longPressTimer.current) {
+                                clearTimeout(longPressTimer.current)
+                                longPressTimer.current = null
+                            }
+                            if (!isLongPress.current) {
+                                router.push(url)
+                            }
+                        }
+
+                        const NavButton = (
+                            <div
+                                className="flex flex-col items-center justify-center shrink-0 h-full gap-1 select-none touch-manipulation cursor-pointer"
+                                style={{ minWidth: 64 }}
+                                onPointerDown={startTimer}
+                                onPointerUp={endTimer}
+                                onPointerLeave={() => longPressTimer.current && clearTimeout(longPressTimer.current)}
+                                onContextMenu={(e) => e.preventDefault()}
                             >
                                 <div
-                                    className="rounded-xl flex items-center justify-center"
-                                    style={{
-                                        padding: isActive ? "6px" : "5px",
-                                        transform: isActive ? "scale(1.1)" : "scale(0.9)",
-                                        opacity: isActive ? 1 : 0.45,
-                                        background: isActive
-                                            ? "rgba(108,92,231,0.12)"
-                                            : "transparent",
-                                        transition: "all 280ms cubic-bezier(0.34, 1.56, 0.64, 1)",
-                                    }}
+                                    className={cn(
+                                        "rounded-xl flex items-center justify-center relative transition-all duration-300",
+                                        isActive 
+                                            ? "p-[6px] scale-110 opacity-100 bg-primary/10" 
+                                            : "p-[5px] scale-90 opacity-45 bg-transparent"
+                                    )}
                                 >
                                     <Icon
-                                        style={{
-                                            width: 20,
-                                            height: 20,
-                                            color: isActive ? "#6C5CE7" : "var(--muted-foreground, #9ca3af)",
-                                            strokeWidth: isActive ? 2.5 : 2,
-                                            transition: "color 200ms, stroke-width 200ms",
-                                        }}
+                                        className={cn(
+                                            "w-5 h-5 transition-colors duration-300",
+                                            isActive ? "text-primary stroke-[2.5]" : "text-muted-foreground stroke-2"
+                                        )}
                                     />
+                                    {hasSubItems && (
+                                        <div className="absolute -top-1 -right-1">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" />
+                                        </div>
+                                    )}
                                 </div>
                                 <span
-                                    className="text-[10px] font-bold truncate px-1"
-                                    style={{
-                                        color: isActive ? "#6C5CE7" : "var(--muted-foreground, #9ca3af)",
-                                        opacity: isActive ? 1 : 0,
-                                        transform: isActive ? "translateY(0)" : "translateY(2px)",
-                                        transition: "all 280ms cubic-bezier(0.34, 1.56, 0.64, 1)",
-                                        maxHeight: isActive ? "16px" : "0px",
-                                        overflow: "hidden",
-                                    }}
+                                    className={cn(
+                                        "text-[10px] font-bold truncate px-1 transition-all duration-300",
+                                        isActive 
+                                            ? "text-primary opacity-100 translate-y-0 max-h-4" 
+                                            : "text-muted-foreground opacity-0 translate-y-1 max-h-0"
+                                    )}
                                 >
                                     {item.title.split('/')[0]}
                                 </span>
-                            </button>
+                            </div>
                         )
+
+                        if (hasSubItems) {
+                            return (
+                                <DropdownMenu key={url} open={openMenu === url} onOpenChange={(open) => !open && setOpenMenu(null)}>
+                                    <DropdownMenuTrigger asChild>
+                                        {NavButton}
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="center" side="top" className="w-48 mb-2 rounded-2xl p-2 animate-in slide-in-from-bottom-2">
+                                        {item.subItems?.map((sub: any) => {
+                                            const SubIcon = sub.icon || (LucideIcons as any).Circle;
+                                            return (
+                                                <DropdownMenuItem 
+                                                    key={sub.url}
+                                                    className="rounded-xl focus:bg-primary/10 focus:text-primary gap-2"
+                                                    onClick={() => router.push(sub.url)}
+                                                >
+                                                    <SubIcon className="w-4 h-4" />
+                                                    {sub.title}
+                                                </DropdownMenuItem>
+                                            )
+                                        })}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )
+                        }
+
+                        return <React.Fragment key={url}>{NavButton}</React.Fragment>
                     })}
                 </div>
             </div>

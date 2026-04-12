@@ -243,6 +243,7 @@ export interface WalletData {
   id?: string;
   balance: number | string;
   pinSet?: boolean;
+  pin?: string; // Optional sensitive field for internal logic if ever needed, though kept hidden by API
   user?: {
     username?: string;
     email?: string;
@@ -592,6 +593,10 @@ export interface ChatMessageRecord {
   mentionedUserIds?: string[];
   replyToMessageId?: string | null;
   replyTo?: string | null;
+  replyToDetails?: {
+    username: string;
+    content: string;
+  };
   attachments: ChatAttachment[];
   createdAt: string;
   updatedAt?: string | null;
@@ -756,6 +761,9 @@ export const userApi = {
     bio?: string;
   }): Promise<ApiResponse<UserDetailsRecord>> => {
     return api.put<UserDetailsRecord>('/user/me/details', data);
+  },
+  checkUsername: async (username: string): Promise<ApiResponse<{ available: boolean; message?: string }>> => {
+    return api.get<{ available: boolean; message?: string }>(`/user/check-username/${encodeURIComponent(username)}`);
   },
 };
 
@@ -1433,27 +1441,6 @@ export const reviewApi = {
   },
   hasPurchased: async (productId: number): Promise<ApiResponse<{ hasPurchased: boolean }>> => {
     return api.get<{ hasPurchased: boolean }>(`/market/products/${productId}/can-review`);
-  },
-};
-
-export const themeApi = {
-  getThemes: async (page = 1, limit = 20): Promise<ApiResponse<Product[]>> => {
-    return api.get<Product[]>(`/market/themes?page=${page}&limit=${limit}`);
-  },
-  getTheme: async (id: number): Promise<ApiResponse<Product>> => {
-    return api.get(`/market/themes/${id}`);
-  },
-  buyTheme: async (productId: number, pin: string): Promise<ApiResponse<void>> => {
-    return api.post('/market/buy-now', { productId, quantity: 1, pin });
-  },
-  applyTheme: async (productId: number): Promise<ApiResponse<{ themeId: number }>> => {
-    return api.post(`/market/library/${productId}/apply`, {});
-  },
-  getActiveTheme: async (): Promise<ApiResponse<Product | null>> => {
-    return api.get('/market/library/active-theme');
-  },
-  getDownloadUrl: async (productId: number): Promise<ApiResponse<{ url: string }>> => {
-    return api.get(`/market/library/${productId}/download`);
   },
 };
 

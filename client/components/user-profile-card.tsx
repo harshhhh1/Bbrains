@@ -34,7 +34,7 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
             <div className="relative h-24 bg-linear-to-r from-brand-purple via-violet-500 to-fuchsia-400">
                 <div className="absolute top-2 right-2 flex gap-1.5">
                     <Link
-                        href="/profile"
+                        href="/settings"
                         aria-label="Edit profile"
                         className="flex items-center justify-center rounded-full bg-white/20 p-2 text-white transition-colors hover:bg-white/30"
                     >

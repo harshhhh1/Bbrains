@@ -52,7 +52,7 @@ export function StudentAssignmentsView({
         </div>
       </div>
 
-      <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as StudentAssignmentFilter)} className="space-y-4">
+      <Tabs value={activeFilter} onValueChange={(value) => setActiveFilter(value as StudentAssignmentFilter)} className="flex flex-col space-y-4">
         <TabsList>
           <TabsTrigger value="pending">Pending ({counts.pending})</TabsTrigger>
           <TabsTrigger value="completed">Completed ({counts.completed})</TabsTrigger>

@@ -149,7 +149,7 @@ const toSocketMessage = (message) => {
         role: message.role,
         content: message.content,
         mentions: message.mentions || [],
-        replyToMessageId: message.replyTo || null,
+        replyTo: message.replyTo || null,
         attachments: message.attachments || [],
         createdAt: message.createdAt,
         updatedAt: message.updatedAt || null,
@@ -261,7 +261,15 @@ export const initChatSocket = (server) => {
                     data: payloadToStore,
                 });
                 if (message) {
-                    io.to(roomName).emit("chat:new", toSocketMessage(message));
+                    const norm = toSocketMessage(message);
+                    if (message.replyTo) {
+                        const parent = await prisma.chatMessage.findUnique({
+                            where: { id: message.replyTo },
+                            select: { username: true, content: true }
+                        });
+                        if (parent) norm.replyToDetails = parent;
+                    }
+                    io.to(roomName).emit("chat:new", norm);
                 } else {
                     socket.emit("chat:error", { message: "Failed to save message" });
                 }
@@ -303,7 +311,15 @@ export const initChatSocket = (server) => {
                     },
                 });
                 if (updated) {
-                    io.to(roomName).emit("chat:edited", toSocketMessage(updated));
+                    const norm = toSocketMessage(updated);
+                    if (updated.replyTo) {
+                        const parent = await prisma.chatMessage.findUnique({
+                            where: { id: updated.replyTo },
+                            select: { username: true, content: true }
+                        });
+                        if (parent) norm.replyToDetails = parent;
+                    }
+                    io.to(roomName).emit("chat:edited", norm);
                 } else {
                     socket.emit("chat:error", { message: "Failed to edit message" });
                 }

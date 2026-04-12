@@ -2,7 +2,8 @@ import express from 'express';
 import {
     getMe, getUserByUsername, getStudents, getTeachers, getStaff,
     getStudentByUsername, getTeacherByUsername,
-    addTeacher, addStudent, addManager, getManagers, updateTeacher, updateStudent, deleteTeacher, searchUser
+    addTeacher, addStudent, addManager, getManagers, updateTeacher, updateStudent, deleteTeacher, searchUser,
+    checkUsernameAvailability
 } from './user_management.controller.js';
 import { editUser, removeUser, dailyClaim } from './user_actions.controller.js';
 import { createDetails, getMyDetails, updateMyDetails, getUserDetails } from './userDetails.controller.js';
@@ -14,6 +15,7 @@ const router = express.Router();
 // Profile
 router.get('/me', verifyToken, getMe);
 router.get('/search', verifyToken, searchUser);
+router.get('/check-username/:username', verifyToken, checkUsernameAvailability);
 
 // User Details
 router.post('/me/details', verifyToken, createDetails);

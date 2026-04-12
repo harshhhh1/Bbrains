@@ -393,7 +393,7 @@ export default function ChatView() {
                               <>
                                 {msg.replyTo && typeof msg.replyTo !== 'string' && (
                                     <p className="mb-1 text-xs text-muted-foreground border-l-2 border-primary pl-2 italic">
-                                      Replying to @{msg.replyTo.username}: {msg.replyTo.content.slice(0,30)}{msg.replyTo.content.length > 30 ? '...' : ''}
+                                      Replying to @{msg.replyTo.username || 'user'}: {msg.replyTo.content.slice(0,30)}{msg.replyTo.content.length > 30 ? '...' : ''}
                                     </p>
                                 )}
                                 <p className="text-sm text-foreground/90 wrap-break-word">{renderContent(msg.content, msg.mentions)}</p>

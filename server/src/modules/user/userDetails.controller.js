@@ -6,6 +6,7 @@ import {
 } from './userDetails.service.js';
 import { sendSuccess, sendCreated, sendError } from '../../utils/response.js';
 import { createAuditLog } from '../../utils/auditLog.js';
+import { deleteFromCloudinary } from '../../utils/cloudinary.js';
 
 // Zod Schemas
 const createDetailsSchema = z.object({
@@ -63,6 +64,18 @@ export const getMyDetails = async (req, res) => {
 export const updateMyDetails = async (req, res) => {
     try {
         const validated = updateDetailsSchema.parse(req.body);
+        
+        // If avatar is being updated, handle deletion of the old one
+        if (validated.avatar) {
+            const currentDetails = await getUserDetailsById(req.user.id);
+            if (currentDetails?.avatar && currentDetails.avatar !== validated.avatar) {
+                // Background delete, don't wait for it to block the response
+                deleteFromCloudinary(currentDetails.avatar).catch(err => 
+                    console.error('Failed to cleanup old avatar from Cloudinary:', err)
+                );
+            }
+        }
+
         const details = await updateUserDetailsRecord(req.user.id, validated);
 
         await createAuditLog(req.user.id, 'USER', 'UPDATE', 'UserDetails', details.id, { after: validated });
