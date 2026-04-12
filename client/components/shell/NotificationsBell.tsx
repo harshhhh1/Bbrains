@@ -3,7 +3,8 @@
 import React from "react"
 import { 
     Bell, Calendar, Trophy, Megaphone, 
-    Settings, MessageSquare, GraduationCap, Info
+    Settings, MessageSquare, GraduationCap, Info,
+    ShoppingCart, Wallet
 } from "lucide-react"
 import {
     DropdownMenu,
@@ -52,6 +53,10 @@ export function NotificationsBell() {
                 router.push('/announcements')
             } else if (notification.type === 'chat' || notification.type === 'mention' || notification.type === 'reply') {
                 router.push('/chat')
+            } else if (notification.type === 'market') {
+                router.push('/market')
+            } else if (notification.type === 'finance') {
+                router.push('/wallet')
             }
         } catch (error) {
             console.error("Failed to mark notification as read:", error)
@@ -75,6 +80,8 @@ export function NotificationsBell() {
             case 'mention': return <MessageSquare className="h-4 w-4 text-brand-orange" />
             case 'reply': return <MessageSquare className="h-4 w-4 text-cyan-500" />
             case 'grade': return <GraduationCap className="h-4 w-4 text-purple-500" />
+            case 'market': return <ShoppingCart className="h-4 w-4 text-emerald-500" />
+            case 'finance': return <Wallet className="h-4 w-4 text-orange-500" />
             case 'system': return <Settings className="h-4 w-4 text-gray-500" />
             default: return <Info className="h-4 w-4 text-muted-foreground" />
         }

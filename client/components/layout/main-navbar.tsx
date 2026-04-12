@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo, useState } from "react"
+import React, { useMemo } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
@@ -192,9 +192,9 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                             <DropdownMenuSeparator />
 
                             <DropdownMenuItem asChild className="cursor-pointer rounded-xl px-3 py-2.5">
-                                <Link href="/profile" className="flex items-center">
+                                <Link href="/settings" className="flex items-center">
                                     <User className="mr-2 h-4 w-4" />
-                                    <span>View Profile</span>
+                                    <span>Account Settings</span>
                                 </Link>
                             </DropdownMenuItem>
 

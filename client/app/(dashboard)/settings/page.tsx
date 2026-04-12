@@ -1,18 +1,16 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertCircle,
+  BadgeCheck,
   Camera,
-  CheckCircle2,
-  ChevronRight,
   KeyRound,
   Loader2,
   Lock,
-  Palette,
+  Mail,
+  Phone,
   Save,
   ShieldCheck,
   Sparkles,
@@ -26,53 +24,80 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload";
+import { cn } from "@/lib/utils";
 import {
   dashboardApi,
   getBaseUrl,
-  libraryApi,
-  themeApi,
   userApi,
   walletApi,
-  type LibraryItem,
   type User as ApiUser,
 } from "@/services/api/client";
-import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload";
-import { cn } from "@/lib/utils";
-import { useTheme } from "@/context/theme";
-import { UiModeToggle } from "@/components/ui-mode-toggle";
-import { useUiMode } from "@/context/ui-mode";
 
 type SettingsUser = ApiUser & {
   userDetails?: {
     firstName?: string;
     lastName?: string;
-    avatar?: string;
+    bio?: string;
+    phone?: string;
+    sex?: string;
+    avatar?: string | null;
   };
 };
 
-function readUserName(user: SettingsUser | null, key: "firstName" | "lastName" | "avatar") {
+type ProfileFormState = {
+  username: string;
+  firstName: string;
+  lastName: string;
+  bio: string;
+  phone: string;
+  sex: string;
+  avatar: string;
+};
+
+type SavingState = "profile" | "password" | "pin" | "avatar" | null;
+
+function readUserField(
+  user: SettingsUser | null,
+  key: "firstName" | "lastName" | "bio" | "phone" | "sex" | "avatar"
+) {
   if (!user) return "";
   return String(user.userDetails?.[key] ?? user[key] ?? "");
 }
 
 function getInitials(user: SettingsUser | null) {
-  const firstName = readUserName(user, "firstName");
-  const lastName = readUserName(user, "lastName");
-
-  if (firstName && lastName) {
-    return `${firstName[0]}${lastName[0]}`.toUpperCase();
-  }
-
-  if (firstName) {
-    return firstName.slice(0, 2).toUpperCase();
-  }
-
-  return (user?.username || "U").slice(0, 2).toUpperCase();
+  const username = user?.username || "U";
+  return username[0].toUpperCase();
 }
 
-function SettingsTabTrigger({
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function getRoleLabel(type?: string) {
+  if (!type) return "Member";
+  return type[0].toUpperCase() + type.slice(1);
+}
+
+function getGradeLabel(user: SettingsUser | null) {
+  return user?.classTeacherCourse?.standard || user?.enrollments?.[0]?.course?.standard || "Not assigned";
+}
+
+function profileCompletion(form: ProfileFormState) {
+  const values = [form.username, form.firstName, form.lastName, form.bio, form.phone, form.avatar];
+  const complete = values.filter((value) => value.trim().length > 0).length;
+  return Math.round((complete / values.length) * 100);
+}
+
+function TabButton({
   value,
   icon,
   label,
@@ -87,58 +112,55 @@ function SettingsTabTrigger({
     <TabsTrigger
       value={value}
       className={cn(
-        "w-full justify-start rounded-[24px] border-2 border-transparent bg-white/60 px-4 py-4 text-left shadow-sm transition-all",
-        "data-[state=active]:border-hand-pencil data-[state=active]:bg-hand-yellow data-[state=active]:shadow-hard-sm"
+        "!h-auto items-start justify-start rounded-[1.5rem] border border-transparent p-6 text-left shadow-none",
+        "data-[state=active]:border-border data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
       )}
     >
-      <div className="flex w-full items-center gap-4">
-        <div className="rounded-3xl border-2 border-hand-pencil bg-white p-2.5 text-hand-pencil">
+      <div className="flex w-full items-start gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           {icon}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="font-kalam text-2xl font-bold text-hand-pencil">{label}</p>
-          <p className="truncate font-patrick text-base text-hand-pencil/65">{note}</p>
+          <p className="text-base font-bold text-foreground">{label}</p>
+          <p className="mt-1.5 line-clamp-2 text-sm leading-6 text-muted-foreground">{note}</p>
         </div>
-        <ChevronRight className="h-4 w-4 text-hand-pencil/45" />
       </div>
     </TabsTrigger>
   );
 }
 
-function SettingsSection({
+function SectionCard({
+  icon,
   title,
   description,
-  icon,
   children,
+  className,
 }: {
+  icon: React.ReactNode;
   title: string;
   description: string;
-  icon: React.ReactNode;
   children: React.ReactNode;
+  className?: string;
 }) {
   return (
-    <Card className="overflow-hidden rounded-[30px] border-[3px] border-hand-pencil bg-white/85 shadow-hard">
-      <CardHeader className="border-b-2 border-dashed border-hand-pencil/15 pb-5">
-        <div className="flex items-start gap-4">
-          <div className="rounded-full border-[3px] border-hand-pencil bg-hand-yellow p-3 text-hand-pencil">
+    <Card className={cn("overflow-hidden border-border/60 shadow-sm", className)}>
+      <CardHeader className="p-6 md:p-8">
+        <div className="flex items-start gap-5">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
             {icon}
           </div>
-          <div>
-            <CardTitle className="font-kalam text-4xl font-bold text-hand-pencil">
-              {title}
-            </CardTitle>
-            <CardDescription className="mt-1 font-patrick text-lg text-hand-pencil/70">
-              {description}
-            </CardDescription>
+          <div className="space-y-1.5">
+            <CardTitle className="text-2xl font-bold tracking-tight">{title}</CardTitle>
+            <CardDescription className="text-base leading-relaxed">{description}</CardDescription>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6 p-6">{children}</CardContent>
+      <CardContent className="p-6 pt-0 md:p-8 md:pt-0">{children}</CardContent>
     </Card>
   );
 }
 
-function FieldGroup({
+function FieldBlock({
   label,
   hint,
   children,
@@ -149,78 +171,116 @@ function FieldGroup({
 }) {
   return (
     <div className="space-y-2">
-      <div>
-        <label className="font-patrick text-sm uppercase tracking-[0.18em] text-hand-pencil/55">
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           {label}
-        </label>
-        {hint ? (
-          <p className="mt-1 font-patrick text-sm text-hand-pencil/55">{hint}</p>
-        ) : null}
+        </p>
+        {hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
       </div>
       {children}
     </div>
   );
 }
 
+function MetricCard({ label, value, note }: { label: string; value: string; note: string }) {
+  return (
+    <div className="rounded-[1.25rem] border border-border/60 bg-background/80 p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-3 text-2xl font-bold tracking-tight text-foreground">{value}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{note}</p>
+    </div>
+  );
+}
+
+function PinSlots({
+  value,
+  onChange,
+  tone = "default",
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  tone?: "default" | "primary";
+}) {
+  return (
+    <InputOTP maxLength={6} value={value} onChange={onChange}>
+      <InputOTPGroup className="flex flex-wrap justify-center gap-2 sm:justify-start">
+        {Array.from({ length: 6 }, (_, index) => (
+          <InputOTPSlot
+            key={index}
+            index={index}
+            className={cn(
+              "h-11 w-9 rounded-xl border bg-background text-base font-semibold sm:h-12 sm:w-10",
+              tone === "primary" ? "border-primary/30" : "border-border"
+            )}
+          />
+        ))}
+      </InputOTPGroup>
+    </InputOTP>
+  );
+}
+
 export default function SettingsPage() {
   const router = useRouter();
-  const { uiMode } = useUiMode();
-  const [user, setUser] = useState<SettingsUser | null>(null);
+  const { uploadFile } = useCloudinaryUpload();
+
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
-  const [purchasedThemes, setPurchasedThemes] = useState<LibraryItem[]>([]);
-  const [activeThemeId, setActiveThemeId] = useState<string | null>(null);
-  const [username, setUsername] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [saving, setSaving] = useState<SavingState>(null);
+  const [user, setUser] = useState<SettingsUser | null>(null);
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [isPinSet, setIsPinSet] = useState(false);
+  const [form, setForm] = useState<ProfileFormState>({
+    username: "",
+    firstName: "",
+    lastName: "",
+    bio: "",
+    phone: "",
+    sex: "other",
+    avatar: "",
+  });
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [oldPin, setOldPin] = useState("");
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
-  const [isPinSetup, setIsPinSet] = useState(false);
-
-  const { uploadFile } = useCloudinaryUpload();
-  const { addTheme, setTheme } = useTheme();
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
-      const [userRes, activeThemeRes, libraryRes, walletRes] = await Promise.all([
+      const [userRes, walletRes] = await Promise.all([
         dashboardApi.getUser(),
-        themeApi.getActiveTheme(),
-        libraryApi.getLibrary("theme"),
         walletApi.getWallet(),
       ]);
 
       if (userRes.success && userRes.data) {
         const nextUser = userRes.data as SettingsUser;
         setUser(nextUser);
-        setUsername(nextUser.username || "");
-        setFirstName(readUserName(nextUser, "firstName"));
-        setLastName(readUserName(nextUser, "lastName"));
-      }
-
-      if (activeThemeRes.success && activeThemeRes.data) {
-        setActiveThemeId(String(activeThemeRes.data.id));
-      } else {
-        setActiveThemeId(null);
-      }
-
-      if (libraryRes.success && libraryRes.data) {
-        setPurchasedThemes(libraryRes.data);
-      } else {
-        setPurchasedThemes([]);
+        setForm({
+          username: nextUser.username || "",
+          firstName: readUserField(nextUser, "firstName"),
+          lastName: readUserField(nextUser, "lastName"),
+          bio: readUserField(nextUser, "bio"),
+          phone: readUserField(nextUser, "phone"),
+          sex: readUserField(nextUser, "sex") || "other",
+          avatar: readUserField(nextUser, "avatar"),
+        });
       }
 
       if (walletRes.success && walletRes.data) {
+        setWalletBalance(Number(walletRes.data.balance || 0));
         setIsPinSet(Boolean(walletRes.data.pinSet));
+      } else {
+        setWalletBalance(0);
+        setIsPinSet(false);
       }
     } catch (error) {
-      console.error("Failed to load settings:", error);
-      toast.error("Failed to sync settings");
+      console.error("Failed to load settings data:", error);
+      toast.error("Failed to load settings");
     } finally {
       setLoading(false);
     }
@@ -230,31 +290,147 @@ export default function SettingsPage() {
     loadData();
   }, [loadData]);
 
-  const handleUpdateProfile = async () => {
+  useEffect(() => {
+    const checkUsername = async () => {
+      const username = form.username.trim();
+      
+      if (!username) {
+        setUsernameError("Username is required");
+        return;
+      }
+
+      if (username.length < 3) {
+        setUsernameError("Username must be at least 3 characters");
+        return;
+      }
+
+      // If it's the current username, no need to check
+      if (username === user?.username) {
+        setUsernameError(null);
+        return;
+      }
+
+      setIsCheckingUsername(true);
+      try {
+        const response = await userApi.checkUsername(username);
+        if (response.success && response.data) {
+          if (response.data.available) {
+            setUsernameError(null);
+          } else {
+            setUsernameError(response.data.message || "Username is already taken");
+          }
+        }
+      } catch (error) {
+        console.error("Failed to check username:", error);
+      } finally {
+        setIsCheckingUsername(false);
+      }
+    };
+
+    const timeoutId = setTimeout(checkUsername, 500);
+    return () => clearTimeout(timeoutId);
+  }, [form.username, user?.username]);
+
+  const displayName = useMemo(() => {
+    const fullName = `${form.firstName} ${form.lastName}`.trim();
+    return fullName || form.username || user?.username || "User";
+  }, [form.firstName, form.lastName, form.username, user?.username]);
+
+  const roleLabel = getRoleLabel(user?.type);
+  const completion = profileCompletion(form);
+  const achievementCount = user?.userAchievements?.length || 0;
+  const level = Number(user?.xp?.level || 1);
+  const gradeLabel = getGradeLabel(user);
+  const canSubmitPin = /^\d{6}$/.test(newPin) && /^\d{6}$/.test(confirmPin) && (!isPinSet || /^\d{6}$/.test(oldPin));
+  const canSaveProfile = !usernameError && !isCheckingUsername;
+
+  const handleProfileSave = async () => {
     if (!user) return;
 
-    setUpdating(true);
-    try {
-      const profileRes = await userApi.updateProfile(user.id, { username });
-      const detailsRes = await userApi.updateDetails({ firstName, lastName });
+    const nextUsername = form.username.trim();
+    if (!nextUsername) {
+      toast.error("Username required");
+      return;
+    }
 
-      if (profileRes.success && detailsRes.success) {
-        toast.success("Profile updated successfully");
-        loadData();
-        router.refresh();
-      } else {
-        toast.error(profileRes.message || detailsRes.message || "Update failed");
+    setSaving("profile");
+    try {
+      if (nextUsername !== user.username) {
+        const profileRes = await userApi.updateProfile(user.id, { username: nextUsername });
+        if (!profileRes.success) {
+          toast.error(profileRes.message || "Failed to update username");
+          return;
+        }
       }
-    } catch {
-      toast.error("An error occurred");
+
+      const detailsRes = await userApi.updateDetails({
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        bio: form.bio.trim(),
+        phone: form.phone.trim(),
+        sex: form.sex,
+        avatar: form.avatar || undefined,
+      });
+
+      if (!detailsRes.success) {
+        toast.error(detailsRes.message || "Failed to update profile");
+        return;
+      }
+
+      toast.success("Profile settings updated");
+      await loadData();
+      router.refresh();
+    } catch (error) {
+      console.error("Profile update failed:", error);
+      toast.error("Failed to update profile");
     } finally {
-      setUpdating(false);
+      setSaving(null);
     }
   };
 
-  const handleUpdatePassword = async () => {
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setSaving("avatar");
+    try {
+      toast.loading("Uploading avatar...", { id: "settings-avatar-upload" });
+      const url = await uploadFile(file);
+
+      if (!url) {
+        toast.error("Upload failed", { id: "settings-avatar-upload" });
+        return;
+      }
+
+      const response = await userApi.updateDetails({ avatar: url });
+      if (!response.success) {
+        toast.error(response.message || "Failed to save avatar", {
+          id: "settings-avatar-upload",
+        });
+        return;
+      }
+
+      setForm((current) => ({ ...current, avatar: url }));
+      toast.success("Avatar updated", { id: "settings-avatar-upload" });
+      await loadData();
+      router.refresh();
+    } catch (error) {
+      console.error("Avatar upload failed:", error);
+      toast.error("Upload failed", { id: "settings-avatar-upload" });
+    } finally {
+      event.target.value = "";
+      setSaving(null);
+    }
+  };
+
+  const handlePasswordUpdate = async () => {
     if (!currentPassword) {
-      toast.error("Enter your current password");
+      toast.error("Enter current password");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error("Password needs 6 characters");
       return;
     }
 
@@ -263,18 +439,13 @@ export default function SettingsPage() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
-
-    setUpdating(true);
+    setSaving("password");
     try {
       const response = await fetch(`${getBaseUrl()}/auth/password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword, newPassword }),
         credentials: "include",
+        body: JSON.stringify({ currentPassword, newPassword }),
       });
 
       const data = await response.json();
@@ -282,1055 +453,518 @@ export default function SettingsPage() {
         throw new Error(data.message || "Failed to update password");
       }
 
-      toast.success("Password updated successfully");
+      toast.success("Password updated");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to update password");
     } finally {
-      setUpdating(false);
+      setSaving(null);
     }
   };
 
-  const handleUpdatePin = async () => {
+  const handlePinUpdate = async () => {
+    if (!/^\d{6}$/.test(newPin)) {
+      toast.error("PIN needs 6 digits");
+      return;
+    }
+
     if (newPin !== confirmPin) {
-      toast.error("PINs do not match");
+      toast.error("PIN values do not match");
       return;
     }
 
-    if (newPin.length !== 6) {
-      toast.error("PIN must be 6 digits");
-      return;
-    }
-
-    setUpdating(true);
+    setSaving("pin");
     try {
-      const response = isPinSetup
+      const response = isPinSet
         ? await walletApi.changePin(oldPin, newPin)
         : await walletApi.setupPin(newPin);
 
-      if (response.success) {
-        toast.success(isPinSetup ? "PIN changed successfully" : "PIN set successfully");
-        setOldPin("");
-        setNewPin("");
-        setConfirmPin("");
-        setIsPinSet(true);
-      } else {
+      if (!response.success) {
         toast.error(response.message || "Failed to update PIN");
-      }
-    } catch {
-      toast.error("An error occurred");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleApplyTheme = async (themeId: number) => {
-    try {
-      setUpdating(true);
-      const response = await themeApi.applyTheme(themeId);
-      if (response.success) {
-        addTheme(String(themeId));
-        setTheme(String(themeId));
-        setActiveThemeId(String(themeId));
-        toast.success("Theme applied");
-      } else {
-        toast.error(response.message || "Failed to apply theme");
-      }
-    } catch {
-      toast.error("Error applying theme");
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    try {
-      toast.loading("Uploading avatar...", { id: "avatar-upload" });
-      const url = await uploadFile(file);
-      if (!url) {
-        toast.error("Upload failed", { id: "avatar-upload" });
         return;
       }
 
-      const response = await userApi.updateDetails({ avatar: url });
-      if (response.success) {
-        toast.success("Avatar updated", { id: "avatar-upload" });
-        loadData();
-        router.refresh();
-      } else {
-        toast.error("Failed to save avatar", { id: "avatar-upload" });
-      }
-    } catch {
-      toast.error("Upload failed", { id: "avatar-upload" });
+      toast.success(isPinSet ? "Wallet PIN updated" : "Wallet PIN created");
+      setOldPin("");
+      setNewPin("");
+      setConfirmPin("");
+      setIsPinSet(true);
+    } catch (error) {
+      console.error("PIN update failed:", error);
+      toast.error("Failed to update PIN");
+    } finally {
+      setSaving(null);
     }
   };
 
   if (loading) {
     return (
-      <DashboardContent>
-        <div className="flex h-[70vh] flex-col items-center justify-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
-          <p className="font-patrick text-lg text-hand-pencil/65">
-            Initializing your settings workspace...
-          </p>
+      <DashboardContent maxWidth="max-w-7xl">
+        <div className="flex min-h-[70vh] flex-col items-center justify-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading settings workspace...</p>
         </div>
       </DashboardContent>
     );
   }
 
-  const fullName = `${readUserName(user, "firstName")} ${readUserName(user, "lastName")}`.trim();
-  const displayName = fullName || user?.username || "User";
-  const roleLabel = user?.type ? user.type[0].toUpperCase() + user.type.slice(1) : "Member";
-  const avatar = readUserName(user, "avatar");
-  const previewUsername = username.trim() || user?.username || "user";
-  const previewDisplayName = `${firstName.trim()} ${lastName.trim()}`.trim() || previewUsername;
-  const avatarSrc = avatar || undefined;
-
-  if (uiMode === "classic") {
-    return (
-      <SettingsPageClassicView
-        user={user}
-        username={username}
-        firstName={firstName}
-        lastName={lastName}
-        currentPassword={currentPassword}
-        newPassword={newPassword}
-        confirmPassword={confirmPassword}
-        oldPin={oldPin}
-        newPin={newPin}
-        confirmPin={confirmPin}
-        isPinSetup={isPinSetup}
-        purchasedThemes={purchasedThemes}
-        activeThemeId={activeThemeId}
-        updating={updating}
-        avatar={avatar}
-        previewUsername={previewUsername}
-        previewDisplayName={previewDisplayName}
-        setUsername={setUsername}
-        setFirstName={setFirstName}
-        setLastName={setLastName}
-        setCurrentPassword={setCurrentPassword}
-        setNewPassword={setNewPassword}
-        setConfirmPassword={setConfirmPassword}
-        setOldPin={setOldPin}
-        setNewPin={setNewPin}
-        setConfirmPin={setConfirmPin}
-        handleAvatarUpload={handleAvatarUpload}
-        handleUpdateProfile={handleUpdateProfile}
-        handleUpdatePassword={handleUpdatePassword}
-        handleUpdatePin={handleUpdatePin}
-        handleApplyTheme={handleApplyTheme}
-      />
-    );
-  }
-
   return (
-    <DashboardContent maxWidth="max-w-6xl" className="space-y-8">
-      <div className="relative overflow-hidden rounded-[42px] border-[3px] border-hand-pencil bg-hand-paper bg-paper-texture bg-size-[18px_18px] p-5 shadow-[10px_10px_0px_0px_rgba(45,45,45,0.12)] md:p-8">
-        <div className="absolute -left-10 top-20 h-40 w-40 rounded-full bg-hand-yellow/60 blur-3xl" />
-        <div className="absolute right-0 top-0 h-48 w-48 rounded-full bg-hand-blue/10 blur-3xl" />
-
-        <section className="relative mb-8 rounded-[34px] border-[3px] border-hand-pencil bg-white/80 p-6 shadow-hard md:p-8">
+    <DashboardContent maxWidth="max-w-7xl" className="space-y-6">
+      <section className="relative overflow-hidden rounded-[2rem] border border-border/60 bg-card shadow-sm">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.18),transparent_35%),radial-gradient(circle_at_right,rgba(16,185,129,0.12),transparent_30%)]" />
+        <div className="relative flex flex-col gap-8 p-6 md:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="flex flex-1 flex-col gap-6 md:flex-row md:items-center">
+            <div className="flex flex-1 flex-col gap-5 md:flex-row md:items-center">
               <div className="relative">
-                <Avatar className="h-28 w-28 rounded-[30px] border-4 border-white bg-white shadow-[8px_8px_0px_0px_rgba(45,45,45,0.12)] md:h-32 md:w-32">
-                  <AvatarImage src={avatar || undefined} className="object-cover" />
-                  <AvatarFallback
-                    name={user?.username}
-                    className="bg-hand-blue text-3xl font-bold text-white"
-                  >
+                <Avatar className="h-24 w-24 rounded-[1.75rem] border-4 border-background shadow-lg md:h-28 md:w-28">
+                  <AvatarImage src={form.avatar || undefined} className="object-cover" />
+                  <AvatarFallback name={user?.username} className="rounded-[1.55rem] bg-primary text-2xl font-bold text-primary-foreground">
                     {getInitials(user)}
                   </AvatarFallback>
                 </Avatar>
                 <label
                   htmlFor="settings-avatar-upload"
-                  className="absolute -bottom-2 -right-2 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-[3px] border-hand-pencil bg-hand-yellow shadow-hard-sm"
+                  className="absolute -bottom-2 -right-2 flex h-11 w-11 cursor-pointer items-center justify-center rounded-2xl border border-border bg-background text-primary shadow-sm transition-transform hover:scale-105"
                 >
-                  <Camera className="h-4 w-4 text-hand-pencil" />
+                  {saving === "avatar" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
                   <input
                     id="settings-avatar-upload"
                     type="file"
-                    className="hidden"
                     accept="image/*"
+                    className="hidden"
                     onChange={handleAvatarUpload}
                   />
                 </label>
               </div>
 
               <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Badge className="border-0 bg-hand-yellow px-3 py-1 font-patrick text-sm text-hand-pencil">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge className="border-none bg-primary/10 px-3 py-1 text-primary">
                     <Sparkles className="mr-1 h-3.5 w-3.5" />
-                    Settings control center
+                    Unified settings
                   </Badge>
-                  <Badge className="border-0 bg-hand-blue px-3 py-1 font-patrick text-sm text-white">
+                  <Badge variant="secondary" className="px-3 py-1">
                     {roleLabel}
                   </Badge>
                 </div>
+
                 <div>
-                  <h1 className="font-kalam text-4xl font-bold text-hand-pencil md:text-5xl">
+                  <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
                     Settings
                   </h1>
-                  <p className="mt-2 font-patrick text-xl text-hand-pencil/75">
-                    Manage identity, passwords, wallet protection, and workspace theme from one place.
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground md:text-base">
+                    Manage profile identity, contact details, password, wallet PIN, and workspace appearance from one page.
                   </p>
                 </div>
-                <p className="font-patrick text-lg text-hand-pencil/65">
-                  Signed in as <span className="font-semibold text-hand-pencil">{displayName}</span> @{user?.username}
-                </p>
+
+                <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">{displayName}</span>
+                  <span className="h-1 w-1 rounded-full bg-border" />
+                  <span>@{form.username || user?.username}</span>
+                  <span className="h-1 w-1 rounded-full bg-border" />
+                  <span>{user?.email}</span>
+                </div>
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              {[
-                { label: "Profile", value: "Editable", tint: "bg-hand-yellow/35" },
-                { label: "Security", value: "Protected", tint: "bg-blue-50" },
-                { label: "Themes", value: `${purchasedThemes.length} owned`, tint: "bg-emerald-50" },
-              ].map((item) => (
-                <div
-                  key={item.label}
-                  className={cn("rounded-[22px] border-[3px] border-hand-pencil px-4 py-3 shadow-hard-sm", item.tint)}
-                >
-                  <p className="font-patrick text-sm uppercase tracking-[0.18em] text-hand-pencil/55">
-                    {item.label}
-                  </p>
-                  <p className="mt-2 font-kalam text-2xl font-bold text-hand-pencil">
-                    {item.value}
-                  </p>
-                </div>
-              ))}
+              <MetricCard label="Completion" value={`${completion}%`} note="Profile readiness" />
+              <MetricCard label="Wallet" value={formatCurrency(walletBalance)} note={isPinSet ? "PIN protected" : "PIN missing"} />
+              <MetricCard label="Grade" value={gradeLabel} note="Current class level" />
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <Tabs defaultValue="profile" className="w-full">
-          <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-            <div className="space-y-5">
-              <div className="rounded-[30px] border-[3px] border-hand-pencil bg-white/85 p-5 shadow-hard">
-                <p className="font-patrick text-sm uppercase tracking-[0.18em] text-hand-pencil/55">
-                  Navigation
-                </p>
-                <h2 className="mt-2 font-kalam text-3xl font-bold text-hand-pencil">
-                  Choose a panel
-                </h2>
-                <p className="mt-2 font-patrick text-lg text-hand-pencil/70">
-                  Each section keeps one job clear and easy to manage.
-                </p>
-              </div>
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="grid !h-auto w-full grid-cols-1 gap-5 rounded-[2.5rem] border border-border/60 bg-card p-5 md:grid-cols-3">
+          <TabButton
+            value="profile"
+            icon={<User className="h-5 w-5" />}
+            label="Profile"
+            note="Avatar, username, bio, account details"
+          />
+          <TabButton
+            value="security"
+            icon={<Lock className="h-5 w-5" />}
+            label="Security"
+            note="Password controls and account safety checks"
+          />
+          <TabButton
+            value="wallet"
+            icon={<Wallet className="h-5 w-5" />}
+            label="Wallet PIN"
+            note="Protect payments and wallet confirmations"
+          />
+        </TabsList>
 
-              <TabsList className="flex h-auto flex-col gap-3 bg-transparent p-0">
-                <SettingsTabTrigger
-                  value="profile"
-                  icon={<User className="h-5 w-5" />}
-                  label="Profile"
-                  note="Username, name, and avatar"
-                />
-                <SettingsTabTrigger
-                  value="security"
-                  icon={<Lock className="h-5 w-5" />}
-                  label="Security"
-                  note="Password and account access"
-                />
-                <SettingsTabTrigger
-                  value="wallet"
-                  icon={<Wallet className="h-5 w-5" />}
-                  label="Wallet PIN"
-                  note="Protect payment actions"
-                />
-                <SettingsTabTrigger
-                  value="appearance"
-                  icon={<Palette className="h-5 w-5" />}
-                  label="Appearance"
-                  note="Theme and workspace style"
-                />
-              </TabsList>
-            </div>
+        <TabsContent value="profile" className="mt-0 space-y-6">
+          <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+              <SectionCard
+                icon={<User className="h-5 w-5" />}
+                title="Profile details"
+                description="Keep your profile complete and easy to recognize across Bbrains."
+              >
+                <div className="grid gap-5 md:grid-cols-2">
+                  <FieldBlock label="Username" hint="Used in mentions and quick search.">
+                    <div className="relative">
+                      <Input
+                        value={form.username}
+                        onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))}
+                        className={cn(
+                          "h-12 pr-10",
+                          usernameError ? "border-destructive focus-visible:ring-destructive/20" : 
+                          (form.username.length >= 3 && form.username !== user?.username ? "border-emerald-500/50 focus-visible:ring-emerald-500/20" : "")
+                        )}
+                      />
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        {isCheckingUsername ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        ) : usernameError ? (
+                          <AlertCircle className="h-4 w-4 text-destructive" />
+                        ) : form.username.length >= 3 && form.username !== user?.username ? (
+                          <BadgeCheck className="h-4 w-4 text-emerald-500" />
+                        ) : null}
+                      </div>
+                    </div>
+                    {usernameError && (
+                      <p className="px-1 text-[12px] font-medium text-destructive transition-all">
+                        {usernameError}
+                      </p>
+                    )}
+                  </FieldBlock>
 
-            <div className="min-w-0">
-              <TabsContent value="profile" className="mt-0 space-y-6">
-                <SettingsSection
-                  title="Identity and profile"
-                  description="Update the public identity your classmates, staff, and dashboard use."
-                  icon={<User className="h-5 w-5" />}
+                  <FieldBlock label="Email" hint="Primary account identity.">
+                    <Input value={user?.email || ""} disabled className="h-12 bg-muted/60" />
+                  </FieldBlock>
+
+                  <FieldBlock label="First name">
+                    <Input
+                      value={form.firstName}
+                      disabled
+                      className="h-12 bg-muted/60"
+                    />
+                  </FieldBlock>
+
+                  <FieldBlock label="Last name">
+                    <Input
+                      value={form.lastName}
+                      disabled
+                      className="h-12 bg-muted/60"
+                    />
+                  </FieldBlock>
+
+                  <FieldBlock label="Phone number">
+                    <Input
+                      value={form.phone}
+                      disabled
+                      className="h-12 bg-muted/60"
+                      placeholder="+91 98765 43210"
+                    />
+                  </FieldBlock>
+                  <FieldBlock label="Gender">
+                    <Input
+                      value={form.sex?.charAt(0).toUpperCase() + form.sex?.slice(1)}
+                      disabled
+                      className="h-12 bg-muted/60"
+                    />
+                  </FieldBlock>
+
+                  <div className="md:col-span-2">
+                    <FieldBlock label="Bio" hint="Short profile summary visible in account surfaces.">
+                      <Textarea
+                        value={form.bio}
+                        onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))}
+                        rows={5}
+                        placeholder="Tell classmates and staff a little about you."
+                        className="resize-none"
+                      />
+                    </FieldBlock>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <Button
+                    onClick={handleProfileSave}
+                    disabled={(saving !== null && saving !== "profile") || !canSaveProfile}
+                    className="h-11 w-full rounded-xl px-6 sm:w-auto font-semibold"
+                  >
+                    {saving === "profile" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save profile changes
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </SectionCard>
+
+              <div className="space-y-6">
+                <SectionCard
+                  icon={<BadgeCheck className="h-5 w-5" />}
+                  title="Profile preview"
+                  description="Quick view of how your account details currently read."
                 >
-                  <div className="grid gap-6 md:grid-cols-[200px_minmax(0,1fr)]">
-                    <div className="rounded-[26px] border-2 border-hand-pencil/15 bg-hand-paper p-5 text-center">
-                      <Avatar className="mx-auto h-28 w-28 items-center justify-center rounded-[28px] border-4 border-white bg-white shadow-[6px_6px_0px_0px_rgba(45,45,45,0.10)]">
-                        <AvatarImage src={avatarSrc} className="object-cover" />
-                        <AvatarFallback name={previewUsername} className="bg-hand-blue text-3xl font-bold text-white">
+                  <div className="space-y-5">
+                    <div className="flex flex-col gap-4 rounded-[1.25rem] border border-border/60 bg-background/75 p-4 sm:flex-row sm:items-start">
+                      <Avatar className="h-20 w-20 rounded-[1.5rem] border border-border">
+                        <AvatarImage src={form.avatar || undefined} className="object-cover" />
+                        <AvatarFallback name={user?.username} className="rounded-[1.35rem] bg-primary text-xl font-bold text-primary-foreground">
                           {getInitials(user)}
                         </AvatarFallback>
                       </Avatar>
-                      <p className="mt-4 font-kalam text-3xl font-bold text-hand-pencil">
-                        {previewDisplayName}
-                      </p>
-                      <p className="font-patrick text-base text-hand-pencil/65">@{previewUsername}</p>
-                      <label
-                        htmlFor="profile-tab-avatar"
-                        className="mt-4 inline-flex cursor-pointer items-center rounded-3xl border-[3px] border-hand-pencil bg-white px-4 py-2 font-patrick text-base text-hand-pencil shadow-hard-sm"
-                      >
-                        <Camera className="mr-2 h-4 w-4" />
-                        Change avatar
-                        <input
-                          id="profile-tab-avatar"
-                          type="file"
-                          className="hidden"
-                          accept="image/*"
-                          onChange={handleAvatarUpload}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="grid gap-5">
-                      <div className="grid gap-5 md:grid-cols-2">
-                        <FieldGroup label="Public username">
-                          <Input
-                            value={username}
-                            onChange={(event) => setUsername(event.target.value)}
-                            className="h-12 rounded-[18px] border-2 border-hand-pencil/20 bg-white font-patrick text-base shadow-none"
-                          />
-                        </FieldGroup>
-
-                        <FieldGroup label="Email address" hint="Read-only identity for login">
-                          <Input
-                            value={user?.email || ""}
-                            disabled
-                            className="h-12 rounded-[18px] border-2 border-hand-pencil/15 bg-hand-paper font-patrick text-base opacity-70 shadow-none"
-                          />
-                        </FieldGroup>
-                      </div>
-
-                      <div className="grid gap-5 md:grid-cols-2">
-                        <FieldGroup label="First name">
-                          <Input
-                            value={firstName}
-                            onChange={(event) => setFirstName(event.target.value)}
-                            className="h-12 rounded-[18px] border-2 border-hand-pencil/20 bg-white font-patrick text-base shadow-none"
-                          />
-                        </FieldGroup>
-
-                        <FieldGroup label="Last name">
-                          <Input
-                            value={lastName}
-                            onChange={(event) => setLastName(event.target.value)}
-                            className="h-12 rounded-[18px] border-2 border-hand-pencil/20 bg-white font-patrick text-base shadow-none"
-                          />
-                        </FieldGroup>
-                      </div>
-
-                      <div className="rounded-[24px] border-2 border-dashed border-hand-pencil/20 bg-hand-yellow/20 p-4">
-                        <div className="flex items-start gap-3">
-                          <CheckCircle2 className="mt-0.5 h-5 w-5 text-hand-pencil" />
-                          <p className="font-patrick text-lg text-hand-pencil/75">
-                            These details update the identity shown across the LMS, dashboards, and profile surfaces.
-                          </p>
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <p className="text-xl font-bold tracking-tight text-foreground">{displayName}</p>
+                        <p className="text-sm text-muted-foreground">@{form.username || user?.username}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="secondary">{roleLabel}</Badge>
+                          <Badge variant="outline">{gradeLabel}</Badge>
+                          <Badge variant="outline">{isPinSet ? "Wallet PIN active" : "Wallet PIN missing"}</Badge>
                         </div>
                       </div>
+                    </div>
 
-                      <div className="flex justify-end">
-                        <Button
-                          onClick={handleUpdateProfile}
-                          disabled={updating}
-                          className="h-12 rounded-[18px] border-[3px] border-hand-pencil bg-hand-yellow px-6 font-patrick text-base text-hand-pencil shadow-hard-sm hover:bg-hand-yellow/90"
-                        >
-                          {updating ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <Save className="mr-2 h-4 w-4" />
-                              Save profile
-                            </>
-                          )}
-                        </Button>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <MetricCard label="Level" value={`Lv ${level}`} note="Current account level" />
+                      <MetricCard label="Grade" value={gradeLabel} note="Assigned class level" />
+                      <MetricCard label="Achievements" value={String(achievementCount)} note="Unlocked milestones" />
+                      <MetricCard label="Wallet" value={formatCurrency(walletBalance)} note="Current balance" />
+                    </div>
+                  </div>
+                </SectionCard>
+
+                <SectionCard
+                  icon={<Mail className="h-5 w-5" />}
+                  title="Account summary"
+                  description="Read-only account context helpful while updating profile details."
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3 rounded-[1.1rem] border border-border/60 bg-background/70 p-4">
+                      <Mail className="mt-0.5 h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Email address</p>
+                        <p className="text-sm text-muted-foreground">{user?.email}</p>
                       </div>
                     </div>
-                  </div>
-                </SettingsSection>
-              </TabsContent>
-
-              <TabsContent value="security" className="mt-0 space-y-6">
-                <SettingsSection
-                  title="Password and access"
-                  description="Use a strong current password and rotate credentials when you need to secure your account."
-                  icon={<Lock className="h-5 w-5" />}
-                >
-                  <div className="rounded-[24px] border-2 border-hand-pencil/15 bg-amber-50 p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="mt-0.5 h-5 w-5 text-amber-700" />
-                      <p className="font-patrick text-lg text-hand-pencil/75">
-                        Password change now uses your actual current password for verification before saving a new one.
-                      </p>
+                    <div className="flex items-start gap-3 rounded-[1.1rem] border border-border/60 bg-background/70 p-4">
+                      <Phone className="mt-0.5 h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Phone</p>
+                        <p className="text-sm text-muted-foreground">{form.phone || "Not provided yet"}</p>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="grid gap-5 md:grid-cols-2">
-                    <FieldGroup label="Current password">
-                      <Input
-                        type="password"
-                        value={currentPassword}
-                        onChange={(event) => setCurrentPassword(event.target.value)}
-                        placeholder="Enter current password"
-                        className="h-12 rounded-[18px] border-2 border-hand-pencil/20 bg-white font-patrick text-base shadow-none"
-                      />
-                    </FieldGroup>
-
-                    <FieldGroup label="New password" hint="Minimum 6 characters">
-                      <Input
-                        type="password"
-                        value={newPassword}
-                        onChange={(event) => setNewPassword(event.target.value)}
-                        placeholder="Create a stronger password"
-                        className="h-12 rounded-[18px] border-2 border-hand-pencil/20 bg-white font-patrick text-base shadow-none"
-                      />
-                    </FieldGroup>
-                  </div>
-
-                  <FieldGroup label="Confirm new password">
-                    <Input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(event) => setConfirmPassword(event.target.value)}
-                      placeholder="Repeat the new password"
-                      className="h-12 rounded-[18px] border-2 border-hand-pencil/20 bg-white font-patrick text-base shadow-none"
-                    />
-                  </FieldGroup>
-
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={handleUpdatePassword}
-                      disabled={updating || !currentPassword || !newPassword || !confirmPassword}
-                      className="h-12 rounded-[18px] border-[3px] border-hand-pencil bg-hand-blue px-6 font-patrick text-base text-white shadow-hard-sm hover:bg-hand-blue/90"
-                    >
-                      {updating ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <KeyRound className="mr-2 h-4 w-4" />
-                          Update password
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </SettingsSection>
-              </TabsContent>
-
-              <TabsContent value="wallet" className="mt-0 space-y-6">
-                <SettingsSection
-                  title="Wallet protection"
-                  description="Lock transfers and purchases behind a six-digit PIN that only you know."
-                  icon={<ShieldCheck className="h-5 w-5" />}
-                >
-                  <div className="grid gap-8">
-                    {isPinSetup ? (
-                      <FieldGroup label="Current PIN">
-                        <InputOTP maxLength={6} value={oldPin} onChange={setOldPin}>
-                          <InputOTPGroup className="gap-2">
-                            {Array.from({ length: 6 }, (_, index) => (
-                              <InputOTPSlot
-                                key={index}
-                                index={index}
-                                className="h-12 w-11 rounded-[14px] border-2 border-hand-pencil/20 bg-white font-bold text-hand-pencil"
-                              />
-                            ))}
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </FieldGroup>
-                    ) : (
-                      <div className="rounded-[24px] border-2 border-dashed border-hand-pencil/20 bg-hand-yellow/20 p-4">
-                        <p className="font-patrick text-lg text-hand-pencil/75">
-                          No PIN is set yet. Create one now to protect wallet actions across the LMS.
+                    <div className="flex items-start gap-3 rounded-[1.1rem] border border-border/60 bg-background/70 p-4">
+                      <ShieldCheck className="mt-0.5 h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Security state</p>
+                        <p className="text-sm text-muted-foreground">
+                          {isPinSet ? "Wallet PIN already enabled." : "Add wallet PIN for payment safety."}
                         </p>
                       </div>
-                    )}
-
-                    <div className="grid gap-8 md:grid-cols-2">
-                      <FieldGroup label={isPinSetup ? "New PIN" : "Create PIN"}>
-                        <InputOTP maxLength={6} value={newPin} onChange={setNewPin}>
-                          <InputOTPGroup className="gap-2">
-                            {Array.from({ length: 6 }, (_, index) => (
-                              <InputOTPSlot
-                                key={index}
-                                index={index}
-                                className="h-12 w-11 rounded-[14px] border-2 border-hand-pencil/20 bg-white font-bold text-hand-pencil"
-                              />
-                            ))}
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </FieldGroup>
-
-                      <FieldGroup label="Confirm PIN">
-                        <InputOTP maxLength={6} value={confirmPin} onChange={setConfirmPin}>
-                          <InputOTPGroup className="gap-2">
-                            {Array.from({ length: 6 }, (_, index) => (
-                              <InputOTPSlot
-                                key={index}
-                                index={index}
-                                className="h-12 w-11 rounded-[14px] border-2 border-hand-pencil/20 bg-white font-bold text-hand-pencil"
-                              />
-                            ))}
-                          </InputOTPGroup>
-                        </InputOTP>
-                      </FieldGroup>
                     </div>
-
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={handleUpdatePin}
-                        disabled={updating || newPin.length < 6 || confirmPin.length < 6}
-                        className="h-12 rounded-[18px] border-[3px] border-hand-pencil bg-hand-yellow px-6 font-patrick text-base text-hand-pencil shadow-hard-sm hover:bg-hand-yellow/90"
-                      >
-                        {updating ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <ShieldCheck className="mr-2 h-4 w-4" />
-                            {isPinSetup ? "Update PIN" : "Set PIN"}
-                          </>
-                        )}
-                      </Button>
+                    <div className="flex items-start gap-3 rounded-[1.1rem] border border-border/60 bg-background/70 p-4">
+                      <BadgeCheck className="mt-0.5 h-4 w-4 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Current grade</p>
+                        <p className="text-sm text-muted-foreground">{gradeLabel}</p>
+                      </div>
                     </div>
                   </div>
-                </SettingsSection>
-              </TabsContent>
-
-              <TabsContent value="appearance" className="mt-0 space-y-6">
-                <SettingsSection
-                  title="Workspace appearance"
-                  description="Apply purchased themes so the dashboard feels personal without losing consistency."
-                  icon={<Palette className="h-5 w-5" />}
-                >
-                  <UiModeToggle />
-
-                  {purchasedThemes.length === 0 ? (
-                    <div className="rounded-[26px] border-2 border-dashed border-hand-pencil/20 bg-hand-paper px-6 py-12 text-center">
-                      <Palette className="mx-auto mb-3 h-10 w-10 text-hand-pencil/25" />
-                      <p className="font-kalam text-3xl font-bold text-hand-pencil">
-                        No themes purchased yet
-                      </p>
-                      <p className="mt-2 font-patrick text-lg text-hand-pencil/65">
-                        Visit the marketplace to unlock custom looks for your workspace.
-                      </p>
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="mt-5 h-11 rounded-[18px] border-[3px] border-hand-pencil bg-white px-5 font-patrick text-base text-hand-pencil shadow-hard-sm hover:bg-hand-yellow"
-                      >
-                        <Link href="/market/themes">Open theme marketplace</Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="grid gap-5 md:grid-cols-2">
-                      {purchasedThemes.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => handleApplyTheme(item.productId)}
-                          className={cn(
-                            "overflow-hidden rounded-[28px] border-[3px] p-3 text-left transition-transform hover:-translate-y-1",
-                            activeThemeId === String(item.productId)
-                              ? "border-hand-pencil bg-hand-yellow/35 shadow-hard"
-                              : "border-hand-pencil/20 bg-white shadow-sm"
-                          )}
-                        >
-                          <div className="relative aspect-16/10 overflow-hidden rounded-[22px] border-2 border-hand-pencil/10 bg-hand-paper">
-                            {item.image ? (
-                              <Image
-                                src={item.image}
-                                alt={item.name}
-                                fill
-                                sizes="(max-width: 768px) 100vw, 50vw"
-                                className="object-cover"
-                              />
-                            ) : (
-                              <div className="flex h-full items-center justify-center">
-                                <Palette className="h-10 w-10 text-hand-pencil/20" />
-                              </div>
-                            )}
-
-                            {activeThemeId === String(item.productId) ? (
-                              <div className="absolute inset-0 flex items-center justify-center bg-hand-blue/15 backdrop-blur-[2px]">
-                                <Badge className="border-0 bg-hand-blue px-4 py-1 font-patrick text-sm text-white">
-                                  Active theme
-                                </Badge>
-                              </div>
-                            ) : null}
-                          </div>
-
-                          <div className="flex items-center justify-between gap-4 p-3">
-                            <div>
-                              <p className="font-kalam text-3xl font-bold text-hand-pencil">
-                                {item.name}
-                              </p>
-                              <p className="font-patrick text-base text-hand-pencil/60">
-                                Version {String((item.themeConfig as { version?: string } | null)?.version || "1.0")}
-                              </p>
-                            </div>
-                            {activeThemeId === String(item.productId) ? (
-                              <Badge className="border-0 bg-emerald-100 px-3 py-1 font-patrick text-sm text-emerald-800">
-                                Active
-                              </Badge>
-                            ) : (
-                              <Badge className="border-0 bg-hand-yellow px-3 py-1 font-patrick text-sm text-hand-pencil">
-                                Apply
-                              </Badge>
-                            )}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </SettingsSection>
-              </TabsContent>
-            </div>
+                </SectionCard>
+              </div>
           </div>
-        </Tabs>
-      </div>
-    </DashboardContent>
-  );
-}
+        </TabsContent>
 
-type SettingsPageClassicViewProps = {
-  user: SettingsUser | null;
-  username: string;
-  firstName: string;
-  lastName: string;
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-  oldPin: string;
-  newPin: string;
-  confirmPin: string;
-  isPinSetup: boolean;
-  purchasedThemes: LibraryItem[];
-  activeThemeId: string | null;
-  updating: boolean;
-  avatar: string;
-  previewUsername: string;
-  previewDisplayName: string;
-  setUsername: React.Dispatch<React.SetStateAction<string>>;
-  setFirstName: React.Dispatch<React.SetStateAction<string>>;
-  setLastName: React.Dispatch<React.SetStateAction<string>>;
-  setCurrentPassword: React.Dispatch<React.SetStateAction<string>>;
-  setNewPassword: React.Dispatch<React.SetStateAction<string>>;
-  setConfirmPassword: React.Dispatch<React.SetStateAction<string>>;
-  setOldPin: React.Dispatch<React.SetStateAction<string>>;
-  setNewPin: React.Dispatch<React.SetStateAction<string>>;
-  setConfirmPin: React.Dispatch<React.SetStateAction<string>>;
-  handleAvatarUpload: (event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
-  handleUpdateProfile: () => Promise<void>;
-  handleUpdatePassword: () => Promise<void>;
-  handleUpdatePin: () => Promise<void>;
-  handleApplyTheme: (themeId: number) => Promise<void>;
-};
+        <TabsContent value="security" className="mt-0 space-y-6">
+          <div className="grid gap-6 xl:grid-cols-[1fr_0.82fr]">
+              <SectionCard
+                icon={<KeyRound className="h-5 w-5" />}
+                title="Password and login access"
+                description="Rotate your password regularly to keep account access protected."
+              >
+                <div className="mb-5 flex items-start gap-3 rounded-[1.25rem] border border-amber-500/20 bg-amber-500/10 p-4 text-amber-700">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                  <p className="text-sm leading-6">
+                    Use a new password you do not reuse anywhere else. Current password stays required before saving.
+                  </p>
+                </div>
 
-function SettingsPageClassicView({
-  user,
-  username,
-  firstName,
-  lastName,
-  currentPassword,
-  newPassword,
-  confirmPassword,
-  oldPin,
-  newPin,
-  confirmPin,
-  isPinSetup,
-  purchasedThemes,
-  activeThemeId,
-  updating,
-  avatar,
-  previewUsername,
-  previewDisplayName,
-  setUsername,
-  setFirstName,
-  setLastName,
-  setCurrentPassword,
-  setNewPassword,
-  setConfirmPassword,
-  setOldPin,
-  setNewPin,
-  setConfirmPin,
-  handleAvatarUpload,
-  handleUpdateProfile,
-  handleUpdatePassword,
-  handleUpdatePin,
-  handleApplyTheme,
-}: SettingsPageClassicViewProps) {
-  return (
-    <DashboardContent>
-      <div className="mx-auto w-full max-w-5xl space-y-10 pb-20">
-        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          <div className="space-y-2">
-            <div className="flex items-center gap-3 text-brand-orange">
-              <ShieldCheck className="h-6 w-6" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-                System Preferences
-              </span>
-            </div>
-            <h1 className="text-4xl font-black leading-none tracking-tighter text-foreground md:text-6xl">
-              Settings
-            </h1>
-            <p className="text-lg font-medium tracking-tight text-muted-foreground">
-              Configure your identity, security, and workspace behavior.
-            </p>
-          </div>
-        </div>
+                <div className="grid gap-5 md:grid-cols-2">
+                  <FieldBlock label="Current password">
+                    <Input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(event) => setCurrentPassword(event.target.value)}
+                      className="h-12"
+                      placeholder="Enter current password"
+                    />
+                  </FieldBlock>
 
-        <Tabs defaultValue="profile" className="w-full">
-          <div className="flex flex-col gap-10 lg:flex-row">
-            <div className="shrink-0 lg:w-64">
-              <TabsList className="flex h-auto flex-col gap-2 bg-transparent p-0">
-                <ClassicSettingsTabTrigger value="profile" icon={<User />} label="Profile Identity" />
-                <ClassicSettingsTabTrigger value="security" icon={<Lock />} label="Security & Access" />
-                <ClassicSettingsTabTrigger value="wallet" icon={<Wallet />} label="Financial Security" />
-                <ClassicSettingsTabTrigger value="appearance" icon={<Palette />} label="Visual Interface" />
-              </TabsList>
-            </div>
+                  <FieldBlock label="New password">
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      className="h-12"
+                      placeholder="Enter new password"
+                    />
+                  </FieldBlock>
 
-            <div className="min-w-0 flex-1">
-              <TabsContent value="profile" className="mt-0 space-y-8 outline-none">
-                <Card className="overflow-hidden rounded-[2.5rem] border border-border/40 bg-card shadow-2xl">
-                  <CardHeader className="border-b border-border/20 p-8">
-                    <CardTitle className="text-2xl font-black tracking-tight">Avatar & Bio</CardTitle>
-                    <CardDescription>Manage your public representation across the network</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-10 p-8">
-                    <div className="flex flex-col items-center justify-center gap-8 text-center sm:flex-row sm:items-center sm:text-left">
-                      <div className="group relative mx-auto">
-                        <Avatar className="relative z-10 h-32 w-32 items-center justify-center rounded-full border-4 border-background shadow-2xl md:h-40 md:w-40">
-                          <AvatarImage src={avatar} className="object-cover" />
-                          <AvatarFallback
-                            name={previewUsername}
-                            className="bg-brand-orange text-5xl font-black text-white"
-                          >
-                            {(firstName?.[0] || previewUsername?.[0] || "U").toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <label className="absolute bottom-2 right-2 z-20 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border-4 border-background bg-brand-orange text-white shadow-xl transition-all hover:scale-110 active:scale-90">
-                          <Camera className="h-5 w-5" />
-                          <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} />
-                        </label>
-                      </div>
-                      <div className="flex-1 space-y-4">
-                        <div>
-                          <h3 className="text-xl font-black text-foreground">
-                            {previewDisplayName}
-                          </h3>
-                          <p className="text-sm font-medium text-muted-foreground">
-                            @{previewUsername} • {user?.type}
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
-                          <Badge className="border-none bg-muted px-3 py-1 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                            UID: {user?.id?.slice(0, 8)}...
-                          </Badge>
-                          <Badge className="border-none bg-emerald-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-600">
-                            Active Link
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6 border-t border-border/20 pt-6 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          Public Username
-                        </label>
-                        <Input
-                          value={username}
-                          onChange={(event) => setUsername(event.target.value)}
-                          className="h-12 rounded-xl bg-background font-bold"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          Email Identity
-                        </label>
-                        <Input value={user?.email || ""} disabled className="h-12 rounded-xl bg-muted font-bold opacity-60" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          First Name
-                        </label>
-                        <Input
-                          value={firstName}
-                          onChange={(event) => setFirstName(event.target.value)}
-                          className="h-12 rounded-xl bg-background font-bold"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          Last Name
-                        </label>
-                        <Input
-                          value={lastName}
-                          onChange={(event) => setLastName(event.target.value)}
-                          className="h-12 rounded-xl bg-background font-bold"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={handleUpdateProfile}
-                        disabled={updating}
-                        className="h-12 rounded-xl bg-brand-orange px-8 font-black text-white shadow-lg shadow-brand-orange/20 hover:bg-brand-orange/90"
-                      >
-                        {updating ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="mr-2 h-4 w-4" /> Update Profile</>}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="security" className="mt-0 space-y-8 outline-none">
-                <Card className="overflow-hidden rounded-[2.5rem] border border-border/40 bg-card shadow-2xl">
-                  <CardHeader className="border-b border-border/20 p-8">
-                    <CardTitle className="text-2xl font-black tracking-tight">Access Control</CardTitle>
-                    <CardDescription>Update your account credentials safely</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-8 p-8">
-                    <div className="flex items-center gap-4 rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 text-amber-600">
-                      <AlertCircle className="h-5 w-5 shrink-0" />
-                      <p className="text-xs font-bold uppercase tracking-widest">
-                        Frequent password rotations improve your security profile
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          Current Access Key
-                        </label>
-                        <Input
-                          type="password"
-                          value={currentPassword}
-                          onChange={(event) => setCurrentPassword(event.target.value)}
-                          className="h-12 rounded-xl bg-background font-bold"
-                          placeholder="********"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                          New Password
-                        </label>
-                        <Input
-                          type="password"
-                          value={newPassword}
-                          onChange={(event) => setNewPassword(event.target.value)}
-                          className="h-12 rounded-xl bg-background font-bold"
-                          placeholder="********"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                        Confirm New Password
-                      </label>
+                  <div className="md:col-span-2">
+                    <FieldBlock label="Confirm new password">
                       <Input
                         type="password"
                         value={confirmPassword}
                         onChange={(event) => setConfirmPassword(event.target.value)}
-                        className="h-12 rounded-xl bg-background font-bold"
-                        placeholder="********"
+                        className="h-12"
+                        placeholder="Repeat new password"
                       />
-                    </div>
+                    </FieldBlock>
+                  </div>
+                </div>
 
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={handleUpdatePassword}
-                        disabled={updating || !currentPassword || !newPassword || !confirmPassword}
-                        className="h-12 rounded-xl bg-brand-purple px-8 font-black text-white shadow-lg shadow-brand-purple/20 hover:bg-brand-purple/90"
-                      >
-                        {updating ? <Loader2 className="h-4 w-4 animate-spin" /> : <><KeyRound className="mr-2 h-4 w-4" /> Save Changes</>}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="wallet" className="mt-0 space-y-8 outline-none">
-                <Card className="overflow-hidden rounded-[2.5rem] border border-border/40 bg-card shadow-2xl">
-                  <CardHeader className="border-b border-border/20 p-8">
-                    <CardTitle className="text-2xl font-black tracking-tight">Financial Security PIN</CardTitle>
-                    <CardDescription>Secure your wallet with a 6-digit PIN</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col items-center space-y-10 p-8">
-                    <div className="w-full space-y-8">
-                      {isPinSetup && (
-                        <div className="flex flex-col items-center space-y-4">
-                          <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-                            Current Signature PIN
-                          </label>
-                          <InputOTP maxLength={6} value={oldPin} onChange={setOldPin}>
-                            <InputOTPGroup className="gap-2">
-                              {Array.from({ length: 6 }, (_, index) => (
-                                <InputOTPSlot key={index} index={index} className="h-12 w-10 rounded-xl bg-background font-black text-lg" />
-                              ))}
-                            </InputOTPGroup>
-                          </InputOTP>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
-                        <div className="flex flex-col items-center space-y-4">
-                          <label className="text-[10px] font-black uppercase tracking-[0.3em] text-brand-orange">
-                            {isPinSetup ? "New Signature PIN" : "Setup Signature PIN"}
-                          </label>
-                          <InputOTP maxLength={6} value={newPin} onChange={setNewPin}>
-                            <InputOTPGroup className="gap-2">
-                              {Array.from({ length: 6 }, (_, index) => (
-                                <InputOTPSlot key={index} index={index} className="h-12 w-10 rounded-xl border-brand-orange/30 bg-background font-black text-lg" />
-                              ))}
-                            </InputOTPGroup>
-                          </InputOTP>
-                        </div>
-                        <div className="flex flex-col items-center space-y-4">
-                          <label className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">
-                            Confirm PIN
-                          </label>
-                          <InputOTP maxLength={6} value={confirmPin} onChange={setConfirmPin}>
-                            <InputOTPGroup className="gap-2">
-                              {Array.from({ length: 6 }, (_, index) => (
-                                <InputOTPSlot key={index} index={index} className="h-12 w-10 rounded-xl bg-background font-black text-lg" />
-                              ))}
-                            </InputOTPGroup>
-                          </InputOTP>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex w-full justify-end border-t border-border/20 pt-10">
-                      <Button
-                        onClick={handleUpdatePin}
-                        disabled={updating || newPin.length < 6}
-                        className="h-12 rounded-xl bg-brand-orange px-10 font-black text-white shadow-lg shadow-brand-orange/20 hover:bg-brand-orange/90"
-                      >
-                        {updating ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ShieldCheck className="mr-2 h-4 w-4" /> Secure PIN</>}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="appearance" className="mt-0 space-y-8 outline-none">
-                <Card className="overflow-hidden rounded-[2.5rem] border border-border/40 bg-card shadow-2xl">
-                  <CardHeader className="border-b border-border/20 p-8">
-                    <CardTitle className="text-2xl font-black tracking-tight">Visual Interface</CardTitle>
-                    <CardDescription>Apply purchased themes and choose your UI mode</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-8 p-8">
-                    <UiModeToggle
-                      title="UI mode"
-                      description="Switch this settings page and other converted surfaces between classic and new UI."
-                    />
-
-                    {purchasedThemes.length === 0 ? (
-                      <div className="space-y-4 rounded-[2rem] border-2 border-dashed border-border/30 py-20 text-center">
-                        <Palette className="mx-auto h-12 w-12 text-muted-foreground/30" />
-                        <div className="space-y-1">
-                          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">
-                            No custom themes acquired
-                          </p>
-                          <Button asChild variant="link" className="text-brand-orange">
-                            <Link href="/market/themes">
-                              Visit Theme Marketplace <ChevronRight className="ml-1 h-3 w-3" />
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
+                <div className="mt-6 flex justify-end">
+                  <Button
+                    onClick={handlePasswordUpdate}
+                    disabled={saving !== null && saving !== "password"}
+                    className="h-11 w-full rounded-xl px-6 sm:w-auto"
+                  >
+                    {saving === "password" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                        {purchasedThemes.map((item) => (
-                          <div
-                            key={item.id}
-                            onClick={() => handleApplyTheme(item.productId)}
-                            className={cn(
-                              "group relative cursor-pointer overflow-hidden rounded-[2rem] border p-1 transition-all duration-500",
-                              activeThemeId === String(item.productId)
-                                ? "border-brand-orange bg-brand-orange/5 shadow-[0_0_30px_rgba(249,115,22,0.2)]"
-                                : "border-border/30 bg-card hover:border-border"
-                            )}
-                          >
-                            <div className="relative aspect-video overflow-hidden rounded-[1.8rem] bg-muted/30">
-                              {item.image ? (
-                                <Image
-                                  src={item.image}
-                                  alt={item.name}
-                                  fill
-                                  sizes="(max-width: 768px) 100vw, 50vw"
-                                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center">
-                                  <Palette className="h-10 w-10 text-muted-foreground/30" />
-                                </div>
-                              )}
-                              {activeThemeId === String(item.productId) && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-brand-orange/20 backdrop-blur-[2px]">
-                                  <Badge className="rounded-full border-none bg-brand-orange px-4 py-1 text-[10px] font-black uppercase tracking-widest text-white shadow-xl">
-                                    Active Engine
-                                  </Badge>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between p-5">
-                              <div>
-                                <h4 className="font-black tracking-tight text-foreground">{item.name}</h4>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
-                                  Version {String((item.themeConfig as { version?: string } | null)?.version || "1.0")}
-                                </p>
-                              </div>
-                              {activeThemeId !== String(item.productId) && (
-                                <Button size="sm" className="h-8 rounded-full bg-muted text-[9px] font-black uppercase tracking-widest hover:bg-brand-orange hover:text-white">
-                                  Apply
-                                </Button>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                      <>
+                        <KeyRound className="mr-2 h-4 w-4" />
+                        Update password
+                      </>
                     )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </div>
+                  </Button>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                icon={<ShieldCheck className="h-5 w-5" />}
+                title="Security overview"
+                description="Quick account checks before you leave this page."
+              >
+                <div className="space-y-4">
+                  <div className="rounded-[1.25rem] border border-border/60 bg-background/75 p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Account identity
+                    </p>
+                    <p className="mt-3 text-base font-semibold text-foreground">{displayName}</p>
+                    <p className="text-sm text-muted-foreground">@{form.username || user?.username}</p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <MetricCard label="Password" value="Manual update" note="Current password required" />
+                    <MetricCard label="Wallet PIN" value={isPinSet ? "Enabled" : "Missing"} note="Used for wallet actions" />
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-3">
+                    {[
+                      "Keep password unique.",
+                      "Set wallet PIN before payments.",
+                      "Review profile details after avatar change.",
+                    ].map((item) => (
+                      <div key={item} className="flex items-start gap-3 rounded-[1rem] border border-border/50 bg-background/60 p-3">
+                        <BadgeCheck className="mt-0.5 h-4 w-4 text-primary" />
+                        <p className="text-sm text-muted-foreground">{item}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </SectionCard>
           </div>
-        </Tabs>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="wallet" className="mt-0 space-y-6">
+          <div className="grid gap-6 xl:grid-cols-[1fr_0.82fr]">
+              <SectionCard
+                icon={<Wallet className="h-5 w-5" />}
+                title="Wallet security PIN"
+                description="Add or rotate your 6-digit wallet PIN before approving payments."
+              >
+                <div className="grid gap-6">
+                  {isPinSet ? (
+                    <FieldBlock label="Current PIN" hint="Required before replacing wallet PIN.">
+                      <PinSlots value={oldPin} onChange={setOldPin} />
+                    </FieldBlock>
+                  ) : (
+                    <div className="rounded-[1.25rem] border border-dashed border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
+                      No wallet PIN found yet. Create one now so transfers and paid actions stay protected.
+                    </div>
+                  )}
+
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <FieldBlock label={isPinSet ? "New PIN" : "Create PIN"}>
+                      <PinSlots value={newPin} onChange={setNewPin} tone="primary" />
+                    </FieldBlock>
+
+                    <FieldBlock label="Confirm PIN">
+                      <PinSlots value={confirmPin} onChange={setConfirmPin} />
+                    </FieldBlock>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                  <Button
+                    onClick={handlePinUpdate}
+                    disabled={(saving !== null && saving !== "pin") || !canSubmitPin}
+                    className="h-11 w-full rounded-xl px-6 sm:w-auto"
+                  >
+                    {saving === "pin" ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <ShieldCheck className="mr-2 h-4 w-4" />
+                        {isPinSet ? "Update wallet PIN" : "Create wallet PIN"}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </SectionCard>
+
+              <SectionCard
+                icon={<ShieldCheck className="h-5 w-5" />}
+                title="Wallet snapshot"
+                description="Current wallet status tied to your account security."
+              >
+                <div className="space-y-4">
+                  <div className="rounded-[1.25rem] bg-primary/10 p-5">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary/80">
+                      Available balance
+                    </p>
+                    <p className="mt-3 text-3xl font-bold tracking-tight text-foreground">
+                      {formatCurrency(walletBalance)}
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <MetricCard label="PIN status" value={isPinSet ? "Active" : "Not set"} note="Needed for wallet actions" />
+                    <MetricCard label="Protection" value={isPinSet ? "Ready" : "Incomplete"} note="Add PIN for stronger control" />
+                  </div>
+
+                  <div className="rounded-[1.1rem] border border-border/60 bg-background/70 p-4">
+                    <p className="text-sm font-medium text-foreground">Security note</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                      Wallet PIN protects transfers, checkout actions, and other payment approvals inside account flows.
+                    </p>
+                  </div>
+                </div>
+              </SectionCard>
+          </div>
+        </TabsContent>
+      </Tabs>
     </DashboardContent>
   );
 }
-
-function ClassicSettingsTabTrigger({
-  value,
-  icon,
-  label,
-}: {
-  value: string;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <TabsTrigger
-      value={value}
-      className={cn(
-        "w-full justify-start gap-4 rounded-2xl border border-transparent px-6 py-4 text-sm font-bold text-muted-foreground transition-all duration-300",
-        "data-[state=active]:border-border data-[state=active]:bg-card data-[state=active]:text-brand-orange data-[state=active]:shadow-xl"
-      )}
-    >
-      <span className="shrink-0 [&_svg]:h-5 [&_svg]:w-5">{icon}</span>
-      <span className="truncate">{label}</span>
-      <ChevronRight className="ml-auto h-4 w-4 opacity-60" />
-    </TabsTrigger>
-  );
-}
-
-

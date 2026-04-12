@@ -8,6 +8,7 @@ import { createAuditLog } from "../../utils/auditLog.js";
 import { z } from 'zod';
 import prisma from "../../utils/prisma.js";
 import { getCourseById } from "../course/course.service.js";
+import { deleteFromCloudinary } from "../../utils/cloudinary.js";
 
 const assignmentSchema = z.object({
     title: z.string().min(1).max(255),
@@ -207,6 +208,12 @@ export const updateAssignmentHandler = async (req, res) => {
         if (data.dueDate === null) delete data.dueDate;
         if (data.file === null) delete data.file;
 
+        if (data.file && existing.file && existing.file !== data.file) {
+            deleteFromCloudinary(existing.file).catch(err => 
+                console.error('Failed to cleanup old assignment file from Cloudinary:', err)
+            );
+        }
+
         const assignment = await prisma.assignment.update({
             where: { id },
             data,
@@ -247,6 +254,27 @@ export const deleteAssignmentHandler = async (req, res) => {
                 return sendError(res, 'You can only delete your own assignments', 403);
             }
             await getCourseById(existing.courseId, req.user);
+        }
+
+        // Cleanup assignment file
+        if (existing.file) {
+            deleteFromCloudinary(existing.file).catch(err => 
+                console.error('Failed to cleanup assignment file from Cloudinary:', err)
+            );
+        }
+
+        // Cleanup all submission files
+        const submissions = await prisma.submission.findMany({
+            where: { assignmentId: id },
+            select: { filePath: true }
+        });
+
+        for (const sub of submissions) {
+            if (sub.filePath) {
+                deleteFromCloudinary(sub.filePath).catch(err => 
+                    console.error('Failed to cleanup submission file from Cloudinary during assignment deletion:', err)
+                );
+            }
         }
 
         await prisma.assignment.delete({ where: { id } });
@@ -369,6 +397,16 @@ export const deleteAnnouncementHandler = async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         if (isNaN(id)) return sendError(res, 'Invalid ID', 400);
+        const existing = await prisma.announcement.findUnique({
+            where: { id }
+        });
+
+        if (existing?.image) {
+            deleteFromCloudinary(existing.image).catch(err => 
+                console.error('Failed to cleanup academic announcement image from Cloudinary:', err)
+            );
+        }
+
         await deleteAnnouncement(id);
         await createAuditLog(req.user.id, 'ACADEMIC', 'DELETE', 'Announcement', id);
         return sendSuccess(res, null, 'Announcement deleted');

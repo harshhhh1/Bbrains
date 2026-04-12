@@ -1,6 +1,7 @@
 import prisma from '../../utils/prisma.js';
 import { NotFoundError } from '../../utils/errors.js';
 import { z } from 'zod';
+import { deleteFromCloudinary } from '../../utils/cloudinary.js';
 
 const createAnnouncementSchema = z.object({
     title: z.string().trim().min(1, 'Title is required').max(100, 'Title must be at most 100 characters'),
@@ -134,6 +135,12 @@ export const deleteAnnouncement = async (req, res, next) => {
 
         if (!announcement) {
             throw new NotFoundError('Announcement not found');
+        }
+
+        if (announcement.image) {
+            deleteFromCloudinary(announcement.image).catch(err => 
+                console.error('Failed to cleanup announcement image from Cloudinary:', err)
+            );
         }
 
         await prisma.announcement.delete({

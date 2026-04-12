@@ -12,7 +12,7 @@ const TOP_LEVEL_TAB_PATHS = [
   "/calendar",
   "/market",
   "/tools",
-  "/profile",
+  "/settings",
   "/results",
 ]
 

@@ -71,7 +71,7 @@ function PinDialog({
         </div>
         <DialogFooter>
           <Button onClick={() => onConfirm(pin)} disabled={pin.length < 6 || isProcessing} className="w-full h-14 rounded-2xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black uppercase tracking-widest shadow-lg shadow-brand-orange/20 disabled:opacity-50">
-            {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Sign & Finalize"}
+            {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Checkout"}
           </Button>
         </DialogFooter>
       </DialogContent>

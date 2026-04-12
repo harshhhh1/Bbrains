@@ -344,12 +344,12 @@ export function OverviewClient({ stats }: OverviewClientProps) {
                 </div>
 
                 <div className="grid gap-4">
-                    <OverviewLinkCard href="/profile">
+                    <OverviewLinkCard href="/settings">
                         <CardHeader className="space-y-1 pb-3">
                             <div className="flex items-start justify-between gap-3">
                                 <div>
-                                    <CardTitle>Admin Profile</CardTitle>
-                                    <CardDescription>Identity, contact details, and wallet context for the current admin.</CardDescription>
+                                    <CardTitle>Admin Settings</CardTitle>
+                                    <CardDescription>Identity, contact details, wallet context, and account controls for current admin.</CardDescription>
                                 </div>
                                 <ArrowUpRight className="size-4 text-muted-foreground" />
                             </div>

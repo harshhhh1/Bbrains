@@ -3,6 +3,7 @@ import { createNotification } from "../notification/notification.service.js";
 import { awardXpToUser } from "../xp/xp.service.js";
 import { ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import { getAllCourses, getCourseById } from "../course/course.service.js";
+import { deleteFromCloudinary } from "../../utils/cloudinary.js";
 
 const normalizePositiveInteger = (value, fallback = 0) => {
     const parsed = Number(value);
@@ -237,15 +238,17 @@ const submitAssignment = async (currentUser, data) => {
 
     const existing = await prisma.submission.findFirst({
         where: { assignmentId, userId: currentUser.id },
-        select: {
-            id: true,
-            reviewStatus: true,
-            xpAwardedAt: true,
-        }
     });
 
     if (existing?.reviewStatus === "completed") {
         throw new Error("This assignment has already been marked completed");
+    }
+
+    // Cleanup old submission file if being replaced
+    if (existing && existing.filePath && existing.filePath !== filePath) {
+        deleteFromCloudinary(existing.filePath).catch(err => 
+            console.error('Failed to cleanup old submission file from Cloudinary:', err)
+        );
     }
 
     const submission = existing

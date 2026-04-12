@@ -26,9 +26,9 @@ export const getWalletHandler = async (req, res) => {
     try {
         const result = await getWalletDetails(req.user.id);
         if (!result) return sendError(res, 'Wallet not found', 404);
-        // Don't expose PIN
+        // Don't expose PIN but tell if it is set
         const { pin, ...wallet } = result;
-        return sendSuccess(res, wallet);
+        return sendSuccess(res, { ...wallet, pinSet: !!pin });
     } catch (error) {
         return sendError(res, 'Failed to fetch wallet', 500);
     }
@@ -65,8 +65,8 @@ export const setupPin = async (req, res) => {
             return sendCreated(res, { id: newWallet.id }, 'Wallet created and PIN set');
         }
 
-        // Update PIN if it's the default
-        if (wallet.pin === '000000') {
+        // Update PIN if it's the default or null (for seeded users)
+        if (!wallet.pin || wallet.pin === '000000') {
             const hashedPin = await bcrypt.hash(validated.pin, 10);
             await prisma.wallet.update({
                 where: { userId: req.user.id },
