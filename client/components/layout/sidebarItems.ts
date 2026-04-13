@@ -10,6 +10,7 @@ export const sidebarItems = [
     { "title": "Announcements", "url": "/announcements", "icon": "Megaphone", "access": ["student", "teacher", "admin", "staff", "manager", "superadmin", "bbrains_official"] },
     { "title": "Assignments", "url": "/assignments", "icon": "Book", "access": ["student", "teacher", "admin", "staff", "manager", "superadmin", "bbrains_official"] },
     { "title": "Results", "url": "/results", "icon": "Trophy", "access": ["student"] },
+    { "title": "Leaderboard", "url": "/leaderboard", "icon": "Trophy", "access": ["student", "teacher", "admin", "staff", "manager", "superadmin", "bbrains_official"] },
     { "title": "Chat", "url": "/chat", "icon": "MessageSquare", "access": ["student", "teacher", "admin", "staff", "manager", "superadmin", "bbrains_official"] },
     {
         "title": "My Transactions",

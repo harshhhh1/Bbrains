@@ -331,14 +331,15 @@ export interface AttendanceRecord {
 }
 
 export interface LeaderboardEntry {
-  id: string;
+  userId: string;
   rank: number;
   username: string;
   firstName?: string;
   lastName?: string;
   avatar?: string;
-  xp: number;
-  points?: number;
+  totalXp: number;
+  totalPoints: number;
+  value: number;
 }
 
 export interface Announcement {
@@ -445,6 +446,7 @@ export interface SubjectChapterProgress {
   subject: string;
   totalChapters: number;
   completedChapters: number;
+  teacherId?: string;
 }
 
 export interface ClassTimetableEntry {
@@ -884,11 +886,11 @@ export const attendanceApi = {
 };
 
 export const leaderboardApi = {
-  getLeaderboard: async (sortBy: 'xp' | 'points' = 'xp'): Promise<ApiResponse<LeaderboardEntry[]>> => {
-    return api.get<LeaderboardEntry[]>(`/leaderboard?sortBy=${sortBy}`);
+  getLeaderboard: async (category: 'weekly' | 'monthly' | 'allTime' | 'course' = 'allTime', sortBy: 'xp' | 'points' = 'xp', limit = 20, offset = 0): Promise<ApiResponse<LeaderboardEntry[]>> => {
+    return api.get<LeaderboardEntry[]>(`/leaderboard?category=${category}&sortBy=${sortBy}&limit=${limit}&offset=${offset}`);
   },
-  getMyPosition: async (sortBy: 'xp' | 'points' = 'xp'): Promise<ApiResponse<LeaderboardEntry>> => {
-    return api.get<LeaderboardEntry>(`/leaderboard/me?sortBy=${sortBy}`);
+  getMyPosition: async (category: 'weekly' | 'monthly' | 'allTime' | 'course' = 'allTime', sortBy: 'xp' | 'points' = 'xp'): Promise<ApiResponse<LeaderboardEntry>> => {
+    return api.get<LeaderboardEntry>(`/leaderboard/me?category=${category}&sortBy=${sortBy}`);
   },
 };
 
@@ -962,11 +964,11 @@ export const courseApi = {
     standard: string;
     subjects: string[];
     subjectProgress?: SubjectChapterProgress[];
-    feePerStudent: number;
-    durationValue: number;
-    durationUnit: "months" | "years";
-    studentCapacity: number;
-    timetable: ClassTimetableEntry[];
+    feePerStudent?: number;
+    durationValue?: number;
+    durationUnit?: "months" | "years";
+    studentCapacity?: number;
+    timetable?: ClassTimetableEntry[];
   }): Promise<ApiResponse<Course>> => {
     return api.post<Course>('/courses', data);
   },

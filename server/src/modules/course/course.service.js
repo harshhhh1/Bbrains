@@ -32,10 +32,13 @@ const normalizeSubjectProgress = (value) => {
                 ? Math.min(normalizeChapterCount(entry?.completedChapters), totalChapters)
                 : 0;
 
+            const teacherId = entry?.teacherId ? String(entry.teacherId) : undefined;
+
             return {
                 subject,
                 totalChapters,
                 completedChapters,
+                ...(teacherId && { teacherId }),
             };
         })
         .filter(Boolean);
@@ -55,6 +58,7 @@ const buildSubjectProgress = (subjects, nextProgress = [], existingProgress = []
             subject,
             totalChapters: baseEntry?.totalChapters ?? 0,
             completedChapters: baseEntry?.completedChapters ?? 0,
+            ...(baseEntry?.teacherId && { teacherId: baseEntry.teacherId }),
         };
     });
 };
