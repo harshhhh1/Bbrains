@@ -13,6 +13,7 @@ export function useAcademics() {
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<number | string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [courseModalOpen, setCourseModalOpen] = useState(false);
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -45,7 +46,7 @@ export function useAcademics() {
 
   const handleAddClick = () => {
     if (tab === "courses") {
-      router.push("/dashboard/manager/classes");
+      setCourseModalOpen(true);
       return;
     }
 
@@ -114,5 +115,8 @@ export function useAcademics() {
     handleAddClick,
     handleEditClick,
     handleDelete,
+    courseModalOpen,
+    setCourseModalOpen,
+    onCourseCreated: (course: Course) => setCourses((prev) => [course, ...prev]),
   };
 }

@@ -9,6 +9,7 @@ import { CoursesTable } from "./components/CoursesTable";
 import { StudentsTable } from "./components/StudentsTable";
 import { AssignmentsTable } from "./components/AssignmentsTable";
 import { DeleteDialog } from "./components/DeleteDialog";
+import { CourseFormModal } from "./components/CourseFormModal";
 import { useAcademics } from "./hooks/use-academics";
 
 export default function AcademicsPage() {
@@ -29,6 +30,9 @@ export default function AcademicsPage() {
     handleAddClick,
     handleEditClick,
     handleDelete,
+    courseModalOpen,
+    setCourseModalOpen,
+    onCourseCreated,
   } = useAcademics();
 
   if (loading && courses.length === 0) {
@@ -89,6 +93,12 @@ export default function AcademicsPage() {
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
         confirming={deleting}
+      />
+
+      <CourseFormModal
+        open={courseModalOpen}
+        onOpenChange={setCourseModalOpen}
+        onSuccess={onCourseCreated}
       />
     </div>
   );

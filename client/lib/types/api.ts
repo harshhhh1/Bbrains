@@ -262,3 +262,26 @@ export interface DashboardData {
     configured: boolean;
   };
 }
+
+export type LeaderboardCategory = 'weekly' | 'monthly' | 'allTime' | 'course';
+export type LeaderboardSort = 'xp' | 'points';
+
+export interface LeaderboardEntry {
+  userId: string;
+  username: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+  totalXp: number;
+  totalPoints: number;
+  rank: number;
+  value: number;
+}
+
+export interface LeaderboardState {
+  entries: LeaderboardEntry[];
+  myPosition: LeaderboardEntry | null;
+  category: LeaderboardCategory;
+  sortBy: LeaderboardSort;
+  loading: boolean;
+}

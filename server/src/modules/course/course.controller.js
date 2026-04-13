@@ -16,8 +16,9 @@ const timetableEntrySchema = z.object({
 
 const subjectProgressEntrySchema = z.object({
     subject: z.string().min(1).max(100),
-    totalChapters: z.coerce.number().int().min(0),
-    completedChapters: z.coerce.number().int().min(0),
+    totalChapters: z.coerce.number().int().min(0).optional().default(0),
+    completedChapters: z.coerce.number().int().min(0).optional().default(0),
+    teacherId: z.string().optional(),
 }).refine(
     (entry) => entry.completedChapters <= entry.totalChapters,
     {
@@ -32,11 +33,11 @@ const createCourseSchema = z.object({
     standard: z.string().min(1).max(50),
     subjects: z.array(z.string().min(1).max(100)).min(1),
     subjectProgress: z.array(subjectProgressEntrySchema).optional(),
-    feePerStudent: z.coerce.number().min(0),
-    durationValue: z.coerce.number().int().positive(),
-    durationUnit: z.enum(['months', 'years']),
-    studentCapacity: z.coerce.number().int().min(1),
-    timetable: z.array(timetableEntrySchema).min(1),
+    feePerStudent: z.coerce.number().min(0).optional(),
+    durationValue: z.coerce.number().int().positive().optional(),
+    durationUnit: z.enum(['months', 'years']).optional(),
+    studentCapacity: z.coerce.number().int().min(1).optional(),
+    timetable: z.array(timetableEntrySchema).optional().nullable(),
 });
 
 const updateCourseSchema = createCourseSchema.partial();
