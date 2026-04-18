@@ -134,6 +134,7 @@ const getUserDetailsByID = async (id) => {
             username: true,
             email: true,
             type: true,
+            createdAt: true,
             college: {
                 select: {
                     id: true,

@@ -31,7 +31,7 @@ const createMessageSchema = z.object({
     const hasText = String(payload.content || "").trim().length > 0;
     const hasAttachments = Array.isArray(payload.attachments) && payload.attachments.length > 0;
 
-        if (!hasText && !hasAttachments) {
+    if (!hasText && !hasAttachments) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ["content"],
