@@ -55,10 +55,10 @@ export function mapApiMessage(m: ApiMessage): Message {
 export function mapApiMember(m: ApiMember, activeUserIds: string[] = []): Member {
     const memberId = String(m.id)
     const isOnline = activeUserIds.includes(memberId)
-    
+
     const roles = Array.isArray(m.roles) ? m.roles : []
     const type = m.type || "student"
-    
+
     const isAdmin = roles.includes("admin") || type === "admin"
     const isMod = roles.includes("staff") || roles.includes("teacher") || type === "teacher" || type === "staff"
 

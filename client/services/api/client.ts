@@ -194,6 +194,7 @@ export interface User {
     name: string;
     standard?: string;
   } | null;
+  userDetails?: UserDetailsRecord;
 }
 
 export interface UserDetailsRecord {
@@ -753,13 +754,13 @@ export const userApi = {
   updateProfile: async (id: string, data: { username?: string }): Promise<ApiResponse<User>> => {
     return api.put<User>(`/user/update/${id}`, data);
   },
-  updateDetails: async (data: { 
-    firstName?: string; 
-    lastName?: string; 
-    avatar?: string; 
-    sex?: string; 
-    dob?: string; 
-    phone?: string; 
+  updateDetails: async (data: {
+    firstName?: string;
+    lastName?: string;
+    avatar?: string;
+    sex?: string;
+    dob?: string;
+    phone?: string;
     bio?: string;
   }): Promise<ApiResponse<UserDetailsRecord>> => {
     return api.put<UserDetailsRecord>('/user/me/details', data);
@@ -1155,62 +1156,62 @@ export const notificationApi = {
 };
 
 export interface SystemConfig {
-    id: number;
-    key: string;
-    value: string;
-    type: 'string' | 'number' | 'boolean' | 'json';
-    description?: string;
-    updatedAt: string;
+  id: number;
+  key: string;
+  value: string;
+  type: 'string' | 'number' | 'boolean' | 'json';
+  description?: string;
+  updatedAt: string;
 }
 
 export interface PublicSystemConfigs {
-    maintenanceMode: boolean;
-    welcomeMessage: string;
-    allowSignups: boolean;
+  maintenanceMode: boolean;
+  welcomeMessage: string;
+  allowSignups: boolean;
 }
 
 export const configApi = {
-    getConfigs: async (): Promise<ApiResponse<SystemConfig[]>> => {
-        return api.get('/config');
-    },
-    updateConfig: async (data: Partial<SystemConfig>): Promise<ApiResponse<SystemConfig>> => {
-        return api.post('/config', data);
-    },
-    deleteConfig: async (key: string): Promise<ApiResponse<void>> => {
-        return api.delete(`/config/${key}`);
-    },
-    getPublicConfigs: async (): Promise<ApiResponse<PublicSystemConfigs>> => {
-        return api.get<PublicSystemConfigs>('/config/public');
-    }
+  getConfigs: async (): Promise<ApiResponse<SystemConfig[]>> => {
+    return api.get('/config');
+  },
+  updateConfig: async (data: Partial<SystemConfig>): Promise<ApiResponse<SystemConfig>> => {
+    return api.post('/config', data);
+  },
+  deleteConfig: async (key: string): Promise<ApiResponse<void>> => {
+    return api.delete(`/config/${key}`);
+  },
+  getPublicConfigs: async (): Promise<ApiResponse<PublicSystemConfigs>> => {
+    return api.get<PublicSystemConfigs>('/config/public');
+  }
 };
 
 export interface Suggestion {
-    id: number;
-    userId: string;
-    title: string;
-    content: string;
-    status: 'pending' | 'reviewed' | 'implemented' | 'rejected';
-    createdAt: string;
-    user?: {
-        username: string;
-        userDetails?: { firstName: string; lastName: string };
-    };
+  id: number;
+  userId: string;
+  title: string;
+  content: string;
+  status: 'pending' | 'reviewed' | 'implemented' | 'rejected';
+  createdAt: string;
+  user?: {
+    username: string;
+    userDetails?: { firstName: string; lastName: string };
+  };
 }
 
 export const suggestionApi = {
-    getSuggestions: async (status?: string): Promise<ApiResponse<Suggestion[]>> => {
-        const query = status ? `?status=${status}` : '';
-        return api.get(`/suggestions${query}`);
-    },
-    createSuggestion: async (data: { title: string; content: string }): Promise<ApiResponse<Suggestion>> => {
-        return api.post('/suggestions', data);
-    },
-    updateStatus: async (id: number, status: string): Promise<ApiResponse<Suggestion>> => {
-        return api.put(`/suggestions/${id}/status`, { status });
-    },
-    deleteSuggestion: async (id: number): Promise<ApiResponse<void>> => {
-        return api.delete(`/suggestions/${id}`);
-    }
+  getSuggestions: async (status?: string): Promise<ApiResponse<Suggestion[]>> => {
+    const query = status ? `?status=${status}` : '';
+    return api.get(`/suggestions${query}`);
+  },
+  createSuggestion: async (data: { title: string; content: string }): Promise<ApiResponse<Suggestion>> => {
+    return api.post('/suggestions', data);
+  },
+  updateStatus: async (id: number, status: string): Promise<ApiResponse<Suggestion>> => {
+    return api.put(`/suggestions/${id}/status`, { status });
+  },
+  deleteSuggestion: async (id: number): Promise<ApiResponse<void>> => {
+    return api.delete(`/suggestions/${id}`);
+  }
 };
 
 export interface LevelThreshold {
@@ -1378,6 +1379,9 @@ export const marketApi = {
   },
   addToCart: async (productId: number, quantity: number): Promise<ApiResponse<void>> => {
     return api.post<void>('/market/cart', { productId, quantity });
+  },
+  removeFromCart: async (productId: number): Promise<ApiResponse<void>> => {
+    return api.delete<void>(`/market/cart/remove/${productId}`);
   },
   checkout: async (pin: string): Promise<ApiResponse<{ order: Order; qrCode?: string }>> => {
     return api.post<{ order: Order; qrCode?: string }>('/market/checkout', { pin });

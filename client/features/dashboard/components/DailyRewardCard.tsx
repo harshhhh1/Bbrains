@@ -21,6 +21,7 @@ export function DailyRewardCard({ initialStreak }: DailyRewardCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [claimedToday, setClaimedToday] = useState(false);
+  const [lastLocalUpdate, setLastLocalUpdate] = useState<number>(0);
 
   const syncClaimState = (streakData: StreakData | null) => {
     if (!streakData) {
@@ -40,6 +41,9 @@ export function DailyRewardCard({ initialStreak }: DailyRewardCardProps) {
   };
 
   useEffect(() => {
+    // Skip if we just updated locally to prevent race condition with router.refresh()
+    if (Date.now() - lastLocalUpdate < 2000) return;
+
     if (initialStreak) {
       setStreak(initialStreak);
       syncClaimState(initialStreak);
@@ -76,10 +80,13 @@ export function DailyRewardCard({ initialStreak }: DailyRewardCardProps) {
       if (response.success && response.data) {
         setSuccess(`+${response.data.xp} XP earned!`);
         if (response.data.streak) {
-          setStreak(response.data.streak);
-          syncClaimState(response.data.streak);
+          const newStreak = response.data.streak;
+          setStreak(newStreak);
+          syncClaimState(newStreak);
+          setLastLocalUpdate(Date.now());
         } else {
           setClaimedToday(true);
+          setLastLocalUpdate(Date.now());
         }
         router.refresh();
       } else {

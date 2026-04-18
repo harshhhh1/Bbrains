@@ -20,7 +20,7 @@ export default function LeaderboardPage() {
   const { entries, myPosition, loading, currentUserId } = useLeaderboard({ category, sortBy })
 
   return (
-    <div className="mx-auto w-full max-w-3xl p-4 md:p-8">
+    <div className="mx-auto w-full max-w-3xl md:p-8">
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold tracking-tight">Leaderboard</h1>
         <p className="text-muted-foreground">

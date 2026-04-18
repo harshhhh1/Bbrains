@@ -30,107 +30,135 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
             : "Anonymous User"
 
     return (
-        <div className="absolute bottom-20 left-6 z-50 w-85 overflow-hidden rounded-[28px] border border-slate-200/80 bg-slate-50 shadow-[0_18px_40px_rgba(15,23,42,0.18)] dark:border-slate-800 dark:bg-slate-950">
-            <div className="relative h-24 bg-linear-to-r from-brand-purple via-violet-500 to-fuchsia-400">
-                <div className="absolute top-2 right-2 flex gap-1.5">
+        <div className="absolute bottom-20 left-6 z-50 w-[300px] overflow-hidden rounded-[16px] bg-[#111214] shadow-[0_8px_16px_rgba(0,0,0,0.24)] text-[#dbdee1] font-sans">
+            {/* Header with SVG Banner Mask */}
+            <div className="relative">
+                <svg className="block w-full" viewBox="0 0 300 120" preserveAspectRatio="none">
+                    <mask id="discord-banner-mask">
+                        <rect fill="white" x="0" y="0" width="100%" height="100%" />
+                        <circle fill="black" cx="56" cy="112" r="46" />
+                    </mask>
+                    <foreignObject x="0" y="0" width="100%" height="100%" mask="url(#discord-banner-mask)">
+                        <div 
+                            className="h-full w-full" 
+                            style={{ 
+                                background: 'linear-gradient(45deg, #5865F2, #eb459e, #fee75c)',
+                                backgroundColor: '#1c1d22' 
+                            }} 
+                        />
+                    </foreignObject>
+                </svg>
+
+                {/* Edit Button */}
+                <div className="absolute top-3 right-3">
                     <Link
                         href="/settings"
-                        aria-label="Edit profile"
-                        className="flex items-center justify-center rounded-full bg-white/20 p-2 text-white transition-colors hover:bg-white/30"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-white transition-colors hover:bg-black/60"
                     >
                         <Pencil className="h-4 w-4" />
                     </Link>
                 </div>
             </div>
 
-            <div className="px-4 pb-4">
-                <div className="relative mb-3 flex justify-center -mt-12">
-                    <div className="relative">
-                        <div className="object-cover relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-[6px] border-slate-50 bg-slate-200 shadow-sm dark:border-slate-950 dark:bg-slate-800">
-                            <Avatar 
-                                key={user?.imageUrl}
-                                className="h-full w-full rounded-full object-cover"
-                            >
-                                <AvatarImage src={user?.imageUrl || undefined} className="object-cover" />
-                                <AvatarFallback
-                                    name={user?.username}
-                                    className="flex items-center justify-center rounded-full bg-brand-mint/20 text-2xl font-bold uppercase text-brand-mint"
-                                >
-                                    {user?.firstName?.[0]}{user?.lastName?.[0]}
-                                </AvatarFallback>
-                            </Avatar>
+            {/* Avatar & Content Wrapper */}
+            <div className="relative px-4 pb-4">
+                {/* Avatar with Status Mask */}
+                <div className="absolute -top-26 left-4">
+                    <div className="relative inline-block">
+                        <svg width="92" height="92" viewBox="0 0 92 92" className="block">
+                            <mask id="discord-avatar-mask">
+                                <circle fill="white" cx="40" cy="40" r="40" />
+                            </mask>
+                            <foreignObject x="0" y="0" width="80" height="80" mask="url(#discord-avatar-mask)">
+                                <Avatar className="h-20 w-20 border-0 bg-[#313338]">
+                                    <AvatarImage src={user?.imageUrl || undefined} className="object-cover" />
+                                    <AvatarFallback className="flex items-center justify-center bg-[#5865F2] text-xl font-bold text-white">
+                                        {user?.firstName?.[0]}{user?.lastName?.[0]}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </foreignObject>
+                        </svg>
+                    </div>
+                </div>
+
+                {/* Identity Card Section */}
+                <div className="mt-14 space-y-3 rounded-[8px] bg-[#1e1f22] p-3 shadow-sm">
+                    <div>
+                        <h1 className="text-xl font-bold leading-tight text-white">
+                            {displayName}
+                        </h1>
+                        <p className="text-sm font-medium text-[#b5bac1]">@{user?.username || "user"}</p>
+                    </div>
+
+                    <div className="h-[1px] bg-[#2e3035]" />
+
+                    {/* Roles & Level Section */}
+                    <div className="space-y-3">
+                        <div className="space-y-1.5">
+                            <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#b5bac1]">Roles</h3>
+                            <div className="flex flex-wrap gap-1">
+                                {roles && roles.length > 0 ? (
+                                    roles.map((role) => (
+                                        <span 
+                                            key={role.id} 
+                                            className="flex items-center gap-1 rounded-[4px] bg-[#2b2d31] px-2 py-1 text-[11px] font-medium"
+                                            style={{ borderLeft: `2px solid ${role.color || '#5865f2'}` }}
+                                        >
+                                            <div 
+                                                className="h-3 w-3 rounded-full" 
+                                                style={{ backgroundColor: role.color || '#5865f2' }} 
+                                            />
+                                            {role.name}
+                                        </span>
+                                    ))
+                                ) : (
+                                    <span className="rounded-[4px] bg-[#2b2d31] px-2 py-1 text-[11px] font-medium">User</span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <div className="space-y-1">
+                                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#b5bac1]">Level</h3>
+                                <p className="text-xs font-bold text-white">Lvl {user?.level || 1}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#b5bac1]">Progress</h3>
+                                <p className="text-xs font-bold text-[#5865f2]">{user?.xp || 0} XP</p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="mb-3 rounded-2xl border border-slate-200/80 bg-white/85 p-4 dark:border-slate-800 dark:bg-slate-900/80">
-                    <h1 className="text-xl font-bold leading-tight text-slate-900 dark:text-slate-100">
-                        {displayName}
-                    </h1>
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">@{user?.username || "user"}</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                        {roles && roles.length > 0 ? (
-                            roles.map((role) => (
-                                <span 
-                                    key={role.id} 
-                                    className="rounded px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider border"
-                                    style={{ 
-                                        backgroundColor: `${role.color || '#949ba4'}15`, 
-                                        borderColor: `${role.color || '#949ba4'}40`,
-                                        color: role.color || '#dbdee1'
-                                    }}
-                                >
-                                    {role.name}
-                                </span>
-                            ))
-                        ) : (
-                            <span className="rounded bg-slate-200 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                                User
-                            </span>
-                        )}
-                        <span className="rounded bg-slate-200 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:bg-slate-800 dark:text-slate-300">Lvl {user?.level || 1}</span>
-                        {user?.xp !== undefined && (
-                            <span className="rounded bg-brand-purple/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-brand-purple">
-                                {user?.xp} XP
-                            </span>
-                        )}
-                    </div>
-                </div>
+                    <div className="h-[1px] bg-[#2e3035]" />
 
-                <div className="space-y-3 max-h-50 overflow-y-auto pr-1 custom-scrollbar">
+                    {/* About Me */}
                     <div className="space-y-1">
-                        <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">About Me</h3>
-                        <p className="min-h-5 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-                            {user?.bio || <span className="text-xs italic text-slate-400">No bio yet...</span>}
+                        <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#b5bac1]">About Me</h3>
+                        <p className="text-sm leading-snug text-[#dbdee1]">
+                            {user?.bio || <span className="italic text-[#949ba4]">No bio yet...</span>}
                         </p>
                     </div>
 
+                    {/* Member Since */}
                     <div className="space-y-1">
-                        <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Bbrains Member Since</h3>
-                        <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <rect x="3" y="4" width="18" height="18" rx="2" strokeWidth="2" />
-                                <path strokeWidth="2" d="M16 2v4M8 2v4M3 10h18" />
-                            </svg>
-                            <span>
-                                {hasJoinedDate
-                                    ? joinedDate?.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-                                    : "Just recently"}
-                            </span>
+                        <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#b5bac1]">Bbrains Member Since</h3>
+                        <div className="text-sm text-[#dbdee1]">
+                            {hasJoinedDate
+                                ? joinedDate?.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+                                : "Just recently"}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="border-t border-slate-200 bg-white/70 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/60">
-                <div className="relative">
-                    <input
-                        className="w-full border-none bg-transparent p-0 text-xs italic text-slate-500 outline-none placeholder:text-slate-400 focus:ring-0 dark:text-slate-400 dark:placeholder:text-slate-600"
-                        placeholder="Click to add a custom status note..."
-                        type="text"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                </div>
+            {/* Footer / Status Note */}
+            <div className="bg-[#1e1f22]/50 px-4 py-3">
+                <input
+                    className="w-full bg-transparent text-xs text-[#b5bac1] outline-none placeholder:text-[#949ba4]"
+                    placeholder="Click to add a custom status note..."
+                    type="text"
+                    onClick={(e) => e.stopPropagation()}
+                />
             </div>
         </div>
     )

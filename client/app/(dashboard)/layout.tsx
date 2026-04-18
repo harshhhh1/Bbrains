@@ -41,6 +41,9 @@ type LayoutDBUser = {
     userDetails?: LayoutUserDetails | null;
     xp?: LayoutUserXP | null;
     avatar?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    bio?: string | null;
     college?: {
         name?: string | null;
     } | null;
@@ -127,9 +130,9 @@ async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const formattedUser = {
         id: dbUser.id || '',
         imageUrl: details?.avatar || dbUser?.avatar || "",
-        firstName: details?.firstName || "",
-        lastName: details?.lastName || "",
-        bio: details?.bio || "",
+        firstName: details?.firstName || dbUser.firstName || "",
+        lastName: details?.lastName || dbUser.lastName || "",
+        bio: details?.bio || dbUser.bio || "",
         fullName: details?.firstName ? `${details.firstName} ${details.lastName || ""}` : (dbUser?.username || ""),
         username: dbUser?.username || "",
         type: dbType || "student",

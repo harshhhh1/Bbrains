@@ -129,6 +129,7 @@ export default function MarketPage() {
   const [buyProduct, setBuyProduct] = useState<Product | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [processingItems, setProcessingItems] = useState<Set<number>>(new Set());
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -176,25 +177,48 @@ export default function MarketPage() {
   );
 
   const addToCart = async (productId: number) => {
+    if (processingItems.has(productId)) return;
     try {
+      setProcessingItems(prev => new Set(prev).add(productId));
       await marketApi.addToCart(productId, 1);
       setCart((prev) => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
       toast.success("Added to cart");
     } catch (error) {
       toast.error("Failed to add to cart");
+    } finally {
+      setProcessingItems(prev => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
     }
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prev) => {
-      const newCart = { ...prev };
-      if (newCart[productId] > 1) {
-        newCart[productId]--;
-      } else {
-        delete newCart[productId];
-      }
-      return newCart;
-    });
+  const removeFromCart = async (productId: number) => {
+    if (processingItems.has(productId)) return;
+    try {
+      setProcessingItems(prev => new Set(prev).add(productId));
+      // Perform server removal if decreasing or deleting
+      await marketApi.removeFromCart(productId);
+      
+      setCart((prev) => {
+        const newCart = { ...prev };
+        if (newCart[productId] > 1) {
+          newCart[productId]--;
+        } else {
+          delete newCart[productId];
+        }
+        return newCart;
+      });
+    } catch (error) {
+      toast.error("Failed to update cart on server");
+    } finally {
+      setProcessingItems(prev => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
+    }
   };
 
   const confirmBuy = () => {
@@ -395,21 +419,34 @@ export default function MarketPage() {
                             </Button>
                           ) : inCart > 0 ? (
                             <div className="flex items-center bg-white/5 rounded-xl border border-white/10 p-1">
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => removeFromCart(product.id)}>
-                                <Minus className="w-3 h-3" />
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 rounded-lg" 
+                                onClick={() => removeFromCart(product.id)}
+                                disabled={processingItems.has(product.id)}
+                              >
+                                {processingItems.has(product.id) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Minus className="w-3 h-3" />}
                               </Button>
                               <span className="w-8 text-center text-sm font-black text-foreground">{inCart}</span>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => addToCart(product.id)}>
-                                <Plus className="w-3 h-3" />
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 rounded-lg" 
+                                onClick={() => addToCart(product.id)}
+                                disabled={processingItems.has(product.id)}
+                              >
+                                {processingItems.has(product.id) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
                               </Button>
                             </div>
                           ) : (
                             <Button
                               size="sm"
                               onClick={() => addToCart(product.id)}
+                              disabled={processingItems.has(product.id)}
                               className="h-10 px-5 rounded-xl bg-white/5 hover:bg-brand-orange text-white border border-white/10 hover:border-brand-orange transition-all font-bold"
                             >
-                              <ShoppingCart className="w-4 h-4 mr-2" />
+                              {processingItems.has(product.id) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShoppingCart className="w-4 h-4 mr-2" />}
                               Add to Cart
                             </Button>
                           )}
@@ -467,12 +504,24 @@ export default function MarketPage() {
                           <p className="text-xs font-bold text-brand-orange">{product.price} B-Coins</p>
                         </div>
                         <div className="flex items-center bg-black/20 rounded-lg p-0.5">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeFromCart(Number(id))}>
-                            <Minus className="w-3 h-3" />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7" 
+                            onClick={() => removeFromCart(Number(id))}
+                            disabled={processingItems.has(Number(id))}
+                          >
+                            {processingItems.has(Number(id)) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Minus className="w-3 h-3" />}
                           </Button>
                           <span className="w-7 text-center text-sm font-black">{qty}</span>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => addToCart(Number(id))}>
-                            <Plus className="w-3 h-3" />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7" 
+                            onClick={() => addToCart(Number(id))}
+                            disabled={processingItems.has(Number(id))}
+                          >
+                            {processingItems.has(Number(id)) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
                           </Button>
                         </div>
                       </div>
