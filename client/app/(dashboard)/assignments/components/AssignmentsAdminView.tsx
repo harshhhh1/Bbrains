@@ -32,7 +32,7 @@ function getRequestErrorMessage(error: unknown, fallback: string) {
     return fallback
 }
 
-export default function AssignmentsPage() {
+export function AssignmentsAdminView() {
     const [assignments, setAssignments] = useState<ApiAssignment[]>([])
     const [courses, setCourses] = useState<ApiCourse[]>([])
     const [loading, setLoading] = useState(true)
@@ -85,7 +85,7 @@ export default function AssignmentsPage() {
         try {
             setSubmitting(true)
             const c = await getAuthedClient()
-            const payload = { title: form.title, description: form.description || undefined, courseId: Number(form.courseId), dueDate: form.dueDate || undefined }
+            const payload = { title: form.title.trim(), description: form.description.trim() || undefined, courseId: Number(form.courseId), dueDate: form.dueDate || undefined }
             if (editing) {
                 const r = await c.put<{ success: boolean; data: ApiAssignment }>(`/academic/assignments/${editing.id}`, payload)
                 setAssignments((prev) => prev.map((a) => a.id === editing.id ? r.data.data : a))
@@ -119,7 +119,7 @@ export default function AssignmentsPage() {
 
     return (
         <div className="space-y-4">
-            <SectionHeader title="Assignments" subtitle={`${assignments.length} total`} action={openCreate} actionLabel="New Assignment" />
+            <SectionHeader title="Institutional Assignments" subtitle={`${assignments.length} total across all classes`} action={openCreate} actionLabel="New Assignment" />
             <DataTable<ApiAssignment>
                 loading={loading} data={assignments} searchKeys={["title"]}
                 columns={[

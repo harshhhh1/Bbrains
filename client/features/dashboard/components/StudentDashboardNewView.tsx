@@ -30,6 +30,7 @@ import {
 } from "@/components/hand-drawn/card";
 import { cn } from "@/lib/utils";
 import type { DashboardData, LeaderboardEntry } from "@/services/api/client";
+import type { TransformedLeaderboardEntry } from "@/features/dashboard/types";
 
 function formatCurrency(amount: number, currency = "INR") {
   try {
@@ -106,7 +107,7 @@ export function StudentDashboardNewView({
   resolvedXp,
 }: {
   dashboardData: DashboardData | null;
-  transformedLeaderboard: LeaderboardEntry[];
+  transformedLeaderboard: TransformedLeaderboardEntry[];
   username: string;
   resolvedLevel: number;
   resolvedXp: number;

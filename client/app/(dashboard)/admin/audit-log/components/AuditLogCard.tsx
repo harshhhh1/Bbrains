@@ -1,77 +1,118 @@
-import React from "react"
+import React, { useState } from "react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Clock, ArrowRight } from "lucide-react"
-import type { ApiAuditLog } from "../types"
+import { ChevronRight, ChevronDown, Info, Shield, User, Settings, Database, GraduationCap, ShoppingCart, Landmark } from "lucide-react"
+import type { ApiAuditLog, LogCategory } from "../types"
 import { categoryColors } from "../types"
 import { getInitials, fmtDate, formatChange } from "../utils"
+import { cn } from "@/lib/utils"
 
 interface AuditLogCardProps {
     log: ApiAuditLog
 }
 
-export function AuditLogCard({ log }: AuditLogCardProps) {
-    const change = formatChange(log.change)
-    
-    return (
-        <Card className="border-border/60">
-            <CardContent className="p-4">
-                <div className="flex flex-col gap-3">
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-10 w-10">
-                                <AvatarImage src={log.user?.avatar ?? undefined} className="object-cover" />
-                                <AvatarFallback className="bg-brand-purple/10 text-brand-purple text-sm font-semibold">
-                                    {getInitials(log.user?.username ?? log.userId ?? "S")}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-medium text-foreground">
-                                    {log.user?.username ?? log.userId ?? "System"}
-                                </p>
-                                <Badge className={`text-[10px] font-semibold ${categoryColors[log.category] ?? ""}`}>
-                                    {log.category}
-                                </Badge>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                            <Clock className="size-3.5" />
-                            {fmtDate(log.createdAt)}
-                        </div>
-                    </div>
+const CategoryIcon = ({ category, className }: { category: LogCategory; className?: string }) => {
+    switch (category) {
+        case "AUTH": return <Shield className={className} />
+        case "ACADEMIC": return <GraduationCap className={className} />
+        case "MARKET": return <ShoppingCart className={className} />
+        case "FINANCE": return <Landmark className={className} />
+        case "USER": return <User className={className} />
+        case "SYSTEM": return <Settings className={className} />
+        default: return <Info className={className} />
+    }
+}
 
-                    <div className="flex items-center gap-2 text-sm">
-                        <span className="font-semibold text-foreground">{log.action}</span>
-                        <span className="text-muted-foreground">on</span>
-                        <span className="font-medium text-foreground">{log.entity}</span>
+export function AuditLogCard({ log }: AuditLogCardProps) {
+    const [isExpanded, setIsExpanded] = useState(false)
+    const change = formatChange(log.change)
+    const hasDetails = !!change
+
+    return (
+        <div className="group border-b border-border/40 last:border-0">
+            <div 
+                className={cn(
+                    "flex items-center gap-4 py-3 px-4 transition-colors",
+                    hasDetails ? "cursor-pointer hover:bg-muted/30" : "hover:bg-muted/10"
+                )}
+                onClick={() => hasDetails && setIsExpanded(!isExpanded)}
+            >
+                {/* Action Icon */}
+                <div className={cn(
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                    categoryColors[log.category]?.split(" ")[0] || "bg-muted"
+                )}>
+                    <CategoryIcon 
+                        category={log.category as LogCategory} 
+                        className={cn("size-4", categoryColors[log.category]?.split(" ")[1] || "text-muted-foreground")} 
+                    />
+                </div>
+
+                {/* User Avatar */}
+                <Avatar className="h-10 w-10 shrink-0 border-2 border-background shadow-sm">
+                    <AvatarImage src={log.user?.avatar ?? undefined} className="object-cover" />
+                    <AvatarFallback className="bg-brand-purple/10 text-brand-purple text-xs font-bold uppercase">
+                        {getInitials(log.user?.username ?? log.userId ?? "S")}
+                    </AvatarFallback>
+                </Avatar>
+
+                {/* Log Content */}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                        <span className="font-semibold text-foreground text-sm">
+                            {log.user?.username ?? log.userId ?? "System"}
+                        </span>
+                        <span className="text-muted-foreground text-sm">
+                            {log.action}
+                        </span>
+                        <span className="font-medium text-foreground text-sm">
+                            {log.entity}
+                        </span>
                         {log.entityId && (
-                            <>
-                                <span className="text-muted-foreground">#</span>
-                                <span className="text-muted-foreground font-mono text-xs">{log.entityId}</span>
-                            </>
+                            <span className="text-muted-foreground font-mono text-[10px] bg-muted px-1.5 py-0.5 rounded">
+                                #{log.entityId.slice(-6)}
+                            </span>
                         )}
                     </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5 font-medium flex items-center gap-2">
+                        {fmtDate(log.createdAt)}
+                        <Badge variant="outline" className={cn("px-1.5 py-0 h-4 text-[9px] font-bold tracking-tight", categoryColors[log.category])}>
+                            {log.category}
+                        </Badge>
+                    </div>
+                </div>
 
-                    {change && (
-                        <div className="flex items-start gap-2 text-xs bg-muted/50 rounded-lg p-2.5">
-                            <div className="flex-1 min-w-0">
-                                <p className="text-muted-foreground mb-1">Old Value</p>
-                                <pre className="text-xs text-foreground truncate font-mono whitespace-pre-wrap break-all">
+                {/* Expand Indicator */}
+                {hasDetails && (
+                    <div className="shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors">
+                        {isExpanded ? <ChevronDown className="size-5" /> : <ChevronRight className="size-5" />}
+                    </div>
+                )}
+            </div>
+
+            {/* Collapsible Details */}
+            {hasDetails && isExpanded && (
+                <div className="px-4 pb-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="ml-12 pl-4 border-l-2 border-muted grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Old Value</p>
+                            <div className="bg-muted/40 rounded-md p-2.5 overflow-hidden">
+                                <pre className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all leading-relaxed">
                                     {change.before ? JSON.stringify(change.before, null, 2) : "—"}
                                 </pre>
                             </div>
-                            <ArrowRight className="size-4 text-muted-foreground shrink-0 mt-4" />
-                            <div className="flex-1 min-w-0">
-                                <p className="text-muted-foreground mb-1">New Value</p>
-                                <pre className="text-xs text-foreground truncate font-mono whitespace-pre-wrap break-all">
+                        </div>
+                        <div className="space-y-1.5">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">New Value</p>
+                            <div className="bg-brand-purple/5 rounded-md p-2.5 overflow-hidden border border-brand-purple/10">
+                                <pre className="text-xs font-mono text-foreground whitespace-pre-wrap break-all leading-relaxed">
                                     {change.after ? JSON.stringify(change.after, null, 2) : "—"}
                                 </pre>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+            )}
+        </div>
     )
 }

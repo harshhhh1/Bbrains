@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Loader2, Plus, Trash2 } from "lucide-react";
+import { Coffee, Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,9 +19,9 @@ import type { ClassTimetableEntry } from "@/services/api/client";
 
 const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-const createEmptyEntry = (day = "Monday"): ClassTimetableEntry => ({
+const createEmptyEntry = (day = "Monday", subject = ""): ClassTimetableEntry => ({
   day,
-  subject: "",
+  subject,
   startTime: "09:00",
   endTime: "10:00",
   room: "",
@@ -69,6 +69,10 @@ export function TimetableEditorDialog({
 
   function addEntry(day: string) {
     setDraftEntries((current) => [...current, createEmptyEntry(day)]);
+  }
+
+  function addBreak(day: string) {
+    setDraftEntries((current) => [...current, createEmptyEntry(day, "Break")]);
   }
 
   function removeEntry(index: number) {
@@ -136,10 +140,16 @@ export function TimetableEditorDialog({
                     Add one or more lectures with their own time slot for {day}.
                   </p>
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={() => addEntry(day)}>
-                  <Plus className="mr-1 size-3.5" />
-                  Add Lecture
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => addBreak(day)} className="border-orange-200 bg-orange-50/30 text-orange-700 hover:bg-orange-50 hover:text-orange-800">
+                    <Coffee className="mr-1 size-3.5" />
+                    Add Break
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => addEntry(day)}>
+                    <Plus className="mr-1 size-3.5" />
+                    Add Lecture
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-3">
                 {entries.length === 0 ? (
@@ -148,7 +158,7 @@ export function TimetableEditorDialog({
                   entries.map(({ entry, index }) => (
                     <div
                       key={`${day}-${index}`}
-                      className="grid gap-3 rounded-xl border border-border/60 p-3 md:grid-cols-[1.3fr_0.9fr_0.9fr_1fr_auto]"
+                      className={`grid gap-3 rounded-xl border p-3 md:grid-cols-[1.3fr_0.9fr_0.9fr_1fr_auto] ${entry.subject.toLowerCase() === "break" ? "bg-orange-50/20 border-orange-100" : "border-border/60"}`}
                     >
                       <div className="space-y-2">
                         <Label>Subject</Label>
@@ -157,6 +167,7 @@ export function TimetableEditorDialog({
                           value={entry.subject}
                           onChange={(event) => updateEntry(index, "subject", event.target.value)}
                           placeholder="Mathematics"
+                          className={entry.subject.toLowerCase() === "break" ? "border-orange-200 focus-visible:ring-orange-200" : ""}
                         />
                       </div>
                       <div className="space-y-2">
@@ -165,6 +176,7 @@ export function TimetableEditorDialog({
                           type="time"
                           value={entry.startTime}
                           onChange={(event) => updateEntry(index, "startTime", event.target.value)}
+                          className={entry.subject.toLowerCase() === "break" ? "border-orange-200 focus-visible:ring-orange-200" : ""}
                         />
                       </div>
                       <div className="space-y-2">
@@ -173,6 +185,7 @@ export function TimetableEditorDialog({
                           type="time"
                           value={entry.endTime}
                           onChange={(event) => updateEntry(index, "endTime", event.target.value)}
+                          className={entry.subject.toLowerCase() === "break" ? "border-orange-200 focus-visible:ring-orange-200" : ""}
                         />
                       </div>
                       <div className="space-y-2">
@@ -181,6 +194,8 @@ export function TimetableEditorDialog({
                           value={entry.room || ""}
                           onChange={(event) => updateEntry(index, "room", event.target.value)}
                           placeholder="Room / Lab"
+                          disabled={entry.subject.toLowerCase() === "break"}
+                          className={entry.subject.toLowerCase() === "break" ? "bg-muted/50 border-orange-100 opacity-50" : ""}
                         />
                       </div>
                       <div className="flex items-end">
@@ -190,6 +205,7 @@ export function TimetableEditorDialog({
                           size="icon"
                           onClick={() => removeEntry(index)}
                           disabled={draftEntries.length === 1}
+                          className={entry.subject.toLowerCase() === "break" ? "text-orange-600 hover:text-orange-700 hover:bg-orange-100/50" : ""}
                         >
                           <Trash2 className="size-4" />
                         </Button>

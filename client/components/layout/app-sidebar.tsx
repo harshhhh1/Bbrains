@@ -32,9 +32,10 @@ interface AppSidebarProps {
         xp?: number;
         createdAt?: string;
     } | null;
+    sidebarAccessOverride?: Record<string, string[]> | null;
 }
 
-export function AppSidebar({ user }: AppSidebarProps) {
+export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
     const pathname = usePathname()
     const { state } = useSidebar()
     const isCollapsed = state === "collapsed"
@@ -44,7 +45,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
     const userRoles = user?.roles || [user?.type || "student"]
     const resolvedRoles = resolveRole(userRoles) as Role[]
-    const groups = getSidebarGroups(resolvedRoles)
+    const groups = getSidebarGroups(resolvedRoles, sidebarAccessOverride)
 
     return (
         <Sidebar collapsible="icon" className="border-r border-sidebar-border">

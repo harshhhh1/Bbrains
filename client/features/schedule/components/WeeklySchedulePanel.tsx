@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Calendar, Clock, MapPin, Coffee } from "lucide-react";
 import { WeeklyScheduleDay } from "@/features/schedule/data";
 
 const colors = [
@@ -54,27 +54,45 @@ export function WeeklySchedulePanel({
                 <p className="text-sm text-muted-foreground">{emptyMessage}</p>
               ) : (
                 <div className="grid gap-2">
-                  {day.classes.map((cls, index) => (
-                    <div
-                      key={`${day.day}-${cls.time}-${cls.subject}-${index}`}
-                      className={`flex items-center gap-4 p-3 rounded-lg border ${colors[index % colors.length]}`}
-                    >
-                      <div className="shrink-0 text-center min-w-[84px]">
-                        <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {cls.time}
-                        </p>
+                  {day.classes.map((cls, index) => {
+                    const isBreak = cls.subject.toLowerCase() === "break";
+                    return (
+                      <div
+                        key={`${day.day}-${cls.time}-${cls.subject}-${index}`}
+                        className={`flex items-center gap-4 p-3 rounded-lg border transition-colors ${
+                          isBreak 
+                            ? "bg-orange-50/50 border-orange-200/50" 
+                            : colors[index % colors.length]
+                        }`}
+                      >
+                        <div className="shrink-0 text-center min-w-[84px]">
+                          <p className={`text-xs font-medium flex items-center gap-1 ${
+                            isBreak ? "text-orange-600" : "text-muted-foreground"
+                          }`}>
+                            <Clock className="w-3 h-3" /> {cls.time}
+                          </p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-medium text-sm ${
+                            isBreak ? "text-orange-700" : "text-foreground"
+                          }`}>
+                            {cls.subject}
+                          </p>
+                          {cls.teacher ? (
+                            <p className="text-xs text-muted-foreground">{cls.teacher}</p>
+                          ) : null}
+                        </div>
+                        {!isBreak && (
+                          <Badge variant="outline" className="shrink-0 text-xs gap-1">
+                            <MapPin className="w-3 h-3" /> {cls.room}
+                          </Badge>
+                        )}
+                        {isBreak && (
+                          <Coffee className="size-3.5 text-orange-400 shrink-0" />
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground text-sm">{cls.subject}</p>
-                        {cls.teacher ? (
-                          <p className="text-xs text-muted-foreground">{cls.teacher}</p>
-                        ) : null}
-                      </div>
-                      <Badge variant="outline" className="shrink-0 text-xs gap-1">
-                        <MapPin className="w-3 h-3" /> {cls.room}
-                      </Badge>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

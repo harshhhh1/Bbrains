@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.get('/', verifyToken, getSuggestions);
 router.post('/', verifyToken, createSuggestion);
-router.put('/:id/status', verifyToken, authorize('admin'), updateStatus);
+router.put('/:id/status', verifyToken, authorize('admin', 'teacher'), updateStatus);
 router.delete('/:id', verifyToken, removeSuggestion);
 
 export default router;

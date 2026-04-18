@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { CheckCircle2, Search, XCircle, Clock, Trash2, Eye, Lock, ChevronLeft, ChevronRight } from "lucide-react"
+import { CheckCircle2, Search, XCircle, Clock, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react"
 import { suggestionApi, Suggestion } from "@/services/api/client"
 import { SectionHeader } from "@/features/admin/components/SectionHeader"
 import { Badge } from "@/components/ui/badge"
@@ -15,7 +15,6 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { useHasPermission } from "@/components/providers/permissions-provider"
 import { Input } from "@/components/ui/input"
 
 function formatDate(dateString: string) {
@@ -33,8 +32,7 @@ const statusConfig: Record<Suggestion["status"], { icon: React.ReactNode; class:
     rejected: { icon: <XCircle className="size-3 mr-1" />, class: "bg-red-500/10 text-red-500 border-red-500/20" },
 }
 
-export default function SuggestionsPage() {
-    const canManageSuggestions = useHasPermission("manage_suggestions")
+export function SuggestionsManager() {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([])
     const [loading, setLoading] = useState(true)
     const [selected, setSelected] = useState<Suggestion | null>(null)
@@ -42,16 +40,6 @@ export default function SuggestionsPage() {
     const [search, setSearch] = useState("")
     const [page, setPage] = useState(1)
     const pageSize = 12
-
-    if (!canManageSuggestions) {
-        return (
-            <div className="flex h-[calc(100vh-4rem)] flex-col items-center justify-center gap-3 text-muted-foreground">
-                <Lock className="size-10 opacity-40" />
-                <p className="text-sm font-medium">Access Denied</p>
-                <p className="text-xs">You need the "Manage Suggestions" permission to view this page.</p>
-            </div>
-        )
-    }
 
     const fetchSuggestions = async () => {
         setLoading(true)

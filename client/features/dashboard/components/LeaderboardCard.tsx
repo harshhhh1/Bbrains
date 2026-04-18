@@ -9,15 +9,15 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { transformLeaderboard } from "../utils";
-import { LeaderboardLikeEntry } from "../types";
+import { LeaderboardLikeEntry, TransformedLeaderboardEntry } from "../types";
 
 interface LeaderboardCardProps {
-  initialLeaderboard?: LeaderboardEntry[];
+  initialLeaderboard?: TransformedLeaderboardEntry[];
 }
 
 export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboard }: LeaderboardCardProps) {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(initialLeaderboard || []);
-  const [myPosition, setMyPosition] = useState<LeaderboardEntry | null>(null);
+  const [leaderboard, setLeaderboard] = useState<TransformedLeaderboardEntry[]>(initialLeaderboard || []);
+  const [myPosition, setMyPosition] = useState<TransformedLeaderboardEntry | null>(null);
   const [loading, setLoading] = useState(!initialLeaderboard);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'xp' | 'points'>('xp');
@@ -26,8 +26,8 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
     setLoading(true);
     try {
       const [lbResponse, meResponse] = await Promise.all([
-        leaderboardApi.getLeaderboard(sortBy),
-        leaderboardApi.getMyPosition(sortBy)
+        leaderboardApi.getLeaderboard('allTime', sortBy),
+        leaderboardApi.getMyPosition('allTime', sortBy)
       ]);
 
       if (lbResponse.success && lbResponse.data) {
@@ -74,7 +74,7 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
 
   const isUserInTop = myPosition && leaderboard.some(user => user.id === myPosition.id);
 
-  const RankItem = ({ user, isMe = false }: { user: LeaderboardEntry; isMe?: boolean }) => (
+  const RankItem = ({ user, isMe = false }: { user: TransformedLeaderboardEntry; isMe?: boolean }) => (
     <div
       className={`flex items-center justify-between p-2 rounded-lg transition-colors ${
         isMe ? "bg-primary/10 border border-primary/20" : user.rank <= 3 ? "bg-muted/30" : "hover:bg-muted/20"

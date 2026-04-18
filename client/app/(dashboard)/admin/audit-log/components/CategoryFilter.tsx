@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { LOG_CATEGORIES } from "../types"
+import { cn } from "@/lib/utils"
 
 interface CategoryFilterProps {
     selectedCategory: string
@@ -10,28 +11,36 @@ interface CategoryFilterProps {
 
 export function CategoryFilter({ selectedCategory, onCategoryChange }: CategoryFilterProps) {
     return (
-        <div className="flex flex-wrap items-center gap-2">
-            <div className="flex gap-1.5 flex-wrap">
+        <div className="flex flex-wrap items-center gap-1.5 p-1 bg-muted/30 rounded-lg">
+            <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                    "h-7 px-3 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all",
+                    selectedCategory === "" 
+                        ? "bg-background text-foreground shadow-sm hover:bg-background" 
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )}
+                onClick={() => onCategoryChange("")}
+            >
+                All
+            </Button>
+            {LOG_CATEGORIES.map((cat) => (
                 <Button
-                    variant={selectedCategory === "" ? "default" : "outline"}
+                    key={cat}
+                    variant="ghost"
                     size="sm"
-                    className="h-7 rounded-full text-xs"
-                    onClick={() => onCategoryChange("")}
+                    className={cn(
+                        "h-7 px-3 rounded-md text-[11px] font-bold uppercase tracking-wider transition-all",
+                        selectedCategory === cat 
+                            ? "bg-background text-foreground shadow-sm hover:bg-background" 
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                    onClick={() => onCategoryChange(cat)}
                 >
-                    All
+                    {cat}
                 </Button>
-                {LOG_CATEGORIES.map((cat) => (
-                    <Button
-                        key={cat}
-                        variant={selectedCategory === cat ? "default" : "outline"}
-                        size="sm"
-                        className="h-7 rounded-full text-xs"
-                        onClick={() => onCategoryChange(cat)}
-                    >
-                        {cat}
-                    </Button>
-                ))}
-            </div>
+            ))}
         </div>
     )
 }

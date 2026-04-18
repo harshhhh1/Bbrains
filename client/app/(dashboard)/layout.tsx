@@ -75,6 +75,29 @@ async function fetchUserFromAPI(token: string): Promise<LayoutDBUser | null> {
     }
 }
 
+async function fetchSidebarAccess(token: string): Promise<Record<string, string[]> | null> {
+    try {
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        const response = await fetch(`${baseUrl}/sidebaraccess`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            cache: 'no-store',
+        })
+
+        if (!response.ok) return null
+
+        const result = await response.json()
+        if (result.success && result.data) {
+            return result.data
+        }
+        return null
+    } catch {
+        return null
+    }
+}
+
 async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const cookieStore = await cookies()
     const token = cookieStore.get('token')?.value
@@ -83,7 +106,10 @@ async function DashboardLayout({ children }: { children: React.ReactNode }) {
         redirect("/auth/login")
     }
 
-    const dbUser = await fetchUserFromAPI(token)
+    const [dbUser, sidebarAccessOverride] = await Promise.all([
+        fetchUserFromAPI(token),
+        fetchSidebarAccess(token)
+    ])
 
     if (!dbUser) {
         redirect("/auth/login")
@@ -151,7 +177,7 @@ async function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <PermissionsProvider>
                     <TooltipProvider>
                         <div className="flex h-screen w-full overflow-hidden bg-background">
-                            <AppSidebar user={formattedUser} />
+                            <AppSidebar user={formattedUser} sidebarAccessOverride={sidebarAccessOverride} />
 
                             <SidebarInset className="md:ml-2 flex flex-col h-full overflow-hidden min-w-0 w-full">
                                 <MainNavbar user={formattedUser} />

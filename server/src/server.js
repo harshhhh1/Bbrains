@@ -35,6 +35,7 @@ import notificationRouter from "./modules/notification/notification.routes.js";
 import configRouter from "./modules/config/config.routes.js";
 import suggestionRouter from "./modules/suggestion/suggestion.routes.js";
 import assessmentRouter from "./modules/assessment/assessment.routes.js";
+import sidebarAccessRouter from "./modules/sidebaraccess/sidebaraccess.routes.js";
 import prisma from "./utils/prisma.js";
 
 // Middleware imports
@@ -84,6 +85,8 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use("/", authRouter);
+app.use("/sidebaraccess", sidebarAccessRouter);
+app.use("/api/sidebar-access", sidebarAccessRouter);
 app.use("/user", userRouter);
 app.use("/api/users", userRouter);
 app.use("/market", marketRouter);
