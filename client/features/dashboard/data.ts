@@ -45,30 +45,18 @@ export async function getDashboardOverviewData() {
     name.toLowerCase().includes("manager")
   );
 
-  if (dbUserType === "superadmin") {
-    redirect("/superadmin/overview");
-  }
-  if (dbUserType === "admin") {
-    redirect("/admin/overview");
-  }
-
-  if (isManager) {
-    redirect("/manager/overview");
-  }
-
-  if (dbUserType === "teacher") {
-    redirect("/teacher/overview");
-  }
-
   let dashboardData: DashboardData | null = null;
 
-  try {
-    const response = await dashboardApi.getDashboard();
-    if (response.success && response.data) {
-      dashboardData = response.data;
+  // Only fetch student-specific dashboard data if they are a student
+  if (dbUserType === "student") {
+    try {
+      const response = await dashboardApi.getDashboard();
+      if (response.success && response.data) {
+        dashboardData = response.data;
+      }
+    } catch {
+      dashboardData = null;
     }
-  } catch {
-    dashboardData = null;
   }
 
   const transformedLeaderboard = dashboardData?.leaderboard
@@ -81,5 +69,7 @@ export async function getDashboardOverviewData() {
     dashboardData,
     transformedLeaderboard,
     username,
+    userType: dbUserType,
+    isManager
   };
 }

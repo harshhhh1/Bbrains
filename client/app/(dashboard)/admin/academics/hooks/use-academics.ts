@@ -51,15 +51,15 @@ export function useAcademics() {
     }
 
     if (tab === "students") {
-      router.push("/dashboard/admin/students");
+      router.push("/admin/students");
       return;
     }
 
-    router.push("/dashboard/admin/assignments");
+    router.push("/admin/assignments");
   };
 
   const handleEditClick = (course: Course) => {
-    router.push(`/dashboard/manager/classes?courseId=${course.id}`);
+    router.push(`/manager/classes?courseId=${course.id}`);
   };
 
   const handleDelete = useCallback(async () => {

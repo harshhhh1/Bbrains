@@ -32,15 +32,8 @@ const getIcon = (name: string): LucideIcon => {
 };
 
 // Process dynamic URLs (Dashboard)
-function getDashboardUrl(role: Role): string {
-    switch (role) {
-        case "admin": return "/admin/overview";
-        case "teacher": return "/teacher/overview";
-        case "manager": return "/manager/overview";
-        case "superadmin":
-        case "bbrains_official": return "/superadmin/overview";
-        default: return "/dashboard";
-    }
+function getDashboardUrl(): string {
+    return "/dashboard";
 }
 
 // Convert raw JSON to SidebarItem typed items
@@ -65,13 +58,29 @@ export function resolveRole(rawRole?: string | string[] | null): Role | Role[] {
     return normalized as Role;
 }
 
-export function getSidebarGroups(role: Role | Role[]): SidebarGroup[] {
+export function getSidebarGroups(role: Role | Role[], sidebarAccessOverride?: Record<string, string[]> | null): SidebarGroup[] {
     const roles = Array.isArray(role) ? role : [role];
     const primaryRole = roles[0] || "student";
 
-    const filteredItems = masterSidebarItems.filter(item =>
-        item.access.some(r => roles.includes(r))
-    );
+    // Define hardcoded admin-only paths that cannot be overridden
+    const ADMIN_ONLY_PATHS = ["/admin/users", "/admin/roles", "/admin/config", "/admin/config/sidebar-access"];
+
+    const filteredItems = masterSidebarItems.filter(item => {
+        // 1. Check if path is hardcoded admin-only
+        const itemUrl = typeof item.url === "string" ? item.url : "";
+        if (ADMIN_ONLY_PATHS.some(path => itemUrl === path || itemUrl.startsWith(path))) {
+            return roles.includes("admin") || roles.includes("superadmin");
+        }
+
+        // 2. Check for override (URL first for uniqueness, then title for backward compatibility/generics)
+        const overrideRoles = sidebarAccessOverride?.[itemUrl] || sidebarAccessOverride?.[item.title];
+        if (overrideRoles) {
+            return overrideRoles.some(r => roles.includes(r as Role));
+        }
+
+        // 3. Fallback to default access
+        return item.access.some(r => roles.includes(r));
+    });
 
     const processedItems = filteredItems.map(item => ({
         title: item.title,

@@ -33,9 +33,9 @@ router.post('/products/:id/reviews', verifyToken, createReview);
 router.get('/my-products', verifyToken, getMyProducts);
 router.get('/sales', verifyToken, getSales);
 
-// Pending products & approval (admin/teacher only)
-router.get('/pending', verifyToken, authorize('teacher', 'admin'), getPendingProducts);
-router.patch('/products/:id/approval', verifyToken, authorize('teacher', 'admin'), approveProduct);
+// Pending products & approval (admin/teacher/manager only)
+router.get('/pending', verifyToken, authorize('teacher', 'admin', 'manager'), getPendingProducts);
+router.patch('/products/:id/approval', verifyToken, authorize('teacher', 'admin', 'manager'), approveProduct);
 
 // Themes
 router.get('/themes', verifyToken, getAllThemes);

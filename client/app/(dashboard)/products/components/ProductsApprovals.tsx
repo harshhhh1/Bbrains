@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
 import { SectionHeader } from "@/features/admin/components/SectionHeader"
-import { RoleBadge } from "@/features/admin/components/RoleBadge"
 import Image from "next/image"
 import type { ApiProduct } from "@/lib/types/api"
 import { cn } from "@/lib/utils"
@@ -35,7 +34,7 @@ function fmtCurrency(n: number | string) {
     return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(n))
 }
 
-export default function ProductsApprovalPage() {
+export function ProductsApprovals() {
     const [products, setProducts] = useState<ApiProduct[]>([])
     const [loading, setLoading] = useState(true)
     const [actionLoading, setActionLoading] = useState<number | null>(null)
@@ -251,7 +250,7 @@ export default function ProductsApprovalPage() {
                                             <span className="block text-xl font-black text-brand-orange">{fmtCurrency(selectedProduct.price)}</span>
                                         </div>
                                         <div className="bg-muted/30 rounded-2xl p-4 border border-border/30">
-                                            <span className="block text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Stock</span>
+                                            <span className="block text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Stock</span>
                                             <span className="block text-xl font-black text-foreground">{selectedProduct.stock}</span>
                                         </div>
                                     </div>

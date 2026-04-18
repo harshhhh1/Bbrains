@@ -5,8 +5,8 @@ import { ArrowUpRight, BadgeIndianRupee, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { SectionHeader } from "@/features/admin/components/SectionHeader";
-import { fetchOverviewStats } from "@/app/(dashboard)/admin/overview/data";
-import { emptyStats, type OverviewStats } from "@/app/(dashboard)/admin/overview/_types";
+import { fetchOverviewStats } from "@/app/(dashboard)/dashboard/components/admin/data";
+import { emptyStats, type OverviewStats } from "@/app/(dashboard)/dashboard/components/admin/_types";
 
 function formatCurrency(amount: number, currency: string) {
   try {

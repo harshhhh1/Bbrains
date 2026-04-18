@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Building2, Settings } from "lucide-react";
+import { DashboardContent } from "@/components/dashboard-content";
 
-export default function SuperadminOverview() {
+export function SuperadminDashboard() {
     return (
-        <div className="space-y-6">
+        <DashboardContent className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight">Superadmin Dashboard</h1>
             <p className="text-muted-foreground">Welcome to the Bbrains Officials control panel.</p>
 
@@ -35,6 +36,6 @@ export default function SuperadminOverview() {
                     </Card>
                 </Link>
             </div>
-        </div>
+        </DashboardContent>
     );
 }

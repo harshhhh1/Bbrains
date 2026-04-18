@@ -6,17 +6,17 @@ import { toast } from "sonner"
 import { SectionHeader } from "@/features/admin/components/SectionHeader"
 import { CrudDrawer } from "@/features/admin/components/CrudDrawer"
 import { ConfirmDialog } from "@/features/admin/components/ConfirmDialog"
-import { ProductEditForm } from "./_components/ProductEditForm"
-import { fetchProducts, fmtCurrency } from "./data"
-import { initForm, type ProductFormData } from "./_types"
-import type { ApiProduct } from "./_types"
+import { ProductEditForm } from "../_components/ProductEditForm"
+import { fetchProducts, fmtCurrency } from "../data"
+import { initForm, type ProductFormData } from "../_types"
+import type { ApiProduct } from "../_types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Pencil, Trash2, CheckCircle, XCircle, Package, Loader2, ImageIcon } from "lucide-react"
 
-interface ProductsClientProps {
+interface ProductsManagerProps {
     initialProducts: ApiProduct[]
 }
 
@@ -34,7 +34,7 @@ function fmtDate(value: string) {
     })
 }
 
-export function ProductsClient({ initialProducts }: ProductsClientProps) {
+export function ProductsManager({ initialProducts }: ProductsManagerProps) {
     const [products, setProducts] = useState<ApiProduct[]>(initialProducts)
     const [loading, setLoading] = useState(false)
     const [editing, setEditing] = useState<ApiProduct | null>(null)

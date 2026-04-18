@@ -5,10 +5,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2 } from "lucide-react"
 import { TeacherAssignmentManager } from "@/features/assignments/components/TeacherAssignmentManager"
 import { TeacherGradingView } from "@/features/grading/components/TeacherGradingView"
+import { TeacherAssessmentWorkspace } from "@/features/assignments/components/TeacherAssessmentWorkspace"
+import { AssignmentsAdminView } from "./components/AssignmentsAdminView"
 import { useAssignments } from "./hooks/use-assignments"
 import { StudentAssignmentsView } from "./components/StudentAssignmentsView"
 import { AssignmentViewDialog } from "./components/AssignmentViewDialog"
 import { AssignmentSubmitDrawer } from "./components/AssignmentSubmitDrawer"
+import { BookOpen, GraduationCap, ListChecks } from "lucide-react"
 
 export default function AssignmentsPage() {
   const {
@@ -38,27 +41,44 @@ export default function AssignmentsPage() {
     )
   }
 
-  if (userRole === "teacher") {
+  // Admin / Manager / Teacher View (Management Hub)
+  if (userRole === "admin" || userRole === "superadmin" || userRole === "manager" || userRole === "teacher") {
     return (
       <DashboardContent className="space-y-6">
         <Tabs defaultValue="manage" className="flex-col space-y-6">
           <div className="space-y-4">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Assignments</h1>
-              <p className="text-muted-foreground">
-                Create assignments, review uploaded work, and approve completed submissions.
+              <h1 className="text-2xl font-bold text-foreground">Assignments Hub</h1>
+              <p className="text-muted-foreground text-sm">
+                Manage institutional assignments, review submissions, and publish results.
               </p>
             </div>
-            <TabsList>
-              <TabsTrigger value="manage">Manage</TabsTrigger>
-              <TabsTrigger value="review">Review</TabsTrigger>
+            <TabsList className="bg-muted/50 p-1">
+              <TabsTrigger value="manage" className="gap-2">
+                <BookOpen className="size-3.5" />
+                Manage
+              </TabsTrigger>
+              <TabsTrigger value="review" className="gap-2">
+                <ListChecks className="size-3.5" />
+                Review
+              </TabsTrigger>
+              <TabsTrigger value="assessments" className="gap-2">
+                <GraduationCap className="size-3.5" />
+                Tests & Exams
+              </TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent value="manage">
-            <TeacherAssignmentManager />
+          
+          <TabsContent value="manage" className="mt-0 border-none p-0 outline-none">
+            <AssignmentsAdminView />
           </TabsContent>
-          <TabsContent value="review">
+          
+          <TabsContent value="review" className="mt-0 border-none p-0 outline-none">
             <TeacherGradingView />
+          </TabsContent>
+          
+          <TabsContent value="assessments" className="mt-0 border-none p-0 outline-none">
+            <TeacherAssessmentWorkspace />
           </TabsContent>
         </Tabs>
       </DashboardContent>

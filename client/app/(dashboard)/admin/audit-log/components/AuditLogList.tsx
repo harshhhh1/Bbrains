@@ -14,10 +14,12 @@ export function AuditLogList({ logs, searchQuery }: AuditLogListProps) {
     }
 
     return (
-        <div className="space-y-3">
-            {logs.map((log) => (
-                <AuditLogCard key={log.id} log={log} />
-            ))}
+        <div className="rounded-xl border border-border/60 bg-card overflow-hidden shadow-sm">
+            <div className="divide-y divide-border/40">
+                {logs.map((log) => (
+                    <AuditLogCard key={log.id} log={log} />
+                ))}
+            </div>
         </div>
     )
 }
