@@ -88,6 +88,7 @@ export function DailyRewardCard({ initialStreak }: DailyRewardCardProps) {
           setClaimedToday(true);
           setLastLocalUpdate(Date.now());
         }
+        window.dispatchEvent(new Event("user-xp-updated"));
         router.refresh();
       } else {
         setError(response.message || "Failed to claim reward");

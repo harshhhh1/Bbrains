@@ -280,20 +280,21 @@ const getUserDataHandler = async (req, res) => {
 const getUsersByRole = async (roleName, collegeId) => {
     return await prisma.user.findMany({
         where: {
-            type: roleName, // 'student' or 'teacher' from enum
-            ...(collegeId ? { collegeId } : {})
+            type: roleName,
+            collegeId: collegeId || -1 // Force isolation: if no collegeId, return nothing rather than everything
         },
         select: userSummarySelect,
         orderBy: {
             createdAt: 'desc'
         }
     });
-
 };
 
 const getAllUsersWithRoles = async (collegeId) => {
     return await prisma.user.findMany({
-        where: collegeId ? { collegeId } : {},
+        where: {
+            collegeId: collegeId || -1
+        },
         select: userSummarySelect,
         orderBy: {
             createdAt: 'desc'
@@ -519,6 +520,14 @@ const createManager = async (data) => {
     });
 };
 
+const createAdmin = async (data) => {
+    return await createManagedUser({
+        ...data,
+        type: 'admin',
+        assignRoleNames: ['Admin'],
+    });
+};
+
 const deleteUser = async (userId) => {
     try {
         const user = await prisma.user.delete({
@@ -545,5 +554,6 @@ export {
     createTeacher,
     createStudent,
     createManager,
+    createAdmin,
     deleteUser
 };

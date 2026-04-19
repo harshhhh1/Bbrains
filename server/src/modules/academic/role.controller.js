@@ -28,7 +28,7 @@ export const createRole = async (req, res) => {
 // GET /roles
 export const getRoles = async (req, res) => {
     try {
-        const roles = await getAllRoles();
+        const roles = await getAllRoles(req.user.collegeId);
         return sendSuccess(res, roles);
     } catch (error) {
         return sendError(res, 'Failed to fetch roles', 500);
@@ -38,7 +38,7 @@ export const getRoles = async (req, res) => {
 // GET /roles/users
 export const listUsers = async (req, res) => {
     try {
-        const users = await getUsersWithRoles();
+        const users = await getUsersWithRoles(req.user.collegeId);
         return sendSuccess(res, users);
     } catch (error) {
         return sendError(res, 'Failed to fetch users', 500);

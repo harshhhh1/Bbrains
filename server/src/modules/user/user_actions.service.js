@@ -1,4 +1,5 @@
 import prisma from "../../utils/prisma.js";
+import { awardXpToUser } from "../xp/xp.service.js";
 
 const DAILY_REWARD_XP = [50, 50, 75, 75, 100, 100, 200];
 const STREAK_RESET_HOURS = 48;
@@ -42,21 +43,8 @@ const claimDailyRewards = async (userId) => {
     const rewardCoins = 100;
 
     // Use a transaction to ensure all updates succeed or fail together
-    return await prisma.$transaction(async (tx) => {
-        // 1. Update/Create XP
-        await tx.xp.upsert({
-            where: { userId: userId },
-            update: {
-                xp: { increment: rewardXP }
-            },
-            create: {
-                userId: userId,
-                xp: rewardXP,
-                level: 1
-            }
-        });
-
-        // 2. Update/Create Wallet (Coins)
+    const txResult = await prisma.$transaction(async (tx) => {
+        // 1. Update/Create Wallet (Coins)
         await tx.wallet.upsert({
             where: { userId: userId },
             update: {
@@ -99,19 +87,24 @@ const claimDailyRewards = async (userId) => {
             }
         });
 
-        return {
-            xp: rewardXP,
-            coins: rewardCoins,
-            streak: {
-                id: updatedStreak.id,
-                userId: updatedStreak.userId,
-                currentStreak: Number(updatedStreak.currentStreak || 0),
-                lastClaimedAt: updatedStreak.lastClaimedAt,
-                canClaim: false,
-                hoursUntilNextClaim: CLAIM_COOLDOWN_HOURS
-            }
-        };
+        return updatedStreak;
     });
+
+    // 2. Update XP using canonical service to trigger level ups and achievements
+    await awardXpToUser(userId, rewardXP).catch(err => console.error("Failed to award XP after daily claim:", err));
+
+    return {
+        xp: rewardXP,
+        coins: rewardCoins,
+        streak: {
+            id: txResult.id,
+            userId: txResult.userId,
+            currentStreak: Number(txResult.currentStreak || 0),
+            lastClaimedAt: txResult.lastClaimedAt,
+            canClaim: false,
+            hoursUntilNextClaim: CLAIM_COOLDOWN_HOURS
+        }
+    };
 };
 
 export { updateUser, deleteUser, claimDailyRewards };

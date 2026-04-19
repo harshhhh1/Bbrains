@@ -4,6 +4,7 @@ import {
     createTeacher,
     createStudent,
     createManager,
+    createAdmin,
     deleteUser as deleteManagedUser,
     getUserDetailsByID,
     getUserSummaryByID,
@@ -49,6 +50,12 @@ const createManagerSchema = createStudentSchema.omit({
     bio: z.string().max(500).optional()
 });
 
+const createAdminSchema = createStudentSchema.omit({
+    classId: true,
+}).extend({
+    bio: z.string().max(500).optional()
+});
+
 const formatZodErrors = (error) => {
     const issues = Array.isArray(error?.issues)
         ? error.issues
@@ -62,8 +69,10 @@ const formatZodErrors = (error) => {
     }));
 };
 
-const resolveCollegeId = async (requestedCollegeId, fallbackCollegeId) => {
+const resolveCollegeId = async (requestedCollegeId, fallbackCollegeId, userType = null) => {
     if (
+        userType !== 'superadmin' &&
+        userType !== 'bbrains_official' &&
         requestedCollegeId !== undefined &&
         requestedCollegeId !== null &&
         fallbackCollegeId &&
@@ -409,6 +418,33 @@ export const addManager = async (req, res) => {
         if (error.code === 'P2002') return sendError(res, 'Username or email already exists', 409);
         console.error("Add Manager Error:", error);
         return sendError(res, error?.message || 'Failed to add manager', 500);
+    }
+};
+
+// POST /users/admins
+export const addAdmin = async (req, res) => {
+    try {
+        const validated = createAdminSchema.parse(req.body);
+        const collegeId = await resolveCollegeId(validated.collegeId, req.user.collegeId, req.user.type);
+        const [existingEmail, existingUsername] = await Promise.all([
+            findUserByEmail(validated.email),
+            findUserByUsername(validated.username),
+        ]);
+        if (existingEmail || existingUsername) return sendError(res, 'Username or email already exists', 409);
+
+        const result = await createAdmin({
+            ...validated,
+            collegeId,
+        });
+        await createAuditLog(req.user.id, 'USER', 'CREATE', 'User', result.id, null, 'Admin added');
+        return sendCreated(res, result, 'Admin account created successfully.');
+    } catch (error) {
+        if (error.name === 'ZodError') {
+            return sendError(res, 'Validation failed', 400, formatZodErrors(error));
+        }
+        if (error.code === 'P2002') return sendError(res, 'Username or email already exists', 409);
+        console.error("Add Admin Error:", error);
+        return sendError(res, error?.message || 'Failed to add admin', 500);
     }
 };
 

@@ -72,10 +72,14 @@ export default function SidebarAccessClient() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await updateCollegeSidebarAccess(accessMap);
+            const res = await updateCollegeSidebarAccess(accessMap);
+            if (!res.success) {
+                toast.error(res.message || res.error || "Failed to update sidebar access.");
+                return;
+            }
             toast.success("Sidebar access updated successfully. Refresh to see changes.");
-        } catch (error) {
-            toast.error("Failed to update sidebar access.");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to update sidebar access.");
         } finally {
             setSaving(false);
         }
