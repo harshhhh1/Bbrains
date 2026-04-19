@@ -21,29 +21,45 @@ export const getAllColleges = async (skip = 0, take = 20) => {
 
 // Get college by ID
 export const getCollegeById = async (id) => {
-    return await prisma.college.findUnique({
-        where: { id },
-        include: { 
-            address: true,
-            users: {
-                where: { type: 'admin' },
-                select: {
-                    id: true,
-                    username: true,
-                    email: true,
-                    userDetails: {
-                        select: {
-                            firstName: true,
-                            lastName: true,
-                            avatar: true,
-                            phone: true
+    const [college, studentCount, teacherCount] = await prisma.$transaction([
+        prisma.college.findUnique({
+            where: { id },
+            include: {
+                address: true,
+                users: {
+                    where: { type: 'admin' },
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        userDetails: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                avatar: true,
+                                phone: true
+                            }
                         }
                     }
                 }
             }
+        }),
+        prisma.user.count({ where: { collegeId: id, type: 'student' } }),
+        prisma.user.count({ where: { collegeId: id, type: 'teacher' } }),
+    ]);
+
+    if (!college) return null;
+
+    return {
+        ...college,
+        _count: {
+            students: studentCount,
+            teachers: teacherCount,
+            admins: college.users.length
         }
-    });
+    };
 };
+
 
 // Update college
 export const updateCollegeRecord = async (id, data) => {

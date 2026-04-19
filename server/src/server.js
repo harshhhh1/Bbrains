@@ -88,6 +88,7 @@ app.use("/", authRouter);
 app.use("/sidebaraccess", sidebarAccessRouter);
 app.use("/api/sidebar-access", sidebarAccessRouter);
 app.use("/user", userRouter);
+app.use("/users", userRouter);
 app.use("/api/users", userRouter);
 app.use("/market", marketRouter);
 app.use("/dashboard", dashboardRouter);

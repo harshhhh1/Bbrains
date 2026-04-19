@@ -30,6 +30,7 @@ export function CoursesTable({ courses, search, onDelete, onEdit }: CoursesTable
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-12">ID</TableHead>
             <TableHead>Course</TableHead>
             <TableHead className="hidden sm:table-cell">Standard</TableHead>
             <TableHead className="hidden lg:table-cell">Subjects</TableHead>
@@ -40,6 +41,7 @@ export function CoursesTable({ courses, search, onDelete, onEdit }: CoursesTable
         <TableBody>
           {filteredCourses.map((course) => (
             <TableRow key={course.id}>
+              <TableCell className="font-mono text-[10px] text-muted-foreground">{course.id}</TableCell>
               <TableCell>
                 <p className="font-medium text-foreground">{course.name}</p>
                 <p className="text-xs text-muted-foreground line-clamp-1">{course.description}</p>

@@ -68,18 +68,20 @@ function getRoleLabel(type?: string) {
 export function MainNavbar({ user }: { user?: NavbarUser | null }) {
     const router = useRouter()
     const pathname = usePathname()
+    const [todayLabel, setTodayLabel] = React.useState("")
 
     const breadcrumbLabels = useMemo(() => buildPathLabels(pathname), [pathname])
     const pageTitle = useMemo(() => getPrimaryTitle(pathname), [pathname])
-    const todayLabel = useMemo(
-        () =>
+
+    React.useEffect(() => {
+        setTodayLabel(
             new Intl.DateTimeFormat("en-IN", {
                 weekday: "short",
                 day: "numeric",
                 month: "short",
-            }).format(new Date()),
-        []
-    )
+            }).format(new Date())
+        )
+    }, [])
 
     const handleLogout = async () => {
         try {
