@@ -3,6 +3,7 @@ import type { ApiUser } from "@/lib/types/api";
 export type UserDetails = ApiUser;
 
 export interface ManagerForm {
+  type: string;
   username: string;
   email: string;
   password: string;
@@ -14,9 +15,13 @@ export interface ManagerForm {
   phone: string;
   bio: string;
   collegeId: string;
+  roleIds: number[];
+  classId: string;
+  teacherSubjects: string;
 }
 
 export const emptyManagerForm: ManagerForm = {
+  type: "student",
   username: "",
   email: "",
   password: "",
@@ -28,6 +33,9 @@ export const emptyManagerForm: ManagerForm = {
   phone: "",
   bio: "",
   collegeId: "",
+  roleIds: [],
+  classId: "",
+  teacherSubjects: "",
 };
 
 export function hasManagerRole(user: Pick<ApiUser, "roles"> | null | undefined): boolean {

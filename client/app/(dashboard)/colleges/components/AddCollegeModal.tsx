@@ -17,6 +17,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+interface AddCollegeModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
 export function AddCollegeModal({ isOpen, onClose, onSuccess }: AddCollegeModalProps) {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);

@@ -59,14 +59,16 @@ export function ChatSidebarRight({ members, currentUserId, onSelectUser }: ChatS
   const offlineMembers = members.filter(m => !onlineUserIds.has(m.id))
 
   const onlineByRole = onlineMembers.reduce((acc, m) => {
-    if (!acc[m.role]) acc[m.role] = []
-    acc[m.role].push(m)
+    const roleName = m.role?.toLowerCase() === 'moderator' ? 'Teacher' : m.role
+    if (!acc[roleName]) acc[roleName] = []
+    acc[roleName].push(m)
     return acc
   }, {} as Record<string, Member[]>)
 
   const offlineByRole = offlineMembers.reduce((acc, m) => {
-    if (!acc[m.role]) acc[m.role] = []
-    acc[m.role].push(m)
+    const roleName = m.role?.toLowerCase() === 'moderator' ? 'Teacher' : m.role
+    if (!acc[roleName]) acc[roleName] = []
+    acc[roleName].push(m)
     return acc
   }, {} as Record<string, Member[]>)
 

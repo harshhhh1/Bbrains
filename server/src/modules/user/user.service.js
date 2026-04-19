@@ -460,6 +460,24 @@ const createManagedUser = async (data) => {
                 });
             }
 
+            if (data.roleIds && Array.isArray(data.roleIds)) {
+                for (const roleId of data.roleIds) {
+                    await tx.userRoles.upsert({
+                        where: {
+                            userId_roleId: {
+                                userId: userId,
+                                roleId: Number(roleId),
+                            }
+                        },
+                        create: {
+                            userId: userId,
+                            roleId: Number(roleId),
+                        },
+                        update: {},
+                    });
+                }
+            }
+
             if (type === 'student' && classId) {
                 const course = await findCourseInCollege(classId, 'Selected class was not found for this college');
 

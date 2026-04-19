@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { api } from "@/services/api/client";
 import { toast } from "sonner";
 import { EditCollegeModal } from "../components/EditCollegeModal";
+import { CollegeUsersManagement } from "./_components/CollegeUsersManagement";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -244,7 +245,15 @@ export default function CollegeDetailPage() {
         </Card>
       </div>
 
+      {/* College User Management Hub */}
+      <CollegeUsersManagement
+        collegeId={college.id}
+        collegeName={college.name}
+        initialCounts={college._count}
+      />
+
       {isEditModalOpen && (
+
         <EditCollegeModal 
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}

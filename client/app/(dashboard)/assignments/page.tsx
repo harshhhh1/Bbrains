@@ -3,7 +3,6 @@
 import { DashboardContent } from "@/components/dashboard-content"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2 } from "lucide-react"
-import { TeacherAssignmentManager } from "@/features/assignments/components/TeacherAssignmentManager"
 import { TeacherGradingView } from "@/features/grading/components/TeacherGradingView"
 import { TeacherAssessmentWorkspace } from "@/features/assignments/components/TeacherAssessmentWorkspace"
 import { AssignmentsAdminView } from "./components/AssignmentsAdminView"
