@@ -35,13 +35,23 @@ const verifyToken = async (req, res, next) => {
           include: {
             role: true
           }
-        }
+        },
+        college: true
       }
     });
 
     if (!dbUser) {
       console.error('[AuthMiddleware] User not found in database for ID:', decoded.id);
       return sendError(res, 'User not found in system database', 403);
+    }
+
+    if (dbUser.college && 
+        typeof dbUser.college.features === 'object' && 
+        dbUser.college.features !== null && 
+        dbUser.college.features.isPaused === true && 
+        dbUser.type !== 'superadmin' && 
+        dbUser.type !== 'bbrains_official') {
+      return sendError(res, 'Access denied. Your institution account is currently suspended. Please contact your administrator.', 403);
     }
 
     req.user = dbUser;

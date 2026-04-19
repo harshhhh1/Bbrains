@@ -124,7 +124,7 @@ export const getRecordedTransactionsForActor = async (actor, filters = {}) => {
     if (actor.type === 'admin') {
         const recorders = await prisma.user.findMany({
             where: {
-                ...(actor.collegeId ? { collegeId: actor.collegeId } : {}),
+                collegeId: actor.collegeId || -1,
                 OR: [
                     { type: 'admin' },
                     {

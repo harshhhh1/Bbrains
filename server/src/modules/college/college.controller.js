@@ -107,3 +107,26 @@ export const deleteCollege = async (req, res) => {
         return sendError(res, 'Failed to delete college', 500);
     }
 };
+
+// POST /colleges/:id/toggle-pause
+export const togglePauseCollege = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return sendError(res, 'Invalid college ID', 400);
+
+        const college = await getCollegeById(id);
+        if (!college) return sendError(res, 'College not found', 404);
+
+        const currentFeatures = college.features || {};
+        const isCurrentlyPaused = currentFeatures.isPaused === true;
+        const updatedFeatures = { ...currentFeatures, isPaused: !isCurrentlyPaused };
+
+        const updatedCollege = await updateCollegeRecord(id, { features: updatedFeatures });
+        
+        await createAuditLog(req.user.id, 'SYSTEM', 'UPDATE', 'College', id, null, `College ${!isCurrentlyPaused ? 'paused' : 'resumed'}`);
+        return sendSuccess(res, updatedCollege, `College successfully ${!isCurrentlyPaused ? 'paused' : 'resumed'}`);
+    } catch (error) {
+        console.error(error);
+        return sendError(res, 'Failed to toggle college status', 500);
+    }
+};

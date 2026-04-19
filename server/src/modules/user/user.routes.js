@@ -2,7 +2,7 @@ import express from 'express';
 import {
     getMe, getUserByUsername, getStudents, getTeachers, getStaff,
     getStudentByUsername, getTeacherByUsername,
-    addTeacher, addStudent, addManager, getManagers, updateTeacher, updateStudent, deleteTeacher, searchUser,
+    addTeacher, addStudent, addManager, addAdmin, getManagers, updateTeacher, updateStudent, deleteTeacher, searchUser,
     checkUsernameAvailability
 } from './user_management.controller.js';
 import { editUser, removeUser, dailyClaim } from './user_actions.controller.js';
@@ -40,6 +40,9 @@ router.delete('/teachers/:id', verifyToken, authorize('admin', 'manager'), delet
 // Manager endpoints
 router.get('/managers', verifyToken, authorize('admin'), getManagers);
 router.post('/managers', verifyToken, authorize('admin'), addManager);
+
+// Admin endpoints
+router.post('/admins', verifyToken, authorize('superadmin'), addAdmin);
 
 // User actions
 router.put('/update/:id', verifyToken, editUser);

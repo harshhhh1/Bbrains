@@ -7,10 +7,13 @@ export const createSuggestionRecord = async (userId, title, content) => {
 };
 
 export const getSuggestionsByFilters = async (filters = {}) => {
-    const { userId, status } = filters;
+    const { userId, status, collegeId } = filters;
     const where = {};
     if (userId) where.userId = userId;
     if (status) where.status = status;
+    if (collegeId) {
+        where.user = { collegeId };
+    }
 
     return await prisma.suggestion.findMany({
         where,

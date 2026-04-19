@@ -24,8 +24,13 @@ export const createSuggestion = async (req, res) => {
 
 export const getSuggestions = async (req, res) => {
     try {
-        const filters = {};
-        if (req.user.type !== 'admin') {
+        const filters = {
+            collegeId: req.user.collegeId
+        };
+        
+        const isManagerial = ['admin', 'superadmin', 'teacher', 'manager'].includes(req.user.type);
+        
+        if (!isManagerial) {
             filters.userId = req.user.id;
         } else if (req.query.userId) {
             filters.userId = req.query.userId;

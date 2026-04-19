@@ -152,7 +152,8 @@ const buildCourseBaseWhere = (currentUser, search = '') => {
 
     if (!currentUser) return Object.keys(searchWhere).length ? searchWhere : undefined;
 
-    const collegeScoped = currentUser?.collegeId ? { collegeId: currentUser.collegeId } : {};
+    const collegeId = currentUser.collegeId || -1;
+    const collegeScoped = { collegeId };
 
     return {
         ...searchWhere,

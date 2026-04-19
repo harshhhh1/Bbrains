@@ -15,13 +15,9 @@ export async function fetchCollegeSidebarAccess(): Promise<Record<string, string
 
 export async function updateCollegeSidebarAccess(map: Record<string, string[]>) {
     try {
-        const response = await api.post<Record<string, string[]>>("/sidebaraccess", map);
-        if (!response.success) {
-            throw new Error(response.message || "Failed to update sidebar access");
-        }
-        return response.data;
-    } catch (error) {
+        return await api.post<Record<string, string[]>>("/sidebaraccess", map);
+    } catch (error: any) {
         console.error("Failed to update sidebar access:", error);
-        throw error;
+        return { success: false, message: error.message || "Unknown error occurred" } as any;
     }
 }
