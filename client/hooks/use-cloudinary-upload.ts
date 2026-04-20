@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react'
 
 // Cloudinary unsigned upload helper
-const rawCloudName = (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? process.env.CLOUDINARY_CLOUD_NAME) : '') as string;
-const rawPreset = (typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? process.env.CLOUDINARY_UPLOAD_PRESET) : '') as string;
+const rawCloudName = (typeof window !== 'undefined' ? (process.env.CLOUDINARY_CLOUD_NAME ?? process.env.CLOUDINARY_CLOUD_NAME) : '') as string;
+const rawPreset = (typeof window !== 'undefined' ? (process.env.CLOUDINARY_UPLOAD_PRESET ?? process.env.CLOUDINARY_UPLOAD_PRESET) : '') as string;
 const CLOUD_NAME = (rawCloudName || '').toString().replace(/^"|"$/g, '');
 const UPLOAD_PRESET = (rawPreset || '').toString().replace(/^"|"$/g, '');
 

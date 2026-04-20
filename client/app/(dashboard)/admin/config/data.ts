@@ -2,7 +2,7 @@ import { getAuthToken } from "@/services/api/client"
 import type { SystemConfig } from "@/services/api/client"
 
 const getBaseUrl = () => {
-    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
+    if (process.env.API_URL) return process.env.API_URL
     return "http://localhost:5000"
 }
 
