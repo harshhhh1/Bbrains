@@ -15,7 +15,8 @@ export const getLeaderboardHandler = async (req, res) => {
         const limit = Math.min(parseInt(req.query.limit) || 20, 100);
         const offset = parseInt(req.query.offset) || 0;
 
-        const leaderboard = await getLeaderboard(category, sortBy, limit, offset);
+        const collegeId = req.user.collegeId;
+        const leaderboard = await getLeaderboard(category, sortBy, limit, offset, collegeId);
         return sendSuccess(res, leaderboard);
     } catch (error) {
         console.error('Leaderboard error:', error);
@@ -28,7 +29,8 @@ export const getMyLeaderboardPosition = async (req, res) => {
     try {
         const category = sanitizeCategory(req.query.category);
         const sortBy = sanitizeSort(req.query.sortBy);
-        const position = await getMyPosition(req.user.id, category, sortBy);
+        const collegeId = req.user.collegeId;
+        const position = await getMyPosition(req.user.id, category, sortBy, collegeId);
         return sendSuccess(res, position || { rank: null, message: 'Not on leaderboard yet' });
     } catch (error) {
         console.error('My position error:', error);

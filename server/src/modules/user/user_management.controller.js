@@ -897,12 +897,14 @@ export const batchImportUsers = async (req, res) => {
                         }
                     });
 
-                    // Create Wallet record with 5000 starting balance
-                    await tx.wallet.create({
-                        data: {
+                    // Create Wallet record with 5000 starting balance (use upsert to handle duplicates)
+                    await tx.wallet.upsert({
+                        where: { userId: user.id },
+                        update: {},
+                        create: {
                             id: crypto.randomUUID(),
                             userId: user.id,
-                            balance: 5000, // Override default 500
+                            balance: 5000,
                             heldBalance: 0
                         }
                     });

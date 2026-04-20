@@ -15,20 +15,21 @@ import {
     SheetFooter,
 } from "@/components/ui/sheet"
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-    VisuallyHidden,
-} from "@/components/ui/dialog"
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+} from "@/components/ui/drawer"
 import { Textarea } from "@/components/ui/textarea"
 import { SectionHeader } from "@/features/admin/components/SectionHeader"
 import Image from "next/image"
 import type { ApiProduct } from "@/lib/types/api"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 function fmtCurrency(n: number | string) {
     return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(n))
@@ -305,50 +306,62 @@ export function ProductsApprovals() {
                 </SheetContent>
             </Sheet>
 
-            <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-                <DialogContent className="sm:max-w-md rounded-[2rem] border-border/40 shadow-xl">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-black text-red-600">Reject Product</DialogTitle>
-                        <DialogDescription className="font-medium">
-                            Are you sure you want to reject <span className="font-bold text-foreground">&quot;{selectedProduct?.name}&quot;</span>?
-                        </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="py-4">
-                        <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                            Reason for Rejection (Optional)
-                        </label>
-                        <Textarea 
-                            placeholder="Explain why this product is being rejected to help the creator fix issues..."
-                            className="min-h-[120px] resize-none rounded-xl bg-muted/20 border-border/50 focus:border-red-500/50 focus:ring-red-500/20"
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
-                        />
-                    </div>
+            <Drawer open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen} direction="right">
+                <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem] z-[100]">
+                    <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+                        <DrawerHeader className="border-b border-border/60 p-6 text-left">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="space-y-2">
+                                    <DrawerTitle className="text-xl font-black text-red-600">Reject Product</DrawerTitle>
+                                    <DrawerDescription className="font-medium">
+                                        Are you sure you want to reject <span className="font-bold text-foreground">&quot;{selectedProduct?.name}&quot;</span>?
+                                    </DrawerDescription>
+                                </div>
+                                <DrawerClose asChild>
+                                    <Button variant="ghost" size="icon" className="rounded-full">
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </DrawerClose>
+                            </div>
+                        </DrawerHeader>
+                        
+                        <div className="flex-1 p-6">
+                            <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                                Reason for Rejection (Optional)
+                            </label>
+                            <Textarea 
+                                placeholder="Explain why this product is being rejected to help the creator fix issues..."
+                                className="min-h-[200px] resize-none rounded-xl bg-muted/20 border-border/50 focus:border-red-500/50 focus:ring-red-500/20"
+                                value={rejectReason}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                            />
+                        </div>
 
-                    <DialogFooter className="gap-2 sm:gap-0">
-                        <Button 
-                            variant="ghost" 
-                            onClick={() => setIsRejectDialogOpen(false)}
-                            className="rounded-xl font-bold"
-                        >
-                            Cancel
-                        </Button>
-                        <Button 
-                            variant="destructive" 
-                            onClick={confirmReject}
-                            className="rounded-xl font-bold"
-                            disabled={actionLoading === selectedProduct?.id}
-                        >
-                            {actionLoading === selectedProduct?.id ? (
-                                <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                                "Confirm Rejection"
-                            )}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                        <DrawerFooter className="border-t border-border/60 p-6 sm:flex-row sm:justify-end gap-3">
+                            <DrawerClose asChild>
+                                <Button 
+                                    variant="ghost" 
+                                    className="rounded-xl font-bold"
+                                >
+                                    Cancel
+                                </Button>
+                            </DrawerClose>
+                            <Button 
+                                variant="destructive" 
+                                onClick={confirmReject}
+                                className="rounded-xl font-bold"
+                                disabled={actionLoading === selectedProduct?.id}
+                            >
+                                {actionLoading === selectedProduct?.id ? (
+                                    <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                    "Confirm Rejection"
+                                )}
+                            </Button>
+                        </DrawerFooter>
+                    </div>
+                </DrawerContent>
+            </Drawer>
         </div>
     )
 }

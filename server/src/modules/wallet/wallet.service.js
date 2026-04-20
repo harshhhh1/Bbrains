@@ -27,9 +27,14 @@ const transferFunds = async (senderId, recipientEmail, amount, note, pin) => {
             throw new Error("Insufficient balance");
         }
 
-        // 2. Find recipient wallet by email (wallet ID)
-        const recipientWallet = await tx.wallet.findUnique({
-            where: { id: recipientEmail }
+        // 2. Find recipient wallet by email (wallet ID) or userId
+        const recipientWallet = await tx.wallet.findFirst({
+            where: {
+                OR: [
+                    { id: recipientEmail },
+                    { userId: recipientEmail }
+                ]
+            }
         });
 
         if (!recipientWallet) throw new Error("Recipient wallet not found");
@@ -38,12 +43,12 @@ const transferFunds = async (senderId, recipientEmail, amount, note, pin) => {
         // 3. Perform Transfer
         await tx.wallet.update({
             where: { id: senderWallet.id },
-            data: { balance: { decrement: amount } }
+            data: { balance: { decrement: Number(amount) } }
         });
 
         await tx.wallet.update({
             where: { id: recipientWallet.id },
-            data: { balance: { increment: amount } }
+            data: { balance: { increment: Number(amount) } }
         });
 
         // 4. Log Transactions (Debit for Sender, Credit for Recipient)
@@ -55,13 +60,13 @@ const transferFunds = async (senderId, recipientEmail, amount, note, pin) => {
                 recordedById: senderId,
                 relatedUserId: recipientWallet.userId,
                 entryGroupId,
-                amount: amount,
+                amount: Number(amount),
                 type: 'debit',
                 category: 'transfer',
                 status: 'success',
                 paymentMode: 'wallet',
                 primaryRecord: true,
-                note: `Sent to ${recipientEmail}: ${note || ''}`
+                note: `Sent to ${recipientWallet.id}: ${note || ''}`
             }
         });
 
@@ -71,7 +76,7 @@ const transferFunds = async (senderId, recipientEmail, amount, note, pin) => {
                 recordedById: senderId,
                 relatedUserId: senderId,
                 entryGroupId,
-                amount: amount,
+                amount: Number(amount),
                 type: 'credit',
                 category: 'transfer',
                 status: 'success',

@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import {
   Select,
   SelectContent,
@@ -38,6 +40,7 @@ import {
   Share2,
   Download,
   Building2,
+  X,
 } from "lucide-react";
 import { transactionApi, type Transaction } from "@/services/api/client";
 
@@ -464,107 +467,115 @@ export default function PaymentHistoryPage() {
           </CardContent>
         </Card>
 
-        <Dialog open={!!selectedPayment} onOpenChange={() => setSelectedPayment(null)}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                {selectedPayment && selectedPayment.type === "market" ? (
-                  <>
-                    <ShoppingBag className="w-5 h-5 text-blue-600" />
-                    Market Order Details
-                  </>
-                ) : (
-                  <>
-                    <Wallet className="w-5 h-5 text-primary" />
-                    Transaction Details
-                  </>
-                )}
-              </DialogTitle>
-              <DialogDescription>
-                {selectedPayment && formatDate(selectedPayment.createdAt)}
-              </DialogDescription>
-            </DialogHeader>
-            
-            {selectedPayment && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-center py-4">
+        <Drawer open={!!selectedPayment} onOpenChange={(open) => !open && setSelectedPayment(null)} direction="right">
+          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+            <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+              <DrawerHeader className="border-b border-border/60 p-6 text-left">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <DrawerTitle className="flex items-center gap-2">
+                      {selectedPayment && selectedPayment.type === "market" ? (
+                        <>
+                          <ShoppingBag className="w-5 h-5 text-blue-600" />
+                          Market Order Details
+                        </>
+                      ) : (
+                        <>
+                          <Wallet className="w-5 h-5 text-primary" />
+                          Transaction Details
+                        </>
+                      )}
+                    </DrawerTitle>
+                    <DrawerDescription>
+                      {selectedPayment && formatDate(selectedPayment.createdAt)}
+                    </DrawerDescription>
+                  </div>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+              
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <div className="flex flex-col items-center justify-center py-4">
                   <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
-                    selectedPayment.status === "completed" 
+                    selectedPayment?.status === "completed" 
                       ? "bg-green-500/10"
-                      : selectedPayment.status === "pending"
+                      : selectedPayment?.status === "pending"
                         ? "bg-yellow-500/10"
                         : "bg-red-500/10"
                   }`}>
-                    {selectedPayment.status === "completed" ? (
+                    {selectedPayment?.status === "completed" ? (
                       <TrendingUp className="w-10 h-10 text-green-600" />
-                    ) : selectedPayment.status === "pending" ? (
+                    ) : selectedPayment?.status === "pending" ? (
                       <Calendar className="w-10 h-10 text-yellow-600" />
                     ) : (
                       <TrendingDown className="w-10 h-10 text-red-600" />
                     )}
                   </div>
+                  <div className="text-center mt-4">
+                    <p className={`text-3xl font-black ${
+                      selectedPayment && selectedPayment.amount > 0 ? "text-green-600" : "text-destructive"
+                    }`}>
+                      {selectedPayment && selectedPayment.amount > 0 ? "+" : "-"}{selectedPayment && Math.abs(selectedPayment.amount)} B-Coins
+                    </p>
+                    <div className="mt-2">{selectedPayment && getStatusBadge(selectedPayment.status)}</div>
+                  </div>
                 </div>
 
-                <div className="text-center mb-4">
-                  <p className={`text-3xl font-bold ${
-                    selectedPayment.amount > 0 ? "text-green-600" : "text-destructive"
-                  }`}>
-                    {selectedPayment.amount > 0 ? "+" : "-"}{Math.abs(selectedPayment.amount)} B-Coins
-                  </p>
-                  <div className="mt-2">{getStatusBadge(selectedPayment.status)}</div>
-                </div>
-
-                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground flex items-center gap-2">
-                      <Receipt className="w-4 h-4" />
-                      ID
+                <div className="bg-muted/30 rounded-2xl p-5 space-y-4 border border-border/50">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Receipt className="w-3.5 h-3.5" />
+                      Reference ID
                     </span>
-                    <span className="font-medium text-foreground font-mono text-sm">{selectedPayment.id}</span>
+                    <span className="font-bold text-foreground font-mono text-xs">{selectedPayment?.id}</span>
                   </div>
                   
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      Date
+                  <div className="flex justify-between items-center pt-2 border-t border-border/40">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Calendar className="w-3.5 h-3.5" />
+                      Timestamp
                     </span>
-                    <span className="font-medium text-foreground">{formatShortDate(selectedPayment.createdAt)}</span>
+                    <span className="font-bold text-sm text-foreground">{selectedPayment && formatShortDate(selectedPayment.createdAt)}</span>
                   </div>
 
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground flex items-center gap-2">
-                      <Building2 className="w-4 h-4" />
-                      Type
+                  <div className="flex justify-between items-center pt-2 border-t border-border/40">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                      <Building2 className="w-3.5 h-3.5" />
+                      Category
                     </span>
-                    <span className="font-medium text-foreground capitalize">
-                      {selectedPayment.type}
+                    <span className="font-bold text-sm text-foreground capitalize">
+                      {selectedPayment?.type}
                     </span>
                   </div>
 
-                  {selectedPayment.details && (
+                  {selectedPayment?.details && (
                     <>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground flex items-center gap-2">
-                          <CreditCard className="w-4 h-4" />
-                          Payment Method
+                      <div className="flex justify-between items-center pt-2 border-t border-border/40">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                          <CreditCard className="w-3.5 h-3.5" />
+                          Authorization
                         </span>
-                        <span className="font-medium text-foreground">
+                        <span className="font-bold text-sm text-foreground">
                           {selectedPayment.details.paymentMethod || "B-Coins Wallet"}
                         </span>
                       </div>
 
                       {selectedPayment.details.items && (
-                        <div className="border-t border-border pt-3 mt-3">
-                          <p className="text-muted-foreground text-sm mb-2">Items</p>
-                          <div className="space-y-2">
+                        <div className="border-t border-border/40 pt-4 mt-4">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Line Items</p>
+                          <div className="space-y-3">
                             {selectedPayment.details.items.map((item: PaymentItem, i: number) => (
-                              <div key={i} className="flex items-center gap-3">
-                                <span className="text-xl">{item.image}</span>
+                              <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-background/50 border border-border/40">
+                                <span className="text-2xl">{item.image}</span>
                                 <div className="flex-1 min-w-0">
-                                  <p className="font-medium text-foreground text-sm truncate">{item.name}</p>
-                                  <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                                  <p className="font-bold text-foreground text-sm truncate">{item.name}</p>
+                                  <p className="text-[10px] font-black text-muted-foreground">Quantity: {item.quantity}</p>
                                 </div>
-                                <span className="font-semibold text-foreground text-sm">{item.price} B-Coins</span>
+                                <span className="font-black text-foreground text-sm">{item.price} <span className="text-[10px] text-brand-orange">B</span></span>
                               </div>
                             ))}
                           </div>
@@ -573,21 +584,21 @@ export default function PaymentHistoryPage() {
                     </>
                   )}
                 </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" className="flex-1">
-                    <Share2 className="w-4 h-4 mr-1" />
-                    Share
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    <Download className="w-4 h-4 mr-1" />
-                    Download
-                  </Button>
-                </div>
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
+
+              <DrawerFooter className="border-t border-border/60 p-6 sm:flex-row sm:justify-end gap-3 bg-muted/5">
+                <Button variant="outline" className="flex-1 rounded-xl h-12 font-bold">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share Receipt
+                </Button>
+                <Button variant="outline" className="flex-1 rounded-xl h-12 font-bold">
+                  <Download className="w-4 h-4 mr-2" />
+                  Download PDF
+                </Button>
+              </DrawerFooter>
+            </div>
+          </DrawerContent>
+        </Drawer>
       </div>
     </DashboardContent>
   );

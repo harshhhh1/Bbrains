@@ -1,5 +1,6 @@
 import prisma from '../../utils/prisma.js';
 import { createNotification } from '../notification/notification.service.js';
+import { createAuditLog } from '../../utils/auditLog.js';
 
 export const getXpByUserId = async (userId) => {
     return await prisma.xp.findUnique({ where: { userId } });
@@ -83,11 +84,21 @@ export const awardXpToUser = async (userId, amount) => {
             data: { level: { increment: 1 } }
         });
 
-        // Notify Level Up
+        // Audit Log for Level Up
+        await createAuditLog(
+            userId, 
+            'LEVELS', 
+            'LEVEL_UP', 
+            'Xp', 
+            userId, 
+            { oldLevel: xpRecord.level, newLevel: updated.level }
+        );
+
+        // Notify Level Up with reward info (reward coins could be dynamic but using +50 as example)
         await createNotification(
             userId,
             'Level Up!',
-            `Congratulations! You've reached Level ${updated.level}!`,
+            `Congratulations! You've reached Level ${updated.level} and earned +50 Coins!`,
             'achievement'
         );
 

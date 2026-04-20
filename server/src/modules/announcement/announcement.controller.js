@@ -9,7 +9,8 @@ const createAnnouncementSchema = z.object({
     image: z.string().optional(),
     isGlobal: z.boolean().optional().default(false),
     collegeId: z.number().optional(),
-    category: z.string().optional()
+    category: z.string().optional(),
+    type: z.string().optional()
 });
 
 const defaultIncludes = {
@@ -48,14 +49,16 @@ const formatAckUsers = (acknowledged) => acknowledged?.map(ack => ({
 
 export const createAnnouncement = async (req, res, next) => {
     try {
-        const { title, description, image, isGlobal, collegeId: bodyCollegeId } = createAnnouncementSchema.parse(req.body ?? {});
+        const { title, description, image, isGlobal, collegeId: bodyCollegeId, type: bodyType } = createAnnouncementSchema.parse(req.body ?? {});
         const userId = req.user?.id;
         const collegeId = isGlobal ? null : (bodyCollegeId || req.user?.collegeId);
+        const isSuperadmin = req.user?.type === 'superadmin';
+        const type = isSuperadmin ? 'system' : (bodyType || 'user');
 
         if (!userId) return res.status(401).json({ success: false, message: "Unauthorized missing user id" });
         
         const announcement = await prisma.announcement.create({
-            data: { userId, collegeId, isGlobal, title, description, image },
+            data: { userId, collegeId, isGlobal, type, title, description, image },
             include: { user: defaultIncludes.user, acknowledged: false }
         });
 

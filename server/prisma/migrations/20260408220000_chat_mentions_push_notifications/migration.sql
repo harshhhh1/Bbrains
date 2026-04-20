@@ -22,10 +22,6 @@ ADD COLUMN "read" BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE "chat_messages"
 ADD COLUMN "mentioned_user_ids" JSONB DEFAULT '[]';
 
-UPDATE "notification"
-SET "read" = true
-WHERE "read_at" IS NOT NULL;
-
 -- CreateIndex
 CREATE UNIQUE INDEX "push_subscriptions_endpoint_key" ON "push_subscriptions"("endpoint");
 

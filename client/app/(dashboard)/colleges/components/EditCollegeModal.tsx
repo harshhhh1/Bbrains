@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/services/api/client";
 
@@ -72,58 +74,73 @@ export function EditCollegeModal({ isOpen, onClose, onSuccess, collegeData }: Ed
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit College Profile</DialogTitle>
-          <DialogDescription>
-            Update the contact and registry details of the institution.
-          </DialogDescription>
-        </DialogHeader>
+    <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()} direction="right">
+      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+        <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+          <DrawerHeader className="border-b border-border/60 p-6 text-left">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <DrawerTitle>Edit College Profile</DrawerTitle>
+                <DrawerDescription>
+                  Update the contact and registry details of the institution.
+                </DrawerDescription>
+              </div>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DrawerClose>
+            </div>
+          </DrawerHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">College Name *</label>
-            <Input 
-              name="name"
-              placeholder="e.g. Oxford University" 
-              value={formData.name}
-              onChange={handleChange}
-            />
+          <div className="flex-1 space-y-6 overflow-y-auto p-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">College Name *</label>
+                <Input 
+                  name="name"
+                  placeholder="e.g. Oxford University" 
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Registration Number *</label>
+                <Input 
+                  name="regNo"
+                  placeholder="e.g. REG-2023-XYZ" 
+                  value={formData.regNo}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Contact Email *</label>
+                <Input 
+                  type="email"
+                  name="email"
+                  placeholder="admin@college.edu" 
+                  value={formData.email}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Registration Number *</label>
-            <Input 
-              name="regNo"
-              placeholder="e.g. REG-2023-XYZ" 
-              value={formData.regNo}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Contact Email *</label>
-            <Input 
-              type="email"
-              name="email"
-              placeholder="admin@college.edu" 
-              value={formData.email}
-              onChange={handleChange}
-            />
-          </div>
+          <DrawerFooter className="border-t border-border/60 p-6 sm:flex-row sm:justify-end">
+            <DrawerClose asChild>
+              <Button variant="outline" disabled={loading}>
+                Cancel
+              </Button>
+            </DrawerClose>
+            <Button onClick={onSubmit} disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </DrawerFooter>
         </div>
-
-        <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={onClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={onSubmit} disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   );
 }

@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { Loader2, Plus, Trash2, BookOpen } from "lucide-react";
+import { Loader2, Plus, Trash2, BookOpen, X } from "lucide-react";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -123,131 +131,146 @@ export function CourseFormModal({ open, onOpenChange, onSuccess }: CourseFormMod
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Create Course</DialogTitle>
-          <DialogDescription>
-            Define the course details and assign subjects to specific teachers.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="courseName">Course Name</Label>
-              <Input
-                id="courseName"
-                placeholder="e.g. Science Class 10"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="standard">Standard</Label>
-              <Input
-                id="standard"
-                placeholder="e.g. 10th Standard"
-                value={standard}
-                onChange={(e) => setStandard(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
-            <Textarea
-              id="description"
-              placeholder="Short clear description of the course..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="resize-none"
-              rows={2}
-            />
-          </div>
-
-          <div className="space-y-3 mt-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label>Subjects & Teachers</Label>
-                <p className="text-xs text-muted-foreground mt-1">Assign teachers to their respective subjects.</p>
-              </div>
-              <Button type="button" variant="outline" size="sm" onClick={addSubject}>
-                <Plus className="w-4 h-4 mr-1" /> Add Subject
-              </Button>
-            </div>
-
-            {subjects.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-6 border border-dashed border-border/70 rounded-xl bg-muted/20">
-                <BookOpen className="w-8 h-8 text-muted-foreground mb-2 opacity-50" />
-                <p className="text-sm text-muted-foreground">No subjects added yet</p>
-                <Button type="button" variant="link" size="sm" onClick={addSubject} className="mt-1">
-                  Add your first subject
-                </Button>
-              </div>
-            ) : (
+    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-2xl before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+        <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+          <DrawerHeader className="border-b border-border/60 p-6 text-left">
+            <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
-                {subjects.map((subject) => (
-                  <div key={subject.id} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center bg-muted/30 p-2 rounded-lg border border-border/50">
-                    <div className="flex-1 w-full">
-                      <Input
-                        placeholder="Subject Name (e.g. Mathematics)"
-                        value={subject.name}
-                        onChange={(e) => updateSubject(subject.id, "name", e.target.value)}
-                        className="bg-background"
-                      />
-                    </div>
-                    <div className="flex-1 w-full flex gap-2">
-                      <Select
-                        value={subject.teacherId}
-                        onValueChange={(val) => updateSubject(subject.id, "teacherId", val)}
-                        disabled={loadingTeachers}
-                      >
-                        <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="Assign Teacher" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No Teacher Assigned</SelectItem>
-                          {teachers.map((t) => (
-                            <SelectItem key={t.id} value={t.id}>
-                              {t.userDetails?.firstName || t.username} {t.userDetails?.lastName || ""}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:bg-destructive/10 shrink-0"
-                        onClick={() => removeSubject(subject.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                <DrawerTitle>Create Course</DrawerTitle>
+                <DrawerDescription>
+                  Define the course details and assign subjects to specific teachers.
+                </DrawerDescription>
               </div>
-            )}
-          </div>
-        </div>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DrawerClose>
+            </div>
+          </DrawerHeader>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
-            Cancel
-          </Button>
-          <Button onClick={() => void handleSubmit()} disabled={submitting}>
-            {submitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              "Create Course"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <div className="flex-1 space-y-6 overflow-y-auto p-6">
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="courseName">Course Name</Label>
+                  <Input
+                    id="courseName"
+                    placeholder="e.g. Science Class 10"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="standard">Standard</Label>
+                  <Input
+                    id="standard"
+                    placeholder="e.g. 10th Standard"
+                    value={standard}
+                    onChange={(e) => setStandard(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description (Optional)</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Short clear description of the course..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="resize-none"
+                  rows={2}
+                />
+              </div>
+
+              <div className="space-y-3 mt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Subjects & Teachers</Label>
+                    <p className="text-xs text-muted-foreground mt-1">Assign teachers to their respective subjects.</p>
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={addSubject}>
+                    <Plus className="w-4 h-4 mr-1" /> Add Subject
+                  </Button>
+                </div>
+
+                {subjects.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center p-6 border border-dashed border-border/70 rounded-xl bg-muted/20">
+                    <BookOpen className="w-8 h-8 text-muted-foreground mb-2 opacity-50" />
+                    <p className="text-sm text-muted-foreground">No subjects added yet</p>
+                    <Button type="button" variant="link" size="sm" onClick={addSubject} className="mt-1">
+                      Add your first subject
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {subjects.map((subject) => (
+                      <div key={subject.id} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center bg-muted/30 p-2 rounded-lg border border-border/50">
+                        <div className="flex-1 w-full">
+                          <Input
+                            placeholder="Subject Name (e.g. Mathematics)"
+                            value={subject.name}
+                            onChange={(e) => updateSubject(subject.id, "name", e.target.value)}
+                            className="bg-background"
+                          />
+                        </div>
+                        <div className="flex-1 w-full flex gap-2">
+                          <Select
+                            value={subject.teacherId}
+                            onValueChange={(val) => updateSubject(subject.id, "teacherId", val)}
+                            disabled={loadingTeachers}
+                          >
+                            <SelectTrigger className="bg-background">
+                              <SelectValue placeholder="Assign Teacher" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">No Teacher Assigned</SelectItem>
+                              {teachers.map((t) => (
+                                <SelectItem key={t.id} value={t.id}>
+                                  {t.userDetails?.firstName || t.username} {t.userDetails?.lastName || ""}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:bg-destructive/10 shrink-0"
+                            onClick={() => removeSubject(subject.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DrawerFooter className="border-t border-border/60 p-6 sm:flex-row sm:justify-end">
+            <DrawerClose asChild>
+              <Button variant="outline" disabled={submitting}>
+                Cancel
+              </Button>
+            </DrawerClose>
+            <Button onClick={() => void handleSubmit()} disabled={submitting}>
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Course"
+              )}
+            </Button>
+          </DrawerFooter>
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 }

@@ -14,8 +14,10 @@ export function UpcomingEventsCard({ initialEvents }: UpcomingEventsCardProps) {
   const [events, setEvents] = useState<Event[]>(initialEvents || []);
   const [loading, setLoading] = useState(!initialEvents);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (initialEvents) {
       setLoading(false);
       return;
@@ -102,10 +104,10 @@ export function UpcomingEventsCard({ initialEvents }: UpcomingEventsCardProps) {
               >
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
                   <span className="text-xs font-medium text-primary">
-                    {formatDate(event.date).split(" ")[0]}
+                    {mounted ? formatDate(event.date).split(" ")[0] : ""}
                   </span>
                   <span className="text-lg font-bold text-primary">
-                    {getDayNumber(event.date)}
+                    {mounted ? getDayNumber(event.date) : ""}
                   </span>
                 </div>
                 <div className="flex-1 space-y-1">

@@ -113,10 +113,10 @@ export function WalletDialogs({
         const response = await dashboardApi.searchUsers(value);
         if (response.success && response.data) {
           const data = Array.isArray(response.data) ? response.data : [response.data];
-          const users: SearchUser[] = data.map((user: User) => ({
+          const users: SearchUser[] = data.map((user: any) => ({
             id: user.id,
-            name: `${user.firstName || user.username}${user.lastName ? ` ${user.lastName}` : ""}`,
-            avatarUrl: user.avatar || "",
+            name: user.displayName || user.username,
+            avatarUrl: user.avatarUrl || "",
           }));
           setSearchResults(users);
         }
@@ -176,7 +176,42 @@ export function WalletDialogs({
     
     setFormErrors({});
     setShowSendDialog(false);
-    setShowPinDialog(true);
+
+    // Check if PIN is set
+    if (wallet?.pinSet) {
+      setShowPinDialog(true);
+    } else {
+      setShowSetupPinDialog(true);
+    }
+  };
+
+  const [showSetupPinDialog, setShowSetupPinDialog] = useState(false);
+  const [setupPinValue, setSetupPinValue] = useState("");
+
+  const handleSetupPin = async () => {
+    if (setupPinValue.length !== 6) {
+      toast.error("PIN must be 6 digits");
+      return;
+    }
+
+    setSending(true);
+    try {
+      const response = await walletApi.setupPin(setupPinValue);
+      if (response.success) {
+        toast.success("Wallet PIN setup successfully!");
+        setShowSetupPinDialog(false);
+        // After setup, proceed to enter the PIN for the transfer
+        setShowPinDialog(true);
+        // Refresh wallet data to update pinSet
+        onTransferSuccess();
+      } else {
+        toast.error(response.message || "Failed to setup PIN");
+      }
+    } catch (err) {
+      toast.error("Failed to setup PIN");
+    } finally {
+      setSending(false);
+    }
   };
 
   const handlePinSubmit = async () => {
@@ -335,6 +370,40 @@ export function WalletDialogs({
               </Button>
             </DrawerFooter>
           </div>
+        </DrawerContent>
+      </Drawer>
+
+      <Drawer open={showSetupPinDialog} onOpenChange={setShowSetupPinDialog}>
+        <DrawerContent className="p-0 data-[vaul-drawer-direction=bottom]:max-h-[60vh] before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-t-[2rem]">
+          <DrawerHeader className="border-b border-border/60 p-6 text-left">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <DrawerTitle className="text-xl font-bold">Setup Wallet PIN</DrawerTitle>
+                <DrawerDescription>Create a 6-digit PIN to secure your wallet transactions.</DrawerDescription>
+              </div>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DrawerClose>
+            </div>
+          </DrawerHeader>
+          <div className="py-4 px-6">
+            <Label>New PIN (6 digits)</Label>
+            <Input
+              type="password"
+              placeholder="Enter 6-digit PIN"
+              value={setupPinValue}
+              onChange={(e) => setSetupPinValue(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              maxLength={6}
+              className="text-center tracking-widest text-lg"
+            />
+          </div>
+          <DrawerFooter className="border-t border-border/60 p-6">
+            <Button onClick={handleSetupPin} disabled={setupPinValue.length !== 6 || sending} className="w-full">
+              {sending ? 'Setting up...' : 'Setup & Continue'}
+            </Button>
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
 

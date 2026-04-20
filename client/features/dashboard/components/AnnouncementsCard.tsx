@@ -16,8 +16,10 @@ export function AnnouncementsCard({ initialAnnouncements, collegeId }: Announcem
   const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements || []);
   const [loading, setLoading] = useState(!initialAnnouncements);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (initialAnnouncements) {
       setLoading(false);
       return;
@@ -92,7 +94,7 @@ export function AnnouncementsCard({ initialAnnouncements, collegeId }: Announcem
                 <div className="space-y-1">
                   <p className="font-medium text-sm">{announcement.title}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{formatDate(announcement.createdAt)}</span>
+                    <span>{mounted ? formatDate(announcement.createdAt) : ""}</span>
                     {announcement.category && (
                       <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                         {announcement.category}
