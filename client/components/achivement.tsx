@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
+interface AchievementUnlockedProps {
+  title?: string;
+  description?: string;
+  duration?: number;
+  onClose?: () => void;
+}
+
 const AchievementUnlocked = ({ 
   title = "Achievement Unlocked", 
   description = "Level Up!", 
   duration = 4000, 
   onClose 
-}) => {
+}: AchievementUnlockedProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 

@@ -31,23 +31,15 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
 
     return (
         <div className="absolute bottom-20 left-6 z-50 w-[300px] overflow-hidden rounded-[16px] bg-[#111214] shadow-[0_8px_16px_rgba(0,0,0,0.24)] text-[#dbdee1] font-sans">
-            {/* Header with SVG Banner Mask */}
-            <div className="relative">
-                <svg className="block w-full" viewBox="0 0 300 120" preserveAspectRatio="none">
-                    <mask id="discord-banner-mask">
-                        <rect fill="white" x="0" y="0" width="100%" height="100%" />
-                        <circle fill="black" cx="56" cy="112" r="46" />
-                    </mask>
-                    <foreignObject x="0" y="0" width="100%" height="100%" mask="url(#discord-banner-mask)">
-                        <div 
-                            className="h-full w-full" 
-                            style={{ 
-                                background: 'linear-gradient(45deg, #5865F2, #eb459e, #fee75c)',
-                                backgroundColor: '#1c1d22' 
-                            }} 
-                        />
-                    </foreignObject>
-                </svg>
+            {/* Header with SVG Banner */}
+            <div className="relative h-[60px]">
+                <div 
+                    className="h-full w-full" 
+                    style={{ 
+                        background: 'linear-gradient(45deg, #5865F2, #eb459e, #fee75c)',
+                        backgroundColor: '#1c1d22' 
+                    }} 
+                />
 
                 {/* Edit Button */}
                 <div className="absolute top-3 right-3">
@@ -58,31 +50,24 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
                         <Pencil className="h-4 w-4" />
                     </Link>
                 </div>
-            </div>
 
-            {/* Avatar & Content Wrapper */}
-            <div className="relative px-4 pb-4">
-                {/* Avatar with Status Mask */}
-                <div className="absolute -top-26 left-4">
-                    <div className="relative inline-block">
-                        <svg width="92" height="92" viewBox="0 0 92 92" className="block">
-                            <mask id="discord-avatar-mask">
-                                <circle fill="white" cx="40" cy="40" r="40" />
-                            </mask>
-                            <foreignObject x="0" y="0" width="80" height="80" mask="url(#discord-avatar-mask)">
-                                <Avatar className="h-20 w-20 border-0 bg-[#313338]">
-                                    <AvatarImage src={user?.imageUrl || undefined} className="object-cover" />
-                                    <AvatarFallback className="flex items-center justify-center bg-[#5865F2] text-xl font-bold text-white">
-                                        {user?.firstName?.[0]}{user?.lastName?.[0]}
-                                    </AvatarFallback>
-                                </Avatar>
-                            </foreignObject>
-                        </svg>
+                {/* Avatar positioned to overlap banner */}
+                <div className="absolute -bottom-[40px] left-4">
+                    <div className="relative h-[80px] w-[80px] rounded-full border-[6px] border-[#111214] bg-[#111214]">
+                        <Avatar className="h-full w-full">
+                            <AvatarImage src={user?.imageUrl || undefined} className="object-cover" />
+                            <AvatarFallback className="flex items-center justify-center bg-[#5865F2] text-xl font-bold text-white">
+                                {user?.firstName?.[0]}{user?.lastName?.[0]}
+                            </AvatarFallback>
+                        </Avatar>
                     </div>
                 </div>
+            </div>
 
+            {/* Content Wrapper */}
+            <div className="relative px-4 pb-4 pt-[52px]">
                 {/* Identity Card Section */}
-                <div className="mt-14 space-y-3 rounded-[8px] bg-[#1e1f22] p-3 shadow-sm">
+                <div className="space-y-3 rounded-[8px] bg-[#1e1f22] p-3 shadow-sm">
                     <div>
                         <h1 className="text-xl font-bold leading-tight text-white">
                             {displayName}

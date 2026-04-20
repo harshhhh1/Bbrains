@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Brain } from "lucide-react";
+import Image from "next/image";
 import { HandButton } from "@/components/hand-drawn/button";
 import { landingData } from "@/data/landing";
 
@@ -9,10 +9,16 @@ export function Navbar() {
   return (
     <nav className="border-b-[3px] border-hand-pencil border-dashed bg-white/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-2 group">
-          <Brain className="w-8 h-8 text-hand-red group-hover:-rotate-12 transition-transform" strokeWidth={2.5} />
-          <span className="font-kalam text-3xl font-bold tracking-tight">{brand}</span>
-        </div>
+        <Link href="/" className="flex items-center group">
+          <Image
+            src="/logo.png"
+            alt="Bbrains Logo"
+            width={440}
+            height={80}
+            className="h-27 w-auto max-w-60 group-hover:scale-105 transition-transform"
+            priority
+          />
+        </Link>
         <div className="flex items-center gap-4">
           {links.map((link, idx) => (
             <Link 

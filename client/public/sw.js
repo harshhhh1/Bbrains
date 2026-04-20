@@ -27,9 +27,29 @@ self.addEventListener('fetch', (event) => {
 
   // Offline fallback for navigation requests.
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => caches.match('/offline')))
-    return
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Optionally, cache the page here if you want dynamic caching
+          return response;
+        })
+        .catch(() => caches.match('/offline'))
+    );
+    return;
   }
+
+  // Cache-first for static assets (images, CSS, JS, etc.)
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request)
+        .then((response) => {
+          // Optionally, cache new static assets here (dynamic caching)
+          return response;
+        })
+        .catch(() => undefined); // Could fallback to a generic offline asset if desired
+    })
+  );
 })
 
 self.addEventListener('push', (event) => {

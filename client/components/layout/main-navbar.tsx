@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import {
     
@@ -98,6 +99,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
         <nav className="sticky top-0 z-(--z-nav) border-b border-border/60 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/65">
             <div className="mx-auto flex h-19 items-center gap-3 px-4 md:px-6">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
+                   
                     <SidebarTrigger className="hidden md:flex h-11 w-11 rounded-2xl border border-border/70 bg-card/80 text-foreground shadow-sm transition hover:bg-card" />
 
                     <div className="flex min-w-0 items-center gap-3">
