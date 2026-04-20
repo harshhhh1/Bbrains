@@ -7,6 +7,7 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar"
 import Link from "next/link";
+import Image from "next/image";
 import { Settings, BarChart3 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -49,16 +50,18 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
 
     return (
         <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-            <SidebarHeader className="bg-sidebar pt-6 px-3">
-                <div className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"} mb-6 text-sidebar-foreground`}>
-                    <div className={`flex items-center ${isCollapsed ? "justify-center" : "gap-3"} min-w-0`}>
-                        <div className={`${isCollapsed ? "w-8 h-8" : "w-10 h-10"} bg-brand-purple rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm transition-all duration-200`}>
-                            <BarChart3 className={`${isCollapsed ? "h-4 w-4" : "h-6 w-6"} transition-all duration-200`} />
-                        </div>
-                        {!isCollapsed && (
-                            <span className="font-bold text-xl tracking-tight truncate">Bbrains</span>
-                        )}
-                    </div>
+            <SidebarHeader className="bg-sidebar pt-2  ">
+                <div className="flex items-center justify-center w-full text-sidebar-foreground">
+                    <Link href="/" className="flex items-center justify-center">
+                        <Image
+                            src="/logo.png"
+                            alt="Bbrains Logo"
+                            width={isCollapsed ? 48 : 280}
+                            height={isCollapsed ? 48 : 80}
+                            className={isCollapsed ? "h-12 w-12 object-contain" : "h-20 w-auto object-contain"}
+                            priority
+                        />
+                    </Link>
                 </div>
             </SidebarHeader>
 

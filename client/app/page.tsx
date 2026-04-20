@@ -12,7 +12,7 @@ const FooterSection = dynamic(() => import("@/app/_components/landing/FooterSect
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-hand-paper bg-paper-texture bg-[length:24px_24px] text-hand-pencil overflow-x-hidden selection:bg-hand-yellow selection:text-hand-pencil ">
+    <div className="min-h-screen bg-hand-paper bg-paper-texture bg-size-[24px_24px] text-hand-pencil overflow-x-hidden selection:bg-hand-yellow selection:text-hand-pencil ">
       <Navbar />
       <HeroSection />
       <AboutSection />

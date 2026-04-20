@@ -71,7 +71,7 @@ export function usePushNotifications() {
             return false
         }
 
-        const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" })
+        const registration = await navigator.serviceWorker.register("/sw.jssw.js", { scope: "/" })
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(publicKey),
