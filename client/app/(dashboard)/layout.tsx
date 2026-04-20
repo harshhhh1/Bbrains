@@ -54,7 +54,7 @@ type LayoutDBUser = {
 
 async function fetchUserFromAPI(token: string): Promise<LayoutDBUser | null> {
     try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        const baseUrl = process.env.API_URL || 'http://localhost:5000'
         const response = await fetch(`${baseUrl}/user/me`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -77,7 +77,7 @@ async function fetchUserFromAPI(token: string): Promise<LayoutDBUser | null> {
 
 async function fetchSidebarAccess(token: string): Promise<Record<string, string[]> | null> {
     try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        const baseUrl = process.env._API_URL || 'http://localhost:5000'
         const response = await fetch(`${baseUrl}/sidebaraccess`, {
             headers: {
                 'Authorization': `Bearer ${token}`,

@@ -72,7 +72,7 @@ export default function FeesPage() {
 
     try {
       // Create Razorpay order via our backend API
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/razorpay/create-order`, {
+      const response = await fetch(`${process.env.API_URL || "http://localhost:5000"}/razorpay/create-order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +102,7 @@ export default function FeesPage() {
       
       // Initialize Razorpay checkout
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
+        key: process.env.RAZORPAY_KEY_ID || "",
         amount: data.data.amount,
         currency: data.data.currency,
         name: "College Fee Payment",
@@ -139,7 +139,7 @@ export default function FeesPage() {
     try {
       setLoading(true);
       // Verify payment with our backend
-      const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/razorpay/verify-payment`, {
+      const verifyResponse = await fetch(`${process.env.API_URL || "http://localhost:5000"}/razorpay/verify-payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
