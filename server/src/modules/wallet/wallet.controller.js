@@ -15,7 +15,7 @@ const changePinSchema = z.object({
 });
 
 const transferSchema = z.object({
-    recipientWalletId: z.string().email("Invalid email format"),
+    recipientWalletId: z.string().min(1, "Recipient is required"),
     amount: z.number().positive(),
     note: z.string().max(255).optional(),
     pin: z.string().length(6)

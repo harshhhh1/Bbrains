@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,7 @@ import {
   Store,
   AlertTriangle,
   CheckCircle2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardContent } from "@/components/dashboard-content";
@@ -80,41 +82,54 @@ function PinDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setPin(""); }}>
-      <DialogContent className="sm:max-w-md rounded-3xl border-border bg-background/95 backdrop-blur-2xl p-8 shadow-2xl">
-        <DialogHeader className="space-y-3">
-          <div className="w-14 h-14 bg-brand-orange/10 rounded-2xl flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-7 h-7 text-brand-orange" />
+    <Drawer open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setPin(""); }} direction="right">
+      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+        <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+          <DrawerHeader className="border-b border-border/60 p-6 text-left">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <div className="w-12 h-12 bg-brand-orange/10 rounded-2xl flex items-center justify-center mb-2">
+                  <CheckCircle2 className="w-6 h-6 text-brand-orange" />
+                </div>
+                <DrawerTitle className="text-xl font-black">Confirm Purchase</DrawerTitle>
+                <DrawerDescription className="text-sm font-medium text-muted-foreground">{description}</DrawerDescription>
+              </div>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DrawerClose>
+            </div>
+          </DrawerHeader>
+
+          <div className="flex-1 p-6 flex flex-col items-center justify-center space-y-8">
+            <div className="py-6">
+              <InputOTP maxLength={6} value={pin} onChange={setPin}>
+                <InputOTPGroup className="gap-2">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <InputOTPSlot
+                      key={i}
+                      index={i}
+                      className="h-14 w-11 rounded-xl border-border bg-muted/20 text-xl font-black focus:border-brand-orange/50 focus:ring-2 focus:ring-brand-orange/20"
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
           </div>
-          <DialogTitle className="text-2xl font-black tracking-tight text-foreground text-center">Confirm Purchase</DialogTitle>
-          <DialogDescription className="text-base font-medium text-muted-foreground text-center">{description}</DialogDescription>
-        </DialogHeader>
-        <div className="py-6">
-          <div className="flex justify-center">
-            <InputOTP maxLength={6} value={pin} onChange={setPin}>
-              <InputOTPGroup className="gap-2">
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <InputOTPSlot
-                    key={i}
-                    index={i}
-                    className="h-14 w-11 rounded-xl border-border bg-muted/20 text-xl font-black focus:border-brand-orange/50 focus:ring-2 focus:ring-brand-orange/20"
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-          </div>
+
+          <DrawerFooter className="border-t border-border/60 p-6">
+            <Button
+              onClick={handleSubmit}
+              disabled={pin.length < 6 || isProcessing}
+              className="w-full h-14 rounded-2xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black uppercase tracking-widest shadow-lg shadow-brand-orange/20 transition-all active:scale-95 disabled:opacity-50"
+            >
+              {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirm & Pay"}
+            </Button>
+          </DrawerFooter>
         </div>
-        <DialogFooter>
-          <Button
-            onClick={handleSubmit}
-            disabled={pin.length < 6 || isProcessing}
-            className="w-full h-14 rounded-2xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black uppercase tracking-widest shadow-lg shadow-brand-orange/20 transition-all active:scale-95 disabled:opacity-50"
-          >
-            {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirm & Pay"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   );
 }
 
@@ -469,69 +484,78 @@ export default function MarketPage() {
           </div>
         )}
 
-        <Dialog open={showCart} onOpenChange={setShowCart}>
-          <DialogContent className="rounded-3xl border-border bg-background/95 backdrop-blur-2xl p-0 overflow-hidden shadow-2xl">
-            <div className="p-6 space-y-5">
-              <DialogHeader>
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-brand-orange/10 rounded-2xl flex items-center justify-center">
-                    <ShoppingCart className="w-6 h-6 text-brand-orange" />
+        <Drawer open={showCart} onOpenChange={setShowCart} direction="right">
+          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+            <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+              <DrawerHeader className="border-b border-border/60 p-6 text-left">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-brand-orange/10 rounded-2xl flex items-center justify-center">
+                      <ShoppingCart className="w-6 h-6 text-brand-orange" />
+                    </div>
+                    <div>
+                      <DrawerTitle className="text-xl font-black tracking-tight">Your Cart</DrawerTitle>
+                      <DrawerDescription className="font-medium text-muted-foreground">{cartCount} item{cartCount !== 1 ? 's' : ''}</DrawerDescription>
+                    </div>
                   </div>
-                  <div>
-                    <DialogTitle className="text-xl font-black tracking-tight text-foreground">Your Cart</DialogTitle>
-                    <DialogDescription className="font-medium text-muted-foreground">{cartCount} item{cartCount !== 1 ? 's' : ''}</DialogDescription>
-                  </div>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </DrawerClose>
                 </div>
-              </DialogHeader>
+              </DrawerHeader>
 
-              {cartCount === 0 ? (
-                <div className="py-12 text-center space-y-4">
-                  <ShoppingCart className="w-16 h-16 text-white/5 mx-auto" />
-                  <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">Cart is empty</p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                  {Object.entries(cart).map(([id, qty]) => {
-                    const product = products.find((p) => p.id === Number(id));
-                    if (!product) return null;
-                    return (
-                      <div key={id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5">
-                        <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-white/5 shrink-0">
-                          {product.image ? <Image src={product.image} alt={product.name} fill className="object-cover" /> : <Package className="w-6 h-6 text-white/5 m-4" />}
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                {cartCount === 0 ? (
+                  <div className="py-12 text-center space-y-4">
+                    <ShoppingCart className="w-16 h-16 text-white/5 mx-auto" />
+                    <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">Cart is empty</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {Object.entries(cart).map(([id, qty]) => {
+                      const product = products.find((p) => p.id === Number(id));
+                      if (!product) return null;
+                      return (
+                        <div key={id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5">
+                          <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-white/5 shrink-0">
+                            {product.image ? <Image src={product.image} alt={product.name} fill className="object-cover" /> : <Package className="w-6 h-6 text-white/5 m-4" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-white truncate text-sm">{product.name}</p>
+                            <p className="text-xs font-bold text-brand-orange">{product.price} B-Coins</p>
+                          </div>
+                          <div className="flex items-center bg-black/20 rounded-lg p-0.5">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-7 w-7" 
+                              onClick={() => removeFromCart(Number(id))}
+                              disabled={processingItems.has(Number(id))}
+                            >
+                              {processingItems.has(Number(id)) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Minus className="w-3 h-3" />}
+                            </Button>
+                            <span className="w-7 text-center text-sm font-black">{qty}</span>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-7 w-7" 
+                              onClick={() => addToCart(Number(id))}
+                              disabled={processingItems.has(Number(id))}
+                            >
+                              {processingItems.has(Number(id)) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-white truncate text-sm">{product.name}</p>
-                          <p className="text-xs font-bold text-brand-orange">{product.price} B-Coins</p>
-                        </div>
-                        <div className="flex items-center bg-black/20 rounded-lg p-0.5">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7" 
-                            onClick={() => removeFromCart(Number(id))}
-                            disabled={processingItems.has(Number(id))}
-                          >
-                            {processingItems.has(Number(id)) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Minus className="w-3 h-3" />}
-                          </Button>
-                          <span className="w-7 text-center text-sm font-black">{qty}</span>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7" 
-                            onClick={() => addToCart(Number(id))}
-                            disabled={processingItems.has(Number(id))}
-                          >
-                            {processingItems.has(Number(id)) ? <Loader2 className="w-3 h-3 animate-spin" /> : <Plus className="w-3 h-3" />}
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               {cartCount > 0 && (
-                <div className="pt-4 border-t border-white/5 space-y-4">
+                <div className="p-6 border-t border-border/60 bg-muted/5 space-y-4">
                   <div className="flex justify-between items-end">
                     <span className="text-xs font-bold text-white/30 uppercase tracking-wider">Total</span>
                     <span className="text-3xl font-black text-white tabular-nums tracking-tighter">{cartTotal} <span className="text-sm text-brand-orange">B-Coins</span></span>
@@ -545,8 +569,8 @@ export default function MarketPage() {
                 </div>
               )}
             </div>
-          </DialogContent>
-        </Dialog>
+          </DrawerContent>
+        </Drawer>
 
         <AlertDialog open={showBuyConfirm} onOpenChange={setShowBuyConfirm}>
           <AlertDialogContent className="rounded-3xl border-border bg-background/95 backdrop-blur-2xl p-8 shadow-2xl">

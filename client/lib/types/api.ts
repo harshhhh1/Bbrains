@@ -1,6 +1,6 @@
 // Shared API Types
 
-export type LogCategory = "AUTH" | "ACADEMIC" | "MARKET" | "FINANCE" | "USER" | "SYSTEM";
+export type LogCategory = "AUTH" | "ACADEMIC" | "MARKET" | "FINANCE" | "USER" | "SYSTEM" | "LEVELS";
 
 export interface ApiUser {
     id: string

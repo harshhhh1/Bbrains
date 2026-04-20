@@ -1,7 +1,8 @@
 "use client"
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, useRef } from "react"
 import { notificationApi, Notification, type NotificationUnreadCount } from "@/services/api/client"
+import AchievementUnlocked from "@/components/achivement"
 
 interface NotificationContextType {
     notifications: Notification[]
@@ -32,6 +33,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const [unreadCount, setUnreadCount] = useState(0)
     const [chatUnreadState, setChatUnreadState] = useState<NotificationUnreadCount>(emptyUnreadState)
     const [loading, setLoading] = useState(false)
+    const [levelUpToast, setLevelUpToast] = useState<{ title: string, description: string } | null>(null)
+    const processedNotifications = useRef<Set<number>>(new Set())
 
     const refreshUnreadCounts = useCallback(async () => {
         try {
@@ -53,7 +56,24 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             ])
 
             if (notificationsResponse.success && notificationsResponse.data) {
-                setNotifications(notificationsResponse.data.notifications)
+                const newNotifications = notificationsResponse.data.notifications;
+                
+                // Detect level-up in unread notifications
+                const levelUpNotif = newNotifications.find(n => 
+                    !n.read && 
+                    n.title === "Level Up!" && 
+                    !processedNotifications.current.has(n.id)
+                );
+
+                if (levelUpNotif) {
+                    setLevelUpToast({
+                        title: levelUpNotif.title,
+                        description: levelUpNotif.message || "You reached a new level!"
+                    });
+                    processedNotifications.current.add(levelUpNotif.id);
+                }
+
+                setNotifications(newNotifications)
                 setUnreadCount(notificationsResponse.data.unreadCount)
             }
 
@@ -226,6 +246,13 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     return (
         <NotificationContext.Provider value={value}>
             {children}
+            {levelUpToast && (
+                <AchievementUnlocked
+                    title={levelUpToast.title}
+                    description={levelUpToast.description}
+                    onClose={() => setLevelUpToast(null)}
+                />
+            )}
         </NotificationContext.Provider>
     )
 }

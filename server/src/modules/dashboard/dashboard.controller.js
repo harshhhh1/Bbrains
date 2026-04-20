@@ -718,9 +718,10 @@ async function studentDashboard(currentUser, res) {
                 take: 5,
                 orderBy: { gradedAt: 'desc' }
             }),
-            prisma.$queryRaw`SELECT "xpRank" as rank, "totalXp" as score FROM "leaderboard_view" WHERE "userId" = ${userId} LIMIT 1`,
-            prisma.$queryRaw`SELECT "userId", "username", "firstName", "lastName", "avatar", "totalXp", "totalPoints", "xpRank" as rank FROM "leaderboard_view" ORDER BY "xpRank" ASC LIMIT 5`,
+            prisma.$queryRaw`SELECT "xpRank" as rank, "totalXp" as score FROM "leaderboard_view" WHERE "userId" = ${userId} AND "collegeId" = ${collegeId} LIMIT 1`,
+            prisma.$queryRaw`SELECT "userId", "username", "firstName", "lastName", "avatar", "totalXp", "totalPoints", "xpRank" as rank FROM "leaderboard_view" WHERE "collegeId" = ${collegeId} ORDER BY "xpRank" ASC LIMIT 5`,
             prisma.xp.findMany({
+                where: { user: { collegeId } },
                 orderBy: { xp: 'desc' },
                 take: 5,
                 include: {

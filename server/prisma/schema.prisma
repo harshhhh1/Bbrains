@@ -486,6 +486,7 @@ model Announcement {
   userId      String   @map("user_id")
   collegeId   Int?     @map("college_id")
   isGlobal    Boolean  @default(false) @map("is_global")
+  type        String   @default("user") @db.VarChar(20) // 'user' or 'system'
   title       String   @db.VarChar(100)
   description String?
   image       String?
@@ -582,6 +583,7 @@ enum LogCategory {
   FINANCE
   USER
   SYSTEM
+  LEVELS
 }
 
 enum AssessmentType {

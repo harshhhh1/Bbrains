@@ -6,8 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { 
-    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
-} from "@/components/ui/dialog"
+    Drawer, 
+    DrawerClose, 
+    DrawerContent, 
+    DrawerDescription, 
+    DrawerFooter, 
+    DrawerHeader, 
+    DrawerTitle 
+} from "@/components/ui/drawer"
 import { 
     Popover, PopoverContent, PopoverTrigger 
 } from "@/components/ui/popover"
@@ -373,74 +379,99 @@ export default function AttendancePage() {
                 </CardContent>
             </Card>
 
-            {/* History Dialog */}
-            <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-                    <DialogHeader>
-                        <DialogTitle>Attendance History</DialogTitle>
-                        <DialogDescription>
-                            Recent attendance records for {selectedStudent?.userDetails?.firstName} {selectedStudent?.userDetails?.lastName}
-                        </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="flex-1 overflow-y-auto pr-2 mt-4">
-                        {historyLoading ? (
-                            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                                <Loader2 className="h-8 w-8 animate-spin mb-4" />
-                                <p>Loading history...</p>
+            {/* History Drawer */}
+            <Drawer open={historyOpen} onOpenChange={setHistoryOpen} direction="right">
+                <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+                    <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+                        <DrawerHeader className="border-b border-border/60 p-6 text-left">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="space-y-2">
+                                    <DrawerTitle className="text-xl font-black flex items-center gap-2">
+                                        <History className="w-5 h-5 text-primary" />
+                                        Attendance History
+                                    </DrawerTitle>
+                                    <DrawerDescription className="text-sm font-medium text-muted-foreground">
+                                        Recent attendance logs for {selectedStudent?.userDetails?.firstName} {selectedStudent?.userDetails?.lastName}
+                                    </DrawerDescription>
+                                </div>
+                                <DrawerClose asChild>
+                                    <Button variant="ghost" size="icon" className="rounded-full">
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </DrawerClose>
                             </div>
-                        ) : historyRecords.length === 0 ? (
-                            <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-xl">
-                                <p>No attendance records found for this student.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {historyRecords.map((record) => (
-                                    <div key={record.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-card">
-                                        <div className="flex items-center gap-4">
-                                            <div className={cn(
-                                                "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                                                record.status === "present" ? "bg-green-500/10 text-green-500" :
-                                                record.status === "absent" ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500"
-                                            )}>
-                                                {record.status === "present" ? <Check className="h-5 w-5" /> :
-                                                 record.status === "absent" ? <X className="h-5 w-5" /> : <Clock className="h-5 w-5" />}
+                        </DrawerHeader>
+                        
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                            {historyLoading ? (
+                                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                                    <Loader2 className="h-10 w-10 animate-spin mb-4 text-primary" />
+                                    <p className="text-sm font-black uppercase tracking-widest animate-pulse">Retrieving Archives...</p>
+                                </div>
+                            ) : historyRecords.length === 0 ? (
+                                <div className="text-center py-20 text-muted-foreground border-2 border-dashed border-border/50 rounded-[2rem] bg-muted/10">
+                                    <CalendarIcon className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                                    <p className="text-sm font-bold tracking-tight">No attendance records found.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {historyRecords.map((record) => (
+                                        <div key={record.id} className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-white/[0.02] hover:bg-white/[0.04] transition-all">
+                                            <div className="flex items-center gap-4">
+                                                <div className={cn(
+                                                    "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                                                    record.status === "present" ? "bg-green-500/10 text-green-500 border border-green-500/20" :
+                                                    record.status === "absent" ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
+                                                )}>
+                                                    {record.status === "present" ? <Check className="h-6 w-6" /> :
+                                                     record.status === "absent" ? <X className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-black text-foreground">{format(new Date(record.date), "PPP")}</p>
+                                                    <p className={cn(
+                                                        "text-[10px] font-black uppercase tracking-widest mt-0.5",
+                                                        record.status === "present" ? "text-green-600" :
+                                                        record.status === "absent" ? "text-red-600" : "text-yellow-600"
+                                                    )}>{record.status}</p>
+                                                    {record.notes && (
+                                                        <p className="text-xs text-muted-foreground mt-2 px-3 py-1.5 bg-muted/50 rounded-lg italic border-l-2 border-primary/30">
+                                                            &quot;{record.notes}&quot;
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-bold">{format(new Date(record.date), "PPP")}</p>
-                                                <p className="text-xs text-muted-foreground capitalize">{record.status}</p>
-                                                {record.notes && (
-                                                    <p className="text-xs text-foreground mt-1 bg-muted px-2 py-1 rounded inline-block">
-                                                        Note: {record.notes}
+                                            {record.marker && (
+                                                <div className="text-right hidden sm:block">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40 mb-1">Author</p>
+                                                    <p className="text-xs font-bold text-foreground/70">
+                                                        {record.marker.userDetails?.firstName} {record.marker.userDetails?.lastName?.[0]}.
                                                     </p>
-                                                )}
-                                            </div>
+                                                </div>
+                                            )}
                                         </div>
-                                        {record.marker && (
-                                            <div className="text-right text-[10px] text-muted-foreground">
-                                                <p>Marked by</p>
-                                                <p className="font-medium text-foreground">
-                                                    {record.marker.userDetails?.firstName} {record.marker.userDetails?.lastName || record.marker.username}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <DrawerFooter className="border-t border-border/60 p-6 bg-muted/5">
+                            <DrawerClose asChild>
+                                <Button variant="outline" className="w-full h-12 rounded-xl font-bold">Close History</Button>
+                            </DrawerClose>
+                        </DrawerFooter>
                     </div>
-                </DialogContent>
-            </Dialog>
+                </DrawerContent>
+            </Drawer>
         </div>
     )
 }
 
 function StatCard({ label, value, color }: { label: string, value: number, color: string }) {
     return (
-        <Card className="overflow-hidden">
-            <div className={cn("px-4 py-3", color)}>
-                <p className="text-xs font-bold uppercase tracking-wider opacity-80">{label}</p>
-                <p className="text-2xl font-bold mt-1">{value}</p>
+        <Card className="overflow-hidden border-none shadow-sm">
+            <div className={cn("px-4 py-4", color)}>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">{label}</p>
+                <p className="text-3xl font-black mt-1 tabular-nums">{value}</p>
             </div>
         </Card>
     )
@@ -453,9 +484,9 @@ function AttendanceToggle({ status, active, onClick, disabled }: {
     disabled?: boolean
 }) {
     const config = {
-        present: { icon: Check, activeClass: "bg-green-500 text-white border-green-500", hoverClass: "hover:border-green-500/50 hover:bg-green-500/10" },
-        absent: { icon: X, activeClass: "bg-red-500 text-white border-red-500", hoverClass: "hover:border-red-500/50 hover:bg-red-500/10" },
-        late: { icon: Clock, activeClass: "bg-yellow-500 text-white border-yellow-500", hoverClass: "hover:border-yellow-500/50 hover:bg-yellow-500/10" }
+        present: { icon: Check, activeClass: "bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20", hoverClass: "hover:border-green-500/50 hover:bg-green-500/10" },
+        absent: { icon: X, activeClass: "bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20", hoverClass: "hover:border-red-500/50 hover:bg-red-500/10" },
+        late: { icon: Clock, activeClass: "bg-yellow-500 text-white border-yellow-500 shadow-lg shadow-yellow-500/20", hoverClass: "hover:border-yellow-500/50 hover:bg-yellow-500/10" }
     }
     
     const { icon: Icon, activeClass, hoverClass } = config[status]
@@ -465,8 +496,8 @@ function AttendanceToggle({ status, active, onClick, disabled }: {
             size="icon"
             variant="outline"
             className={cn(
-                "h-9 w-9 rounded-full transition-all shrink-0",
-                active ? activeClass : "bg-transparent text-muted-foreground border-border",
+                "h-9 w-9 rounded-full transition-all shrink-0 border-2",
+                active ? activeClass : "bg-transparent text-muted-foreground border-border/60",
                 !active && hoverClass
             )}
             onClick={onClick}

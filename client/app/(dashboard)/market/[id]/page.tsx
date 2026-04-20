@@ -8,7 +8,15 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { marketApi, Product, reviewApi, Review, ReviewStats } from "@/services/api/client";
 import { toast } from "sonner";
@@ -49,33 +57,46 @@ function PinDialog({
   const [pin, setPin] = useState("");
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setPin(""); }}>
-      <DialogContent className="sm:max-w-md rounded-[2.5rem] border-white/10 bg-slate-950/95 backdrop-blur-2xl p-8 shadow-2xl">
-        <DialogHeader className="space-y-3">
-          <div className="w-14 h-14 bg-brand-orange/10 rounded-2xl flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-7 h-7 text-brand-orange" />
+    <Drawer open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setPin(""); }} direction="right">
+      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+        <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+          <DrawerHeader className="border-b border-border/60 p-6 text-left">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <div className="w-12 h-12 bg-brand-orange/10 rounded-2xl flex items-center justify-center mb-2">
+                  <CheckCircle2 className="w-6 h-6 text-brand-orange" />
+                </div>
+                <DrawerTitle className="text-xl font-black">Confirm Authorization</DrawerTitle>
+                <DrawerDescription className="text-sm font-medium text-muted-foreground">Enter your 6-digit cryptographic PIN to sign this transaction.</DrawerDescription>
+              </div>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DrawerClose>
+            </div>
+          </DrawerHeader>
+
+          <div className="flex-1 p-6 flex flex-col items-center justify-center">
+            <div className="py-6">
+              <InputOTP maxLength={6} value={pin} onChange={setPin}>
+                <InputOTPGroup className="gap-2">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <InputOTPSlot key={i} index={i} className="h-14 w-11 rounded-xl border-border bg-muted/20 text-xl font-black focus:border-brand-orange/50" />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
           </div>
-          <DialogTitle className="text-2xl font-black tracking-tight text-white text-center">Confirm Authorization</DialogTitle>
-          <DialogDescription className="text-base font-medium text-white/50 text-center">Enter your 6-digit cryptographic PIN to sign this transaction.</DialogDescription>
-        </DialogHeader>
-        <div className="py-6">
-          <div className="flex justify-center">
-            <InputOTP maxLength={6} value={pin} onChange={setPin}>
-              <InputOTPGroup className="gap-2">
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <InputOTPSlot key={i} index={i} className="h-14 w-11 rounded-xl border-white/10 bg-white/5 text-xl font-black focus:border-brand-orange/50" />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-          </div>
+
+          <DrawerFooter className="border-t border-border/60 p-6">
+            <Button onClick={() => onConfirm(pin)} disabled={pin.length < 6 || isProcessing} className="w-full h-14 rounded-2xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black uppercase tracking-widest shadow-lg shadow-brand-orange/20 disabled:opacity-50">
+              {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Checkout"}
+            </Button>
+          </DrawerFooter>
         </div>
-        <DialogFooter>
-          <Button onClick={() => onConfirm(pin)} disabled={pin.length < 6 || isProcessing} className="w-full h-14 rounded-2xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black uppercase tracking-widest shadow-lg shadow-brand-orange/20 disabled:opacity-50">
-            {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Checkout"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      </DrawerContent>
+    </Drawer>
   );
 }
 

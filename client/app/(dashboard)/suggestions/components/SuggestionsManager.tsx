@@ -1,19 +1,21 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { CheckCircle2, Search, XCircle, Clock, Trash2, Eye, ChevronLeft, ChevronRight } from "lucide-react"
+import { CheckCircle2, Search, XCircle, Clock, Trash2, Eye, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { suggestionApi, Suggestion } from "@/services/api/client"
 import { SectionHeader } from "@/features/admin/components/SectionHeader"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/ui/dialog"
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+} from "@/components/ui/drawer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -188,63 +190,82 @@ export function SuggestionsManager() {
                 )}
             </div>
 
-            <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-                <DialogContent className="max-w-xl">
-                    <DialogHeader>
-                        <div className="flex items-center gap-2 mb-2">
-                            <Badge variant="outline" className="text-[10px] uppercase font-bold">
-                                Suggestion #{selected?.id}
-                            </Badge>
-                        </div>
-                        <DialogTitle className="text-xl font-bold">{selected?.title}</DialogTitle>
-                        <DialogDescription className="text-muted-foreground text-xs">
-                            Submitted by {selected?.user?.username} on {selected && formatDate(selected.createdAt)}
-                        </DialogDescription>
-                    </DialogHeader>
+            <Drawer open={viewOpen} onOpenChange={setViewOpen} direction="right">
+                <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+                    <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+                        <DrawerHeader className="border-b border-border/60 p-6 text-left">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Badge variant="outline" className="text-[10px] uppercase font-bold">
+                                            Suggestion #{selected?.id}
+                                        </Badge>
+                                    </div>
+                                    <DrawerTitle className="text-xl font-bold">{selected?.title}</DrawerTitle>
+                                    <DrawerDescription className="text-muted-foreground text-xs">
+                                        Submitted by {selected?.user?.username} on {selected && formatDate(selected.createdAt)}
+                                    </DrawerDescription>
+                                </div>
+                                <DrawerClose asChild>
+                                    <Button variant="ghost" size="icon" className="rounded-full">
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </DrawerClose>
+                            </div>
+                        </DrawerHeader>
 
-                    <div className="mt-4 p-4 bg-muted/30 rounded-2xl border border-border/50 text-sm whitespace-pre-wrap leading-relaxed">
-                        {selected?.content}
-                    </div>
+                        <div className="flex-1 space-y-6 overflow-y-auto p-6">
+                            <div className="p-4 bg-muted/30 rounded-2xl border border-border/50 text-sm whitespace-pre-wrap leading-relaxed">
+                                {selected?.content}
+                            </div>
 
-                    <div className="mt-6 flex flex-col gap-3">
-                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Update Status</p>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className={cn("text-[10px] font-bold h-9", selected?.status === 'pending' && "bg-yellow-50 border-yellow-200 text-yellow-700")}
-                                onClick={() => selected && handleUpdateStatus(selected.id, 'pending')}
-                            >
-                                Pending
-                            </Button>
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className={cn("text-[10px] font-bold h-9", selected?.status === 'reviewed' && "bg-blue-50 border-blue-200 text-blue-700")}
-                                onClick={() => selected && handleUpdateStatus(selected.id, 'reviewed')}
-                            >
-                                Reviewed
-                            </Button>
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className={cn("text-[10px] font-bold h-9", selected?.status === 'implemented' && "bg-green-50 border-green-200 text-green-700")}
-                                onClick={() => selected && handleUpdateStatus(selected.id, 'implemented')}
-                            >
-                                Done
-                            </Button>
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className={cn("text-[10px] font-bold h-9", selected?.status === 'rejected' && "bg-red-50 border-red-200 text-red-700")}
-                                onClick={() => selected && handleUpdateStatus(selected.id, 'rejected')}
-                            >
-                                Reject
-                            </Button>
+                            <div className="flex flex-col gap-3">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Update Status</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className={cn("text-[10px] font-bold h-9", selected?.status === 'pending' && "bg-yellow-50 border-yellow-200 text-yellow-700")}
+                                        onClick={() => selected && handleUpdateStatus(selected.id, 'pending')}
+                                    >
+                                        Pending
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className={cn("text-[10px] font-bold h-9", selected?.status === 'reviewed' && "bg-blue-50 border-blue-200 text-blue-700")}
+                                        onClick={() => selected && handleUpdateStatus(selected.id, 'reviewed')}
+                                    >
+                                        Reviewed
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className={cn("text-[10px] font-bold h-9", selected?.status === 'implemented' && "bg-green-50 border-green-200 text-green-700")}
+                                        onClick={() => selected && handleUpdateStatus(selected.id, 'implemented')}
+                                    >
+                                        Done
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className={cn("text-[10px] font-bold h-9", selected?.status === 'rejected' && "bg-red-50 border-red-200 text-red-700")}
+                                        onClick={() => selected && handleUpdateStatus(selected.id, 'rejected')}
+                                    >
+                                        Reject
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
+
+                        <DrawerFooter className="border-t border-border/60 p-6">
+                            <DrawerClose asChild>
+                                <Button variant="outline" className="w-full">Close</Button>
+                            </DrawerClose>
+                        </DrawerFooter>
                     </div>
-                </DialogContent>
-            </Dialog>
+                </DrawerContent>
+            </Drawer>
         </div>
     )
 }

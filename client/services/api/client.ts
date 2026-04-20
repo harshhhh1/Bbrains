@@ -887,11 +887,15 @@ export const attendanceApi = {
 };
 
 export const leaderboardApi = {
-  getLeaderboard: async (category: 'weekly' | 'monthly' | 'allTime' | 'course' = 'allTime', sortBy: 'xp' | 'points' = 'xp', limit = 20, offset = 0): Promise<ApiResponse<LeaderboardEntry[]>> => {
-    return api.get<LeaderboardEntry[]>(`/leaderboard?category=${category}&sortBy=${sortBy}&limit=${limit}&offset=${offset}`);
+  getLeaderboard: async (category: 'weekly' | 'monthly' | 'allTime' | 'course' = 'allTime', sortBy: 'xp' | 'points' = 'xp', limit = 20, offset = 0, collegeId?: number): Promise<ApiResponse<LeaderboardEntry[]>> => {
+    let url = `/leaderboard?category=${category}&sortBy=${sortBy}&limit=${limit}&offset=${offset}`;
+    if (collegeId) url += `&collegeId=${collegeId}`;
+    return api.get<LeaderboardEntry[]>(url);
   },
-  getMyPosition: async (category: 'weekly' | 'monthly' | 'allTime' | 'course' = 'allTime', sortBy: 'xp' | 'points' = 'xp'): Promise<ApiResponse<LeaderboardEntry>> => {
-    return api.get<LeaderboardEntry>(`/leaderboard/me?category=${category}&sortBy=${sortBy}`);
+  getMyPosition: async (category: 'weekly' | 'monthly' | 'allTime' | 'course' = 'allTime', sortBy: 'xp' | 'points' = 'xp', collegeId?: number): Promise<ApiResponse<LeaderboardEntry>> => {
+    let url = `/leaderboard/me?category=${category}&sortBy=${sortBy}`;
+    if (collegeId) url += `&collegeId=${collegeId}`;
+    return api.get<LeaderboardEntry>(url);
   },
 };
 

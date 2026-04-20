@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { 
   Bell, 
   Search, 
-  MessageSquare, 
   Trash2,
   ThumbsUp,
   Share2,
@@ -22,13 +21,14 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload";
 import Image from "next/image";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { useHasPermission } from "@/components/providers/permissions-provider";
 
@@ -423,60 +423,107 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
         </div>
       )}
 
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Announcement</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this announcement? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={acknowledgeDialogOpen} onOpenChange={setAcknowledgeDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Acknowledged By</DialogTitle>
-          </DialogHeader>
-          <div className="max-h-[300px] overflow-y-auto">
-            {acknowledgedUsers.length > 0 ? (
-              <div className="space-y-3">
-                {acknowledgedUsers.map((user) => (
-                  <div key={user.userId} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
-                    <Avatar className="h-8 w-8">
-                      {user.userDetails?.avatar && (
-                        <AvatarImage src={user.userDetails.avatar} className="object-cover" />
-                      )}
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-                        {user.userDetails?.firstName?.[0] || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">
-                        {user.userDetails?.firstName} {user.userDetails?.lastName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(user.createdAt || Date.now()), { addSuffix: true })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+      <Drawer open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} direction="right">
+        <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+          <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+            <DrawerHeader className="border-b border-border/60 p-6 text-left">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <DrawerTitle className="text-xl font-black text-destructive">Delete Announcement</DrawerTitle>
+                  <DrawerDescription className="text-sm font-medium text-muted-foreground">
+                    Are you sure you want to delete this announcement? This action cannot be undone.
+                  </DrawerDescription>
+                </div>
+                <DrawerClose asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </DrawerClose>
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">No one has acknowledged this yet.</p>
-            )}
+            </DrawerHeader>
+
+            <div className="flex-1 p-6">
+               <p className="text-sm text-foreground/70 leading-relaxed italic border-l-4 border-destructive/20 pl-4 py-2 bg-destructive/5 rounded-r-xl">
+                 Removing this announcement will hide it from all students and faculty immediately.
+               </p>
+            </div>
+
+            <DrawerFooter className="border-t border-border/60 p-6 sm:flex-row sm:justify-end gap-3">
+              <DrawerClose asChild>
+                <Button variant="outline" className="rounded-xl font-bold flex-1">
+                  Cancel
+                </Button>
+              </DrawerClose>
+              <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="rounded-xl font-bold flex-1">
+                {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                Confirm Delete
+              </Button>
+            </DrawerFooter>
           </div>
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
+
+      <Drawer open={acknowledgeDialogOpen} onOpenChange={setAcknowledgeDialogOpen} direction="right">
+        <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+          <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+            <DrawerHeader className="border-b border-border/60 p-6 text-left">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-2">
+                  <DrawerTitle className="text-xl font-black">Acknowledged By</DrawerTitle>
+                  <DrawerDescription className="text-sm font-medium text-muted-foreground">
+                    List of users who have confirmed reading this update.
+                  </DrawerDescription>
+                </div>
+                <DrawerClose asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <X className="h-4 w-4" />
+                  </Button>
+                </DrawerClose>
+              </div>
+            </DrawerHeader>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              {acknowledgedUsers.length > 0 ? (
+                <div className="space-y-4">
+                  {acknowledgedUsers.map((user) => (
+                    <div key={user.userId} className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all">
+                      <Avatar className="h-10 w-10 border border-primary/20 shadow-sm">
+                        {user.userDetails?.avatar && (
+                          <AvatarImage src={user.userDetails.avatar} className="object-cover" />
+                        )}
+                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-black">
+                          {user.userDetails?.firstName?.[0] || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold truncate">
+                          {user.userDetails?.firstName} {user.userDetails?.lastName}
+                        </p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                          {formatDistanceToNow(new Date(user.createdAt || Date.now()), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-20 text-center flex flex-col items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
+                    <Users className="w-6 h-6 text-muted-foreground/40" />
+                  </div>
+                  <p className="text-sm font-bold text-muted-foreground/60 tracking-tight italic">No acknowledgments yet.</p>
+                </div>
+              )}
+            </div>
+
+            <DrawerFooter className="border-t border-border/60 p-6">
+              <DrawerClose asChild>
+                <Button variant="outline" className="w-full h-12 rounded-xl font-bold">Close List</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

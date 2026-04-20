@@ -6,15 +6,16 @@ import { EventCalender } from "@/app/(dashboard)/calendar/_components/EventCalen
 import { DashboardContent } from "@/components/dashboard-content"
 import { eventApi, Event as ApiEvent } from "@/services/api/client"
 import { 
-    Dialog, 
-    DialogContent, 
-    DialogHeader, 
-    DialogTitle, 
-    DialogDescription,
-    DialogFooter
-} from "@/components/ui/dialog"
+    Drawer, 
+    DrawerClose, 
+    DrawerContent, 
+    DrawerDescription, 
+    DrawerFooter, 
+    DrawerHeader, 
+    DrawerTitle 
+} from "@/components/ui/drawer"
 import { Badge } from "@/components/ui/badge"
-import { MapPin, Clock, Calendar as CalendarIcon, Info } from "lucide-react"
+import { MapPin, Clock, Calendar as CalendarIcon, Info, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function CalendarPage() {
@@ -96,81 +97,91 @@ export default function CalendarPage() {
                 </div>
             </div>
 
-            {/* Event Details Dialog */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden border-none">
-                    {selectedEvent && (
-                        <>
-                            <div className="h-32 bg-gradient-to-r from-blue-600 to-indigo-700 relative">
-                                <div className="absolute -bottom-6 left-6 p-3 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
-                                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-none uppercase text-[10px] font-bold tracking-wider">
-                                        {selectedEvent.type || "Event"}
-                                    </Badge>
+            {/* Event Details Drawer */}
+            <Drawer open={isDialogOpen} onOpenChange={setIsDialogOpen} direction="right">
+                <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+                    <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+                        {selectedEvent && (
+                            <>
+                                <div className="h-40 bg-gradient-to-br from-brand-orange/20 via-brand-orange/10 to-transparent relative flex-shrink-0">
+                                    <div className="absolute top-6 right-6 z-10">
+                                        <DrawerClose asChild>
+                                            <Button variant="ghost" size="icon" className="rounded-full bg-black/20 backdrop-blur-md text-white hover:bg-black/40">
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </DrawerClose>
+                                    </div>
+                                    <div className="absolute -bottom-4 left-6 p-3 bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800">
+                                        <Badge variant="secondary" className="bg-brand-orange/10 text-brand-orange border-none uppercase text-[10px] font-black tracking-widest px-3 py-1">
+                                            {selectedEvent.type || "Event"}
+                                        </Badge>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div className="p-8 pt-10">
-                                <DialogHeader>
-                                    <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                                        {selectedEvent.title}
-                                    </DialogTitle>
-                                    <DialogDescription className="mt-2 text-gray-600 dark:text-gray-400">
-                                        {selectedEvent.description || "No description provided for this event."}
-                                    </DialogDescription>
-                                </DialogHeader>
+                                
+                                <div className="flex-1 overflow-y-auto p-8 pt-12 space-y-8">
+                                    <DrawerHeader className="p-0 text-left">
+                                        <DrawerTitle className="text-3xl font-black text-gray-900 dark:text-white tracking-tighter leading-none">
+                                            {selectedEvent.title}
+                                        </DrawerTitle>
+                                        <DrawerDescription className="mt-4 text-base font-medium text-gray-600 dark:text-gray-400 leading-relaxed bg-muted/20 p-4 rounded-2xl border border-border/50">
+                                            {selectedEvent.description || "No description provided for this event."}
+                                        </DrawerDescription>
+                                    </DrawerHeader>
 
-                                <div className="mt-8 space-y-4">
-                                    <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
-                                            <CalendarIcon size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">Date</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {formatEventDate(selectedEvent.startDate)}
+                                    <div className="space-y-4">
+                                        <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all">
+                                            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-600 dark:text-blue-400 shadow-sm">
+                                                <CalendarIcon size={22} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Schedule</p>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-white">
+                                                    {formatEventDate(selectedEvent.startDate)}
+                                                </p>
                                                 {new Date(selectedEvent.startDate).toDateString() !== new Date(selectedEvent.endDate).toDateString() && (
-                                                    <span> to {formatEventDate(selectedEvent.endDate)}</span>
+                                                    <p className="text-sm font-bold text-gray-900 dark:text-white mt-0.5">
+                                                        until {formatEventDate(selectedEvent.endDate)}
+                                                    </p>
                                                 )}
-                                            </p>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-600 dark:text-purple-400">
-                                            <Clock size={20} />
+                                        <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all">
+                                            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600 dark:text-purple-400 shadow-sm">
+                                                <Clock size={22} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Time Slot</p>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-white">
+                                                    {formatEventTime(selectedEvent.startDate)} - {formatEventTime(selectedEvent.endDate)}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">Time</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {formatEventTime(selectedEvent.startDate)} - {formatEventTime(selectedEvent.endDate)}
-                                            </p>
-                                        </div>
-                                    </div>
 
-                                    <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-emerald-600 dark:text-emerald-400">
-                                            <MapPin size={20} />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-gray-900 dark:text-white">Location</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">{selectedEvent.location || "Campus"}</p>
+                                        <div className="flex items-start gap-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all">
+                                            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-emerald-600 dark:text-emerald-400 shadow-sm">
+                                                <MapPin size={22} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Location</p>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-white">{selectedEvent.location || "Main Campus"}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <DialogFooter className="mt-8">
-                                    <Button 
-                                        onClick={() => setIsDialogOpen(false)}
-                                        className="w-full sm:w-auto"
-                                    >
-                                        Close
-                                    </Button>
-                                </DialogFooter>
-                            </div>
-                        </>
-                    )}
-                </DialogContent>
-            </Dialog>
+                                <DrawerFooter className="p-6 border-t border-border/60 bg-muted/5 flex-shrink-0">
+                                    <DrawerClose asChild>
+                                        <Button className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs">
+                                            Close View
+                                        </Button>
+                                    </DrawerClose>
+                                </DrawerFooter>
+                            </>
+                        )}
+                    </div>
+                </DrawerContent>
+            </Drawer>
         </DashboardContent>
     )
 }

@@ -7,13 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Package, Plus, Pencil, Loader2, Image as ImageIcon, X, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { marketApi, Product } from "@/services/api/client";
@@ -283,55 +284,60 @@ export default function MyProductsPage() {
           </div>
         )}
 
-        <Dialog open={showAddDialog} onOpenChange={(open) => { if (!open) { setShowAddDialog(false); resetForm(); } }}>
-          <DialogContent className="max-w-2xl overflow-hidden rounded-[2.5rem] border-white/10 bg-slate-950/95 p-0 shadow-2xl backdrop-blur-2xl">
-            <div className="space-y-8 p-8">
-              <DialogHeader>
-                <div className="mb-2 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange/10">
-                    <Plus className="h-6 w-6 text-brand-orange" />
-                  </div>
-                  <div>
-                    <DialogTitle className="text-2xl font-black tracking-tight">List New Asset</DialogTitle>
-                    <DialogDescription className="font-medium text-white/40">Provide specifications for your marketplace entry</DialogDescription>
-                  </div>
-                </div>
-              </DialogHeader>
-
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Visual Representation</label>
-                    <div className={cn(
-                      "group/img relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-white/10 bg-white/[0.02] transition-all",
-                      isUploading && "animate-pulse border-brand-orange/30"
-                    )}>
-                      {form.imageUrl ? (
-                        <>
-                          <Image src={form.imageUrl} alt="Preview" fill className="object-cover" />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover/img:opacity-100">
-                            <Button variant="destructive" size="icon" onClick={() => setForm((p) => ({ ...p, imageUrl: "" }))} className="rounded-full">
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </>
-                      ) : isUploading ? (
-                        <div className="flex flex-col items-center gap-3">
-                          <Loader2 className="h-8 w-8 animate-spin text-brand-orange" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-brand-orange">{progress}%</span>
-                        </div>
-                      ) : (
-                        <>
-                          <ImageIcon className="mb-4 h-10 w-10 text-white/10" />
-                          <label className="cursor-pointer">
-                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                            <span className="rounded-xl border border-white/5 bg-white/5 px-4 py-2 text-xs font-bold text-white/60 transition-colors hover:bg-white/10">
-                              Upload Image
-                            </span>
-                          </label>
-                        </>
-                      )}
+        <Drawer open={showAddDialog} onOpenChange={(open) => { if (!open) { setShowAddDialog(false); resetForm(); } }} direction="right">
+          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+            <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+              <DrawerHeader className="border-b border-border/60 p-6 text-left">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange/10">
+                      <Plus className="h-6 w-6 text-brand-orange" />
                     </div>
+                    <div>
+                      <DrawerTitle className="text-xl font-black tracking-tight">List New Asset</DrawerTitle>
+                      <DrawerDescription className="font-medium text-white/40">Provide specifications for your marketplace entry</DrawerDescription>
+                    </div>
+                  </div>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                <div className="flex flex-col gap-2">
+                  <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Visual Representation</label>
+                  <div className={cn(
+                    "group/img relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-white/10 bg-white/[0.02] transition-all",
+                    isUploading && "animate-pulse border-brand-orange/30"
+                  )}>
+                    {form.imageUrl ? (
+                      <>
+                        <Image src={form.imageUrl} alt="Preview" fill className="object-cover" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover/img:opacity-100">
+                          <Button variant="destructive" size="icon" onClick={() => setForm((p) => ({ ...p, imageUrl: "" }))} className="rounded-full">
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </>
+                    ) : isUploading ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-brand-orange" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-orange">{progress}%</span>
+                      </div>
+                    ) : (
+                      <>
+                        <ImageIcon className="mb-4 h-10 w-10 text-white/10" />
+                        <label className="cursor-pointer">
+                          <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                          <span className="rounded-xl border border-white/5 bg-white/5 px-4 py-2 text-xs font-bold text-white/60 transition-colors hover:bg-white/10">
+                            Upload Image
+                          </span>
+                        </label>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -378,88 +384,90 @@ export default function MyProductsPage() {
                   </div>
                 </div>
               </div>
+
+              <DrawerFooter className="border-t border-border/60 p-6">
+                <Button
+                  onClick={handleAddProduct}
+                  disabled={isSubmitting || isUploading}
+                  className="w-full h-12 rounded-xl bg-brand-orange px-8 font-black text-white shadow-lg shadow-brand-orange/20 hover:bg-brand-orange/90"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Finalize Listing
+                    </>
+                  )}
+                </Button>
+              </DrawerFooter>
             </div>
+          </DrawerContent>
+        </Drawer>
 
-            <DialogFooter className="mt-4 bg-white/5 p-6">
-              <Button variant="ghost" onClick={() => setShowAddDialog(false)} className="rounded-xl font-bold text-white/40 hover:bg-white/5 hover:text-white">
-                Cancel Operation
-              </Button>
-              <Button
-                onClick={handleAddProduct}
-                disabled={isSubmitting || isUploading}
-                className="h-12 rounded-xl bg-brand-orange px-8 font-black text-white shadow-lg shadow-brand-orange/20 hover:bg-brand-orange/90"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Finalize Listing
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={showEditDialog} onOpenChange={(open) => { if (!open) { setShowEditDialog(false); resetForm(); } }}>
-          <DialogContent className="max-w-2xl overflow-hidden rounded-[2.5rem] border-white/10 bg-slate-950/95 p-0 shadow-2xl backdrop-blur-2xl">
-            <div className="space-y-8 p-8">
-              <DialogHeader>
-                <div className="mb-2 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange/10">
-                    <Pencil className="h-6 w-6 text-brand-orange" />
-                  </div>
-                  <div>
-                    <DialogTitle className="text-2xl font-black tracking-tight">
-                      {selectedProduct?.approval === "approved" ? "Request Edit Review" : "Update Asset"}
-                    </DialogTitle>
-                    <DialogDescription className="font-medium text-white/40">
-                      {selectedProduct?.approval === "approved"
-                        ? "Approved products require admin review for updates."
-                        : "Modify specifications for your marketplace entry"}
-                    </DialogDescription>
-                  </div>
-                </div>
-              </DialogHeader>
-
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-2">
-                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Visual Representation</label>
-                    <div className={cn(
-                      "group/img relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-white/10 bg-white/[0.02] transition-all",
-                      isUploading && "animate-pulse border-brand-orange/30"
-                    )}>
-                      {form.imageUrl ? (
-                        <>
-                          <Image src={form.imageUrl} alt="Preview" fill className="object-cover" />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover/img:opacity-100">
-                            <Button variant="destructive" size="icon" onClick={() => setForm((p) => ({ ...p, imageUrl: "" }))} className="rounded-full">
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </>
-                      ) : isUploading ? (
-                        <div className="flex flex-col items-center gap-3">
-                          <Loader2 className="h-8 w-8 animate-spin text-brand-orange" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-brand-orange">{progress}%</span>
-                        </div>
-                      ) : (
-                        <>
-                          <ImageIcon className="mb-4 h-10 w-10 text-white/10" />
-                          <label className="cursor-pointer">
-                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                            <span className="rounded-xl border border-white/5 bg-white/5 px-4 py-2 text-xs font-bold text-white/60 transition-colors hover:bg-white/10">
-                              Upload Image
-                            </span>
-                          </label>
-                        </>
-                      )}
+        <Drawer open={showEditDialog} onOpenChange={(open) => { if (!open) { setShowEditDialog(false); resetForm(); } }} direction="right">
+          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+            <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+              <DrawerHeader className="border-b border-border/60 p-6 text-left">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange/10">
+                      <Pencil className="h-6 w-6 text-brand-orange" />
                     </div>
+                    <div>
+                      <DrawerTitle className="text-xl font-black tracking-tight">
+                        {selectedProduct?.approval === "approved" ? "Request Edit Review" : "Update Asset"}
+                      </DrawerTitle>
+                      <DrawerDescription className="font-medium text-white/40">
+                        {selectedProduct?.approval === "approved"
+                          ? "Approved products require admin review for updates."
+                          : "Modify specifications for your marketplace entry"}
+                      </DrawerDescription>
+                    </div>
+                  </div>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                <div className="flex flex-col gap-2">
+                  <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Visual Representation</label>
+                  <div className={cn(
+                    "group/img relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-white/10 bg-white/[0.02] transition-all",
+                    isUploading && "animate-pulse border-brand-orange/30"
+                  )}>
+                    {form.imageUrl ? (
+                      <>
+                        <Image src={form.imageUrl} alt="Preview" fill className="object-cover" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover/img:opacity-100">
+                          <Button variant="destructive" size="icon" onClick={() => setForm((p) => ({ ...p, imageUrl: "" }))} className="rounded-full">
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </>
+                    ) : isUploading ? (
+                      <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-brand-orange" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-orange">{progress}%</span>
+                      </div>
+                    ) : (
+                      <>
+                        <ImageIcon className="mb-4 h-10 w-10 text-white/10" />
+                        <label className="cursor-pointer">
+                          <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                          <span className="rounded-xl border border-white/5 bg-white/5 px-4 py-2 text-xs font-bold text-white/60 transition-colors hover:bg-white/10">
+                            Upload Image
+                          </span>
+                        </label>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -506,32 +514,29 @@ export default function MyProductsPage() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            <DialogFooter className="mt-4 bg-white/5 p-6">
-              <Button variant="ghost" onClick={() => setShowEditDialog(false)} className="rounded-xl font-bold text-white/40 hover:bg-white/5 hover:text-white">
-                Cancel
-              </Button>
-              <Button
-                onClick={handleUpdateProduct}
-                disabled={isSubmitting || isUploading}
-                className="h-12 rounded-xl bg-brand-orange px-8 font-black text-white shadow-lg shadow-brand-orange/20 hover:bg-brand-orange/90"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="mr-2 h-4 w-4" />
-                    {selectedProduct?.approval === "approved" ? "Submit Review Request" : "Save Changes"}
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DrawerFooter className="border-t border-border/60 p-6">
+                <Button
+                  onClick={handleUpdateProduct}
+                  disabled={isSubmitting || isUploading}
+                  className="w-full h-12 rounded-xl bg-brand-orange px-8 font-black text-white shadow-lg shadow-brand-orange/20 hover:bg-brand-orange/90"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      {selectedProduct?.approval === "approved" ? "Submit Review Request" : "Save Changes"}
+                    </>
+                  )}
+                </Button>
+              </DrawerFooter>
+            </div>
+          </DrawerContent>
+        </Drawer>
       </div>
     </DashboardContent>
   );

@@ -4,9 +4,17 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, QrCode, Loader2, BookOpen, ArrowLeft, ShoppingCart, CheckCircle2, Clock, ExternalLink, type LucideIcon } from "lucide-react";
+import { Package, QrCode, Loader2, BookOpen, ArrowLeft, ShoppingCart, CheckCircle2, Clock, ExternalLink, X, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardContent } from "@/components/dashboard-content";
 import { orderApi, Order } from "@/services/api/client";
@@ -77,7 +85,7 @@ export default function OrdersPage() {
                 <Package className="w-10 h-10 text-muted-foreground opacity-50" />
               </div>
               <h3 className="text-xl font-bold mb-2">No Orders Yet</h3>
-              <p className="text-muted-foreground max-w-sm mb-8">Products you purchase will appear here</p>
+              <p className="text-muted-foreground max-sm mb-8">Products you purchase will appear here</p>
               <Link href="/market">
                 <Button variant="outline" className="rounded-xl border-2 font-bold px-8">Browse Market</Button>
               </Link>
@@ -111,77 +119,116 @@ export default function OrdersPage() {
           </Tabs>
         )}
 
-        <Dialog open={!!selectedOrder && !showQR} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-          <DialogContent className="rounded-3xl border-white/10 bg-slate-950/95 backdrop-blur-2xl p-0 overflow-hidden shadow-2xl max-w-lg">
-            <div className="p-6 space-y-5">
-              <DialogHeader>
-                <DialogTitle className="text-xl font-black">Order #{selectedOrder?.id}</DialogTitle>
-                <DialogDescription className="text-sm text-white/40">
-                  {selectedOrder ? new Date(selectedOrder.orderDate).toLocaleDateString() : ''}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-3">
-                {selectedOrder?.items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-white/5 shrink-0">
-                      {item.product?.image ? (
-                        <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
-                      ) : (
-                        <Package className="w-5 h-5 text-white/10 m-3.5" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-white text-sm truncate">{item.product?.name || 'Product'}</p>
-                      <p className="text-xs text-white/40">Qty: {item.quantity}</p>
-                    </div>
-                    <span className="font-bold text-brand-orange text-sm">{Number(item.price) * item.quantity} B-Coins</span>
+        <Drawer open={!!selectedOrder && !showQR} onOpenChange={(open) => !open && setSelectedOrder(null)} direction="right">
+          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+            <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+              <DrawerHeader className="border-b border-border/60 p-6 text-left">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <DrawerTitle className="text-xl font-black">Order #{selectedOrder?.id}</DrawerTitle>
+                    <DrawerDescription className="text-sm text-muted-foreground">
+                      {selectedOrder ? new Date(selectedOrder.orderDate).toLocaleDateString() : ''}
+                    </DrawerDescription>
                   </div>
-                ))}
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+
+              <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                <div className="space-y-3">
+                  {selectedOrder?.items.map((item) => (
+                    <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5">
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-white/5 shrink-0">
+                        {item.product?.image ? (
+                          <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
+                        ) : (
+                          <Package className="w-5 h-5 text-white/10 m-3.5" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-white text-sm truncate">{item.product?.name || 'Product'}</p>
+                        <p className="text-xs text-white/40">Qty: {item.quantity}</p>
+                      </div>
+                      <span className="font-bold text-brand-orange text-sm">{Number(item.price) * item.quantity} B-Coins</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t border-white/5 pt-4 flex justify-between items-center">
+                  <span className="text-sm font-bold text-white/40 uppercase tracking-wider">Total</span>
+                  <span className="text-2xl font-black text-white">{Number(selectedOrder?.totalAmount || 0)} <span className="text-sm text-brand-orange">B-Coins</span></span>
+                </div>
+
+                {selectedOrder && statusConfig[selectedOrder.status] && (
+                  <Badge className={cn("w-fit text-[10px] font-black uppercase tracking-widest px-3 py-1 border", statusConfig[selectedOrder.status].color)}>
+                    {statusConfig[selectedOrder.status].label}
+                  </Badge>
+                )}
               </div>
 
-              <div className="border-t border-white/5 pt-4 flex justify-between items-center">
-                <span className="text-sm font-bold text-white/40 uppercase tracking-wider">Total</span>
-                <span className="text-2xl font-black text-white">{Number(selectedOrder?.totalAmount || 0)} <span className="text-sm text-brand-orange">B-Coins</span></span>
-              </div>
-
-              {selectedOrder && statusConfig[selectedOrder.status] && (
-                <Badge className={cn("w-fit text-[10px] font-black uppercase tracking-widest px-3 py-1 border", statusConfig[selectedOrder.status].color)}>
-                  {statusConfig[selectedOrder.status].label}
-                </Badge>
-              )}
-
-              {selectedOrder?.orderType !== 'digital' && selectedOrder?.status === 'order_placed' && selectedOrder?.qrCode && (
-                <Button onClick={() => setShowQR(true)} className="w-full h-12 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold">
-                  <QrCode className="w-4 h-4 mr-2" />
-                  Show QR Code
-                </Button>
-              )}
-
-              {selectedOrder?.orderType === 'digital' && (
-                <Link href="/library">
-                  <Button className="w-full h-12 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold">
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    View in Library
+              <DrawerFooter className="border-t border-border/60 p-6 space-y-3">
+                {selectedOrder?.orderType !== 'digital' && selectedOrder?.status === 'order_placed' && selectedOrder?.qrCode && (
+                  <Button onClick={() => setShowQR(true)} className="w-full h-12 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold">
+                    <QrCode className="w-4 h-4 mr-2" />
+                    Show QR Code
                   </Button>
-                </Link>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+                )}
 
-        <Dialog open={showQR} onOpenChange={(open) => { if (!open) setShowQR(false); }}>
-          <DialogContent className="rounded-3xl border-white/10 bg-slate-950/95 backdrop-blur-2xl p-6 shadow-2xl max-w-sm">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-black text-center">Order #{selectedOrder?.id}</DialogTitle>
-              <DialogDescription className="text-sm text-white/40 text-center">Show this QR code to the seller for delivery confirmation</DialogDescription>
-            </DialogHeader>
-            {selectedOrder?.qrCode && (
-              <QRCodeDisplay value={selectedOrder.qrCode} size={220} label="Delivery QR Code" />
-            )}
-            <p className="text-xs text-white/30 text-center mt-2">The seller will scan this code to confirm delivery</p>
-          </DialogContent>
-        </Dialog>
+                {selectedOrder?.orderType === 'digital' && (
+                  <Link href="/library" className="w-full">
+                    <Button className="w-full h-12 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold">
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      View in Library
+                    </Button>
+                  </Link>
+                )}
+                
+                <DrawerClose asChild>
+                  <Button variant="outline" className="w-full h-12 rounded-xl">Close</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </div>
+          </DrawerContent>
+        </Drawer>
+
+        <Drawer open={showQR} onOpenChange={(open) => { if (!open) setShowQR(false); }} direction="right">
+          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-sm before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+            <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+              <DrawerHeader className="border-b border-border/60 p-6 text-left">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
+                    <DrawerTitle className="text-xl font-black">Order #{selectedOrder?.id}</DrawerTitle>
+                    <DrawerDescription className="text-sm text-muted-foreground">Show this QR code for delivery confirmation</DrawerDescription>
+                  </div>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+              
+              <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-6">
+                {selectedOrder?.qrCode && (
+                  <div className="p-4 bg-white rounded-3xl">
+                    <QRCodeDisplay value={selectedOrder.qrCode} size={220} label="Delivery QR Code" />
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground text-center max-w-[200px]">The seller will scan this code to confirm delivery</p>
+              </div>
+
+              <DrawerFooter className="border-t border-border/60 p-6">
+                <DrawerClose asChild>
+                  <Button variant="outline" className="w-full h-12 rounded-xl">Done</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </div>
+          </DrawerContent>
+        </Drawer>
       </div>
     </DashboardContent>
   );

@@ -2,15 +2,17 @@
 
 import React, { useState, useEffect } from "react"
 import { api } from "@/services/api/client"
-import { Loader2, XCircle, Shield } from "lucide-react"
+import { Loader2, XCircle, Shield, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer"
 import {
   Select,
   SelectContent,
@@ -105,74 +107,90 @@ export function UserRolesDialog({ open, onOpenChange, userId, username }: UserRo
   const availableRoles = allRoles.filter(r => !userRoles.some(ur => ur.id === r.id))
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-primary" />
-            Manage Roles: @{username}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-6 py-4">
-          {/* Current Roles */}
-          <div className="space-y-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Current Roles</h4>
-            {loading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" /> Loading roles...
+    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+        <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+          <DrawerHeader className="border-b border-border/60 p-6 text-left">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <DrawerTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-primary" />
+                  Manage Roles: @{username}
+                </DrawerTitle>
+                <DrawerDescription>
+                  Assign or remove custom permissions for this user.
+                </DrawerDescription>
               </div>
-            ) : userRoles.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">No custom roles assigned</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {userRoles.map((role) => (
-                  <Badge key={role.id} variant="secondary" className="pl-2 pr-1 py-1 flex items-center gap-1 group">
-                    {role.name}
-                    <button
-                      onClick={() => handleRemove(role.id)}
-                      disabled={submitting}
-                      className="text-muted-foreground hover:text-destructive transition-colors p-0.5 rounded-full hover:bg-destructive/10"
-                    >
-                      <XCircle className="w-3.5 h-3.5" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
+              <DrawerClose asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <X className="h-4 w-4" />
+                </Button>
+              </DrawerClose>
+            </div>
+          </DrawerHeader>
 
-          {/* Assign New Role */}
-          <div className="space-y-2 pt-2 border-t border-border/50">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Assign New Role</h4>
-            <div className="flex gap-2">
-              <Select value={assignRoleId} onValueChange={setAssignRoleId} disabled={loading || availableRoles.length === 0}>
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder={availableRoles.length === 0 ? "No roles available" : "Select a role..."} />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableRoles.map((role) => (
-                    <SelectItem key={role.id} value={role.id.toString()}>
+          <div className="flex-1 space-y-6 overflow-y-auto p-6">
+            {/* Current Roles */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Current Roles</h4>
+              {loading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Loading roles...
+                </div>
+              ) : userRoles.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic">No custom roles assigned</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {userRoles.map((role) => (
+                    <Badge key={role.id} variant="secondary" className="pl-2 pr-1 py-1 flex items-center gap-1 group">
                       {role.name}
-                    </SelectItem>
+                      <button
+                        onClick={() => handleRemove(role.id)}
+                        disabled={submitting}
+                        className="text-muted-foreground hover:text-destructive transition-colors p-0.5 rounded-full hover:bg-destructive/10"
+                      >
+                        <XCircle className="w-3.5 h-3.5" />
+                      </button>
+                    </Badge>
                   ))}
-                </SelectContent>
-              </Select>
-              <Button 
-                onClick={handleAssign} 
-                disabled={!assignRoleId || submitting} 
-                className="shrink-0"
-              >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Assign"}
-              </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Assign New Role */}
+            <div className="space-y-2 pt-2 border-t border-border/50">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Assign New Role</h4>
+              <div className="flex gap-2">
+                <Select value={assignRoleId} onValueChange={setAssignRoleId} disabled={loading || availableRoles.length === 0}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder={availableRoles.length === 0 ? "No roles available" : "Select a role..."} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoles.map((role) => (
+                      <SelectItem key={role.id} value={role.id.toString()}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button 
+                  onClick={handleAssign} 
+                  disabled={!assignRoleId || submitting} 
+                  className="shrink-0"
+                >
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Assign"}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DrawerFooter className="border-t border-border/60 p-6 sm:flex-row sm:justify-end">
+            <DrawerClose asChild>
+              <Button variant="outline">Close</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </div>
+      </DrawerContent>
+    </Drawer>
   )
 }

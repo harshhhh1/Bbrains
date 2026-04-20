@@ -8,6 +8,7 @@ export const LOG_CATEGORIES: LogCategory[] = [
     "FINANCE",
     "USER",
     "SYSTEM",
+    "LEVELS",
 ];
 
 export const categoryColors: Record<string, string> = {
@@ -17,4 +18,5 @@ export const categoryColors: Record<string, string> = {
     FINANCE: "bg-amber-500/10 text-amber-600",
     USER: "bg-purple-500/10 text-purple-600",
     SYSTEM: "bg-slate-500/10 text-slate-600",
+    LEVELS: "bg-yellow-500/10 text-yellow-600",
 };

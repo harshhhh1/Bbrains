@@ -68,7 +68,12 @@ function AvatarFallback({
   const context = React.useContext(AvatarContext)
   const [rotation, setRotation] = React.useState({ x: 0, y: 0 })
   const [isHovered, setIsHovered] = React.useState(false)
+  const [mounted, setMounted] = React.useState(false)
   const containerRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Extract text content from children recursively to use as seed
   const extractText = (node: React.ReactNode): string => {
@@ -134,14 +139,16 @@ function AvatarFallback({
             transformStyle: "preserve-3d",
           }}
         >
-          <FacehashPrimitive 
-            name={seed} 
-            enableBlink 
-            className="block size-full"
-            size={512}
-            variant="gradient"
-            colors={["#6cc9eeff", "#2a9d8f", "#e9c46a", "#ff9f1c", "#ff6b35", "#f7b267", "#80ced6"]} 
-          />
+          {mounted && (
+            <FacehashPrimitive 
+              name={seed} 
+              enableBlink 
+              className="block size-full"
+              size={512}
+              variant="gradient"
+              colors={["#6cc9eeff", "#2a9d8f", "#e9c46a", "#ff9f1c", "#ff6b35", "#f7b267", "#80ced6"]} 
+            />
+          )}
         </div>
       </div>
       {showInitials && children && (
