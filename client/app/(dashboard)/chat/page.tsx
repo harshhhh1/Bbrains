@@ -64,6 +64,8 @@ export default function ChatPage() {
           onSelectSearchResult={actions.handleSelectSearchResult}
           onReply={actions.handleReply}
           onCopy={actions.handleCopy}
+          onCopyLink={actions.handleCopyLink}
+          onMention={actions.handleMention}
           onEdit={actions.handleEdit}
           onDelete={actions.deleteMessage}
           onOpenProfile={actions.handleOpenProfile}

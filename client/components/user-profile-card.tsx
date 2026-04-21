@@ -135,16 +135,6 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
                     </div>
                 </div>
             </div>
-
-            {/* Footer / Status Note */}
-            <div className="bg-[#1e1f22]/50 px-4 py-3">
-                <input
-                    className="w-full bg-transparent text-xs text-[#b5bac1] outline-none placeholder:text-[#949ba4]"
-                    placeholder="Click to add a custom status note..."
-                    type="text"
-                    onClick={(e) => e.stopPropagation()}
-                />
-            </div>
         </div>
     )
 }

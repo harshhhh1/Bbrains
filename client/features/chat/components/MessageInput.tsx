@@ -16,7 +16,7 @@ interface MessageInputProps {
     message: string
     channelName: string
     editingMessageId: string | null
-    replyingMessage: { id: string; username: string; content: string } | null
+    replyingMessage: { id: string; username: string; name: string; avatar: string; content: string } | null
     pendingAttachments: { file: File; previewUrl: string }[]
     mentionSuggestions: ChatMentionUser[]
     isUploading?: boolean
@@ -110,7 +110,7 @@ export function MessageInput({
             {replyingMessage && (
                 <div className="flex items-center justify-between mb-2 px-2 py-1.5 bg-muted/50 rounded-md text-xs">
                     <span className="text-muted-foreground truncate">
-                        Replying to <span className="font-medium text-foreground">@{replyingMessage.username}</span>: {replyingMessage.content.slice(0, 50)}{replyingMessage.content.length > 50 ? '...' : ''}
+                        Replying to <span className="font-medium text-foreground">{replyingMessage.name}</span>: <span className="italic">“{replyingMessage.content.slice(0, 50)}{replyingMessage.content.length > 50 ? '...' : ''}”</span>
                     </span>
                     <Button variant="ghost" size="icon" className="h-5 w-5" onClick={onCancelReply}>
                         <X className="w-3 h-3" />

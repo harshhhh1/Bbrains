@@ -26,17 +26,20 @@ export function WalletHero({ walletBalance, xp, level, nextLevel, progressPercen
             Student Wallet
           </span>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
-            Your campus points, XP, and reward progress
+            Your campus coins, XP, and reward progress
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-            This wallet tracks what a student earns through assignments, attendance, streaks, and performance, then turns those points into store access and progress milestones.
+            This wallet tracks what a student earns through assignments, attendance, streaks, and performance, then turns those coins into store access and progress milestones.
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl bg-slate-900 dark:bg-primary/20 dark:border dark:border-primary/30 p-5 text-white shadow-lg flex flex-col justify-between transition-transform hover:scale-[1.02]">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-300">Available Points</p>
-                <p className="mt-3 text-4xl font-bold">{formatPoints(walletBalance)}</p>
+                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-300">Available Coins</p>
+                <div className="mt-3 flex items-center gap-2">
+                   <img src="/bcoin.svg" className="h-10 w-10 drop-shadow-lg" alt="" />
+                   <p className="text-4xl font-bold">{formatPoints(walletBalance)}</p>
+                </div>
               </div>
               <p className="mt-2 text-[11px] text-slate-400">Ready to spend in the reward store.</p>
             </div>
@@ -81,7 +84,7 @@ export function WalletHero({ walletBalance, xp, level, nextLevel, progressPercen
             </div>
             <div className="rounded-2xl bg-muted/30 p-4 border border-border/50">
               <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Spend</p>
-              <p className="mt-2 text-xs font-medium text-foreground/80">Use points in the store for perks, unlocks, and student rewards.</p>
+              <p className="mt-2 text-xs font-medium text-foreground/80">Use coins in the store for perks, unlocks, and student rewards.</p>
             </div>
             <div className="flex gap-3 mt-1">
               <Link href="/market" className="flex-1 rounded-full bg-primary px-4 py-3 text-center text-sm font-semibold text-primary-foreground shadow-sm transition hover:opacity-90 active:scale-95">

@@ -40,7 +40,8 @@ export function AchievementCard({ item }: AchievementCardProps) {
             +{item.achievement.rewardXP} XP
           </span>
           <span className="inline-flex items-center text-xs font-medium text-amber-600 dark:text-amber-400">
-            +{item.achievement.rewardCoins} Coins
+            <img src="/bcoin.svg" className="mr-1 h-3.5 w-3.5 mb-0.5" alt="" />
+            +{item.achievement.rewardCoins}
           </span>
         </div>
 

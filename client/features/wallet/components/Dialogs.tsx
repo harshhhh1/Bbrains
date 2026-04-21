@@ -413,7 +413,9 @@ export function WalletDialogs({
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
                 <DrawerTitle className="text-xl font-bold">Enter Wallet PIN</DrawerTitle>
-                <DrawerDescription>Enter your PIN to confirm transfer of {sendAmount} B-Coins</DrawerDescription>
+                <DrawerDescription className="flex items-center gap-1">
+                  Enter your PIN to confirm transfer of {sendAmount} <img src="/bcoin.svg" className="h-3 w-3" alt="" /> BCoins
+                </DrawerDescription>
               </div>
               <DrawerClose asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -461,7 +463,7 @@ export function WalletDialogs({
             </div>
             <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-muted-foreground">Recipient</span><span className="font-medium text-foreground">{sendTo}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground">Amount</span><span className="font-bold text-foreground">{sendAmount} B-Coins</span></div>
+              <div className="flex justify-between items-center"><span className="text-muted-foreground">Amount</span><span className="font-bold text-foreground flex items-center gap-1">{sendAmount} <img src="/bcoin.svg" className="h-4 w-4" alt="" /> BCoins</span></div>
               {sendNote && <div className="flex justify-between"><span className="text-muted-foreground">Note</span><span className="text-foreground">{sendNote}</span></div>}
             </div>
             <div className="flex gap-2">

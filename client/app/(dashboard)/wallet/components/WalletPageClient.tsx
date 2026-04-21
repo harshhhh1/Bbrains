@@ -112,7 +112,7 @@ export default function WalletPage() {
             </CardContent>
           </Card>
 
-          <SpendingsChart />
+          <SpendingsChart transactions={transactions} />
 
           <TransactionHistory 
             transactions={transactions} 

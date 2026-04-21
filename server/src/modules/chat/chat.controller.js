@@ -39,6 +39,13 @@ const createMessageSchema = z.object({
         });
     }
 });
+
+const updateMessageSchema = z.object({
+    content: z.string().trim().min(1).max(MAX_MESSAGE_LENGTH),
+    mentions: z.array(z.string().trim().min(1).max(64)).max(50).optional(),
+    mentionedUserIds: z.array(z.string().trim().min(1).max(128)).max(50).optional(),
+});
+
 console.log('[Chat] createMessageSchema defined, checking chatId normalization...');
 
 const normalizeChatId = (value, req = null) => {

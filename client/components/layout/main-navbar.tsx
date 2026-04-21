@@ -4,6 +4,7 @@ import React, { useMemo } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
+import { useTheme } from "@/context/theme"
 import {
     
     CalendarDays,
@@ -69,7 +70,16 @@ function getRoleLabel(type?: string) {
 export function MainNavbar({ user }: { user?: NavbarUser | null }) {
     const router = useRouter()
     const pathname = usePathname()
+    const { currentTheme, themes } = useTheme()
+    const [mounted, setMounted] = React.useState(false)
     const [todayLabel, setTodayLabel] = React.useState("")
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    const isDark = themes.find(t => t.id === currentTheme)?.isDark || false
+    const logoSrc = isDark ? "/logo-white.png" : "/logo-dark.png"
 
     const breadcrumbLabels = useMemo(() => buildPathLabels(pathname), [pathname])
     const pageTitle = useMemo(() => getPrimaryTitle(pathname), [pathname])
@@ -122,13 +132,13 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                 </div>
 
                 <div className="hidden items-center justify-end flex-1 xl:flex mr-4">
-                     <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-linear-to-br from-emerald-500/5 to-cyan-500/5 px-4 py-2 shadow-sm ring-1 ring-emerald-500/10">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-linear-to-br from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/20">
-                            <Coins className="h-4 w-4" />
+                     <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/50 px-4 py-2 shadow-sm ring-1 ring-border/5">
+                        <div className="flex h-9 w-9 items-center justify-center">
+                            <Image src="/bcoin.svg" width={36} height={36} alt="BCoin" className="drop-shadow-sm" />
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col ml-0.5">
                             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Balance</span>
-                            <span className="text-sm font-bold text-foreground tabular-nums">
+                            <span className="text-sm font-bold text-foreground tabular-nums leading-none mt-0.5">
                                 {Number(user?.coins || 0).toLocaleString()}
                             </span>
                         </div>
@@ -152,7 +162,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button aria-label="User Menu" className="group flex items-center gap-3 rounded-2xl border border-border/70 bg-card/80 px-2.5 py-2 shadow-sm transition hover:bg-card focus:outline-none focus:ring-2 focus:ring-ring">
+                            <button suppressHydrationWarning aria-label="User Menu" className="group flex items-center gap-3 rounded-2xl border border-border/70 bg-card/80 px-2.5 py-2 shadow-sm transition hover:bg-card focus:outline-none focus:ring-2 focus:ring-ring">
                                 <div className="hidden text-right md:block">
                                     <p className="max-w-35 truncate text-sm font-semibold text-foreground">
                                         {user?.fullName || user?.username || "Anonymous User"}

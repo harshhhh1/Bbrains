@@ -153,7 +153,10 @@ export function TransactionHistory({ transactions, loading, error }: Transaction
                        <p className={`font-black text-base tracking-tighter ${credit ? "text-green-600 dark:text-green-400" : "text-destructive"}`}>
                         {credit ? "+" : "-"}{txn.amount ?? 0}
                       </p>
-                      <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mt-0.5">B-COINS</p>
+                      <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mt-0.5 flex items-center justify-end gap-1">
+                        <img src="/bcoin.svg" className="h-3 w-3 opacity-50 grayscale" alt="" />
+                        BCoins
+                      </p>
                     </div>
 
                     <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
