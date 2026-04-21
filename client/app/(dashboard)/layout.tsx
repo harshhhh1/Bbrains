@@ -56,7 +56,7 @@ import { getCachedUser } from "@/services/shared-data"
 
 async function fetchSidebarAccess(token: string): Promise<Record<string, string[]> | null> {
     try {
-        const baseUrl = process.env._API_URL || 'http://localhost:5000'
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
         const response = await fetch(`${baseUrl}/sidebaraccess`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
