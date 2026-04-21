@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/features/admin/components/SectionHeader";
 import { api } from "@/services/api/client";
-import { AddCollegeModal } from "./components/AddCollegeModal";
+import { AddCollegeModal } from "./AddCollegeModal";
 import Link from "next/link";
 
 function formatDate(value: string) {

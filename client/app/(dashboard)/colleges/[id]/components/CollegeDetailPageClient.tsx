@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { api } from "@/services/api/client";
 import { toast } from "sonner";
-import { EditCollegeModal } from "../components/EditCollegeModal";
-import { CollegeUsersManagement } from "./_components/CollegeUsersManagement";
+import { EditCollegeModal } from "../../components/EditCollegeModal";
+import { CollegeUsersManagement } from "../_components/CollegeUsersManagement";
 import { 
   AlertDialog,
   AlertDialogAction,

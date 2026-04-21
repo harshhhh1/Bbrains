@@ -33,13 +33,13 @@ type ChatMessagePaneProps = {
   uploadError: string | null;
   mentionQuery: string | null;
   mentionIndex: number;
-  scrollViewportRef: RefObject<HTMLDivElement>;
-  messagesEndRef: RefObject<HTMLDivElement>;
+  scrollViewportRef: RefObject<HTMLDivElement | null>;
+  messagesEndRef: RefObject<HTMLDivElement | null>;
   onSelectSearchResult: (message: Message) => Promise<void>;
   onReply: (message: Message) => void;
   onCopy: (content: string) => void;
   onEdit: (id: string, content: string) => void;
-  onDelete: (messageId: string) => Promise<void>;
+  onDelete: (messageId: string) => Promise<any>;
   onOpenProfile: (userId: string) => void;
   onMessageChange: (value: string) => void;
   onSend: () => Promise<void>;

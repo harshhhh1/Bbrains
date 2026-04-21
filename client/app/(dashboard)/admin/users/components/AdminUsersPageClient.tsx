@@ -9,13 +9,13 @@ import { api } from "@/services/api/client";
 import { getAuthToken, getBaseUrl } from "@/services/api/client";
 import type { ApiUser } from "@/lib/types/api";
 import { CrudDrawer } from "@/features/admin/components/CrudDrawer";
-import { StatsCards } from "./_components/StatsCards";
-import { UserFilters } from "./_components/UserFilters";
-import { UsersTable } from "./_components/UsersTable";
-import { UserRolesDialog } from "./_components/UserRolesDialog";
-import { DeleteConfirmationDialog } from "./_components/DeleteConfirmationDialog";
-import { ManagerForm } from "./_components/ManagerForm";
-import { emptyManagerForm, hasManagerRole, type ManagerForm as ManagerFormType } from "./_types";
+import { StatsCards } from "../_components/StatsCards";
+import { UserFilters } from "../_components/UserFilters";
+import { UsersTable } from "../_components/UsersTable";
+import { UserRolesDialog } from "../_components/UserRolesDialog";
+import { DeleteConfirmationDialog } from "../_components/DeleteConfirmationDialog";
+import { ManagerForm } from "../_components/ManagerForm";
+import { emptyManagerForm, hasManagerRole, type ManagerForm as ManagerFormType } from "../_types";
 
 export default function ManageUsersPage() {
   const searchParams = useSearchParams();

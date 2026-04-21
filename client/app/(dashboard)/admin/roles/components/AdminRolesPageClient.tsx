@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/services/supabase/client";
 import { useUser } from "@/hooks/use-user";
-import RoleList from "./_components/RoleList";
-import RoleDetail from "./_components/RoleDetail";
-import type { Role, Permission, UserWithRoles } from "./_types";
+import RoleList from "../_components/RoleList";
+import RoleDetail from "../_components/RoleDetail";
+import type { Role, Permission, UserWithRoles } from "../_types";
 
 type RoleRelation = {
   position?: number | null;
