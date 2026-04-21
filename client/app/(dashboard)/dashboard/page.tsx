@@ -1,6 +1,12 @@
+import { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getDashboardOverviewData } from "@/features/dashboard/data";
 import { DashboardClient } from "./DashboardClient";
+
+export const metadata: Metadata = {
+  title: "Dashboard | BBrains",
+  description: "View your learning progress, attendance, and leaderboard rankings on BBrains.",
+};
 
 export default async function DashboardOverview() {
   const cookieStore = await cookies();

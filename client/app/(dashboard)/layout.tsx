@@ -52,28 +52,7 @@ type LayoutDBUser = {
     } | null;
 }
 
-async function fetchUserFromAPI(token: string): Promise<LayoutDBUser | null> {
-    try {
-        const baseUrl = process.env.API_URL || 'http://localhost:5000'
-        const response = await fetch(`${baseUrl}/user/me`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            cache: 'no-store',
-        })
-
-        if (!response.ok) return null
-
-        const result = await response.json()
-        if (result.success && result.data) {
-            return result.data
-        }
-        return null
-    } catch {
-        return null
-    }
-}
+import { getCachedUser } from "@/services/shared-data"
 
 async function fetchSidebarAccess(token: string): Promise<Record<string, string[]> | null> {
     try {
@@ -107,7 +86,7 @@ async function DashboardLayout({ children }: { children: React.ReactNode }) {
     }
 
     const [dbUser, sidebarAccessOverride] = await Promise.all([
-        fetchUserFromAPI(token),
+        getCachedUser(token),
         fetchSidebarAccess(token)
     ])
 

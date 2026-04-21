@@ -9,11 +9,11 @@ export function Navbar() {
   return (
     <nav className="border-b-[3px] border-hand-pencil border-dashed bg-white/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
-        <Link href="/" className="flex items-center group">
+        <Link href="/" className="flex items-center group" aria-label="BBrains Logo">
           <Image
             src="/logo.png"
             alt="Bbrains Logo"
-            width={440}
+            width={216}
             height={80}
             className="h-27 w-auto max-w-60 group-hover:scale-105 transition-transform"
             priority

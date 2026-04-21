@@ -19,12 +19,16 @@ export const AttendanceCard = memo(function AttendanceCard({ initialAttendance }
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialAttendance) {
+      setLoading(false);
+      return;
+    }
+
     const fetchAttendance = async () => {
       try {
         setLoading(true);
         const response = await attendanceApi.getAttendance();
         if (response.success && response.data) {
-          // Calculate summary from records if not provided
           const records = response.data as AttendanceRecord[];
           const present = records.filter(r => r.status === 'present').length;
           const total = records.length;
@@ -86,7 +90,7 @@ export const AttendanceCard = memo(function AttendanceCard({ initialAttendance }
               </div>
               <div className={cn(
                   "h-16 w-16 rounded-full border-4 flex items-center justify-center",
-                  attendance.percentage >= 75 ? "border-green-500 text-green-500" : "border-red-500 text-red-500"
+                  attendance.percentage >= 75 ? "border-green-500 text-green-500" : "border-red-600 text-red-600"
               )}>
                 <span className="text-lg font-bold">{attendance.present}/{attendance.total}</span>
               </div>

@@ -23,9 +23,9 @@ export function FooterSection() {
           {/* Dynamic Sections */}
           {sections.map((section, idx) => (
             <div key={idx} className="space-y-6">
-              <h4 className="font-kalam text-lg font-bold text-hand-red uppercase tracking-wider underline decoration-wavy decoration-hand-red decoration-2 underline-offset-4">
+              <h3 className="font-kalam text-lg font-bold text-hand-pencil uppercase tracking-wider underline decoration-wavy decoration-hand-red decoration-2 underline-offset-4">
                 {section.title}
-              </h4>
+              </h3>
               <ul className="space-y-4 font-patrick text-lg text-hand-pencil/80">
                 {section.links.map((link, linkIdx) => (
                   <li key={linkIdx}>
@@ -40,8 +40,8 @@ export function FooterSection() {
         </div>
         
         <div className="mt-16 pt-8 border-t-[2px] border-hand-pencil/20 border-dashed flex flex-col md:flex-row items-center justify-between gap-4">
-          <h4 className="font-kalam text-lg font-bold text-hand-red uppercase tracking-wider underline decoration-wavy decoration-hand-red decoration-2 underline-offset-4">Legal</h4>
-          <div className="flex items-center gap-2 text-hand-pencil/60 font-patrick text-lg">
+          <h3 className="font-kalam text-lg font-bold text-hand-pencil uppercase tracking-wider underline decoration-wavy decoration-hand-red decoration-2 underline-offset-4">Legal</h3>
+          <div className="flex items-center gap-2 text-hand-pencil/80 font-patrick text-lg">
             <span>{legal.builtWith}</span>
             <span>{legal.copyright}</span>
           </div>

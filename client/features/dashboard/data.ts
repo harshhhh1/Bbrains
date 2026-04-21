@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import { LeaderboardLikeEntry, RoleRow } from "./types";
 import { transformLeaderboard } from "./utils";
 
+import { getCachedUser } from "@/services/shared-data";
+
 export async function getDashboardOverviewData() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -12,64 +14,57 @@ export async function getDashboardOverviewData() {
     redirect("/auth/login");
   }
 
-  const baseUrl = process.env.API_URL || 'http://localhost:5000';
-
-  let dbUserType: string | null = null;
-  let roleNames: string[] = [];
-
   try {
-    const userResponse = await fetch(`${baseUrl}/user/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    });
+    // Parallelize core data fetches
+    // getCachedUser is deduplicated with the one in layout.tsx via react cache()
+    const [userData, dashboardResponse] = await Promise.all([
+      getCachedUser(token),
+      dashboardApi.getDashboard()
+    ]);
 
-    if (userResponse.ok) {
-      const userData = await userResponse.json();
-      if (userData.success && userData.data) {
-        dbUserType = userData.data.type;
-        roleNames = (userData.data.roles || []).flatMap((row: RoleRow) => {
-          if (Array.isArray(row?.role)) {
-            return row.role.map((role) => role?.name).filter(Boolean) as string[];
-          }
-          return row?.role?.name ? [row.role.name] : [];
-        });
-      }
+    let dbUserType: string | null = null;
+    let roleNames: string[] = [];
+    let username = "User";
+
+    if (userData) {
+      dbUserType = userData.type;
+      username = userData.firstName || userData.username || "User";
+      roleNames = (userData.roles || []).flatMap((row: RoleRow) => {
+        if (Array.isArray(row?.role)) {
+          return row.role.map((role) => role?.name).filter(Boolean) as string[];
+        }
+        return row?.role?.name ? [row.role.name] : [];
+      });
     }
-  } catch {
-  }
 
-  const isManager = roleNames.some((name: string) =>
-    name.toLowerCase().includes("manager")
-  );
+    const isManager = roleNames.some((name: string) =>
+      name.toLowerCase().includes("manager")
+    );
 
-  let dashboardData: DashboardData | null = null;
-
-  // Only fetch student-specific dashboard data if they are a student
-  if (dbUserType === "student") {
-    try {
-      const response = await dashboardApi.getDashboard();
-      if (response.success && response.data) {
-        dashboardData = response.data;
-      }
-    } catch {
-      dashboardData = null;
+    let dashboardData: DashboardData | null = null;
+    if (dashboardResponse.success && dashboardResponse.data) {
+      dashboardData = dashboardResponse.data;
     }
+
+    const transformedLeaderboard = dashboardData?.leaderboard
+      ? transformLeaderboard(dashboardData.leaderboard as LeaderboardLikeEntry[])
+      : [];
+
+    return {
+      dashboardData,
+      transformedLeaderboard,
+      username,
+      userType: dbUserType,
+      isManager
+    };
+  } catch (error) {
+    console.error("Dashboard data fetch error:", error);
+    return {
+      dashboardData: null,
+      transformedLeaderboard: [],
+      username: "User",
+      userType: null,
+      isManager: false
+    };
   }
-
-  const transformedLeaderboard = dashboardData?.leaderboard
-    ? transformLeaderboard(dashboardData.leaderboard as LeaderboardLikeEntry[])
-    : [];
-
-  const username = dashboardData?.user?.firstName || dashboardData?.user?.username || "User";
-
-  return {
-    dashboardData,
-    transformedLeaderboard,
-    username,
-    userType: dbUserType,
-    isManager
-  };
 }

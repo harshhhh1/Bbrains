@@ -14,10 +14,12 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-hand-paper bg-paper-texture bg-size-[24px_24px] text-hand-pencil overflow-x-hidden selection:bg-hand-yellow selection:text-hand-pencil ">
       <Navbar />
-      <HeroSection />
-      <AboutSection />
-      <FeaturesSection />
-      <CtaSection />
+      <main>
+        <HeroSection />
+        <AboutSection />
+        <FeaturesSection />
+        <CtaSection />
+      </main>
       <FooterSection />
     </div>
   );

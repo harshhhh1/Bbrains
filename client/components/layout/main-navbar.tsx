@@ -100,7 +100,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
             <div className="mx-auto flex h-19 items-center gap-3 px-4 md:px-6">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                    
-                    <SidebarTrigger className="hidden md:flex h-11 w-11 rounded-2xl border border-border/70 bg-card/80 text-foreground shadow-sm transition hover:bg-card" />
+                    <SidebarTrigger aria-label="Toggle Sidebar" className="hidden md:flex h-11 w-11 rounded-2xl border border-border/70 bg-card/80 text-foreground shadow-sm transition hover:bg-card" />
 
                     <div className="flex min-w-0 items-center gap-3">
 
@@ -152,7 +152,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <button className="group flex items-center gap-3 rounded-2xl border border-border/70 bg-card/80 px-2.5 py-2 shadow-sm transition hover:bg-card focus:outline-none focus:ring-2 focus:ring-ring">
+                            <button aria-label="User Menu" className="group flex items-center gap-3 rounded-2xl border border-border/70 bg-card/80 px-2.5 py-2 shadow-sm transition hover:bg-card focus:outline-none focus:ring-2 focus:ring-ring">
                                 <div className="hidden text-right md:block">
                                     <p className="max-w-35 truncate text-sm font-semibold text-foreground">
                                         {user?.fullName || user?.username || "Anonymous User"}
@@ -166,7 +166,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                                     key={user?.imageUrl}
                                     className="h-9 w-9 rounded-2xl border border-border/70 shadow-sm md:h-10 md:w-10"
                                 >
-                                    <AvatarImage src={user?.imageUrl || undefined} />
+                                    <AvatarImage src={user?.imageUrl || undefined} alt={user?.fullName || user?.username || "User Avatar"} />
                                     <AvatarFallback name={user?.username} />
                                 </Avatar>
                             </button>
@@ -179,7 +179,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                                         key={user?.imageUrl}
                                         className="h-10 w-10 rounded-2xl border border-border/70"
                                     >
-                                        <AvatarImage src={user?.imageUrl || undefined} />
+                                        <AvatarImage src={user?.imageUrl || undefined} alt={user?.fullName || user?.username || "User Avatar"} />
                                         <AvatarFallback name={user?.username} />
                                     </Avatar>
                                     <div className="min-w-0">

@@ -30,8 +30,8 @@ export function LevelWidget({ level: initialLevel, xp: initialXp, nextLevelXp, c
       }
     };
 
-    fetchRealtimeData();
-    const intervalId = setInterval(fetchRealtimeData, 15000); // Poll every 15 seconds
+    // Skip the immediate fetch call on mount because server-provided props are already fresh
+    const intervalId = setInterval(fetchRealtimeData, 30000); // Poll every 30 seconds (reduced frequency)
     
     // Refresh on focus to update XP if earned in another tab or after returning
     const handleFocus = () => fetchRealtimeData();
@@ -77,7 +77,7 @@ export function LevelWidget({ level: initialLevel, xp: initialXp, nextLevelXp, c
   return (
     <div className="bg-card border border-border rounded-2xl p-4 shadow-sm flex flex-col justify-between h-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-sm">Level Progress</h3>
+        <h2 className="font-semibold text-sm">Level Progress</h2>
         <div className="w-8 h-8 rounded-lg bg-brand-orange/10 flex items-center justify-center text-brand-orange">
           <Trophy className="w-4 h-4" />
         </div>
