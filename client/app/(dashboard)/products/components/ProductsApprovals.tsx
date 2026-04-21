@@ -30,6 +30,7 @@ import type { ApiProduct } from "@/lib/types/api"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
+import { useNotifications } from "@/components/providers/notification-provider"
 
 function fmtCurrency(n: number | string) {
     return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(n))
@@ -43,6 +44,7 @@ export function ProductsApprovals() {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
     const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false)
     const [rejectReason, setRejectReason] = useState("")
+    const { registerIncomingProductNotification } = useNotifications()
 
     const load = useCallback(async () => {
         try {
@@ -72,6 +74,7 @@ export function ProductsApprovals() {
             setActionLoading(id)
             const c = await getAuthedClient()
             await c.patch(`/market/products/${id}/approval`, { status: "approved" })
+            registerIncomingProductNotification(id, "approval")
             setProducts((prev) => prev.filter((p) => p.id !== id))
             toast.success("Product approved successfully")
             setIsDrawerOpen(false)
@@ -99,6 +102,7 @@ export function ProductsApprovals() {
                 status: "rejected", 
                 reason: rejectReason.trim() || undefined 
             })
+            registerIncomingProductNotification(id, "rejection")
             setProducts((prev) => prev.filter((p) => p.id !== id))
             toast.success("Product rejected")
             setIsRejectDialogOpen(false)

@@ -11,6 +11,7 @@ import { toast } from "sonner"
 import { assignmentApi } from "@/services/api/client"
 import React, { useState, useEffect } from "react"
 import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload"
+import { useNotifications } from "@/components/providers/notification-provider"
 
 interface AssignmentSubmitDrawerProps {
   assignment: Assignment | null
@@ -29,6 +30,7 @@ export function AssignmentSubmitDrawer({
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null)
 
   const { uploadFile } = useCloudinaryUpload()
+  const { registerIncomingAssignmentNotification } = useNotifications()
 
   useEffect(() => {
     if (assignment) {

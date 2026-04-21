@@ -47,7 +47,7 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
     const { currentTheme, themes } = useTheme()
     const [mounted, setMounted] = useState(false)
     const isCollapsed = state === "collapsed"
-    const { chatUnreadTotal } = useNotifications()
+    const { chatUnreadTotal, assignmentUnreadTotal, productUnreadTotal } = useNotifications()
 
     React.useEffect(() => {
         setMounted(true)
@@ -87,11 +87,17 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
                         </SidebarGroupLabel>
                         <SidebarGroupContent>
                             <SidebarMenu className={`${isCollapsed ? "space-y-2" : "space-y-1.5"}`}>
-                                {group.items.map((item) => {
+{group.items.map((item) => {
                                     const isBaseActive = pathname === item.url || pathname.startsWith(`${item.url}/`);
                                     const isSubActive = item.subItems?.some(sub => pathname === sub.url || pathname.startsWith(`${sub.url}/`));
                                     const isActive = isBaseActive || isSubActive;
                                     const isChat = item.url === "/chat";
+                                    const isAssignments = item.url === "/assignments";
+                                    const isProducts = item.url === "/products";
+
+                                    const showDot = (isChat && chatUnreadTotal > 0) || (isAssignments && assignmentUnreadTotal > 0) || (isProducts && productUnreadTotal > 0);
+                                    const showBadge = showDot && !isCollapsed;
+                                    const badgeCount = isChat ? chatUnreadTotal : isAssignments ? assignmentUnreadTotal : productUnreadTotal;
 
                                     return (
                                         <React.Fragment key={item.url}>
@@ -108,14 +114,14 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
                                                     >
                                                         <div className="relative">
                                                             <item.icon className={`${isCollapsed ? "h-5.5 w-5.5" : "h-5 w-5"} shrink-0 ${isActive ? "text-white" : ""}`} />
-                                    {isChat && chatUnreadTotal > 0 && isCollapsed && (
+                                                            {showDot && isCollapsed && (
                                                                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full border-2 border-white dark:border-gray-800" />
                                                             )}
                                                         </div>
                                                         <span className="text-[13px] group-data-[collapsible=icon]:hidden flex-1">{item.title}</span>
-                                                        {isChat && chatUnreadTotal > 0 && !isCollapsed && (
+                                                        {showBadge && (
                                                             <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
-                                                                {chatUnreadTotal > 99 ? "99+" : chatUnreadTotal}
+                                                                {badgeCount > 99 ? "99+" : badgeCount}
                                                             </span>
                                                         )}
                                                     </Link>

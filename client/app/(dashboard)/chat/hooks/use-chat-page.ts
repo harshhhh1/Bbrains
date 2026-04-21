@@ -157,7 +157,7 @@ export function useChatPage() {
         }
         setOnlineUserIds(onlineIds);
       })
-      .subscribe(async (status) => {
+      .subscribe(async (status: string) => {
         if (status === "SUBSCRIBED") {
           await channel.track({
             user_id: currentUserId,
