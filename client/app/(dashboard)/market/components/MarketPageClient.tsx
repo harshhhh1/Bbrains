@@ -405,8 +405,9 @@ export default function MarketPage() {
                               </span>
                             </div>
 
-                            <span className="text-xl font-black text-brand-orange">
-                              {product.price} <span className="text-xs text-muted-foreground/30 font-bold">B-Coins</span>
+                            <span className="text-xl font-black text-brand-orange flex items-center gap-1.5">
+                              <img src="/bcoin.svg" className="h-6 w-6" alt="" />
+                              {product.price}
                             </span>
 
                             {isOutOfStock ? (

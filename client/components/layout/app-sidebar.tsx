@@ -10,6 +10,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Settings, BarChart3 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useTheme } from "@/context/theme";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getSidebarGroups, resolveRole } from "./sidebarData"
 import type { Role } from "./sidebarData"
@@ -43,8 +44,17 @@ interface AppSidebarProps {
 export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
     const pathname = usePathname()
     const { state } = useSidebar()
+    const { currentTheme, themes } = useTheme()
+    const [mounted, setMounted] = useState(false)
     const isCollapsed = state === "collapsed"
     const { chatUnreadTotal } = useNotifications()
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    const isDark = themes.find(t => t.id === currentTheme)?.isDark || false
+    const logoSrc = isDark ? "/logo-white.png" : "/logo-dark.png"
 
     const [showProfileCard, setShowProfileCard] = useState(false)
 
@@ -57,14 +67,14 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
             <SidebarHeader className="bg-sidebar pt-2  ">
                 <div className="flex items-center justify-center w-full text-sidebar-foreground">
                     <Link href="/" className="flex items-center justify-center">
-                        <Image
-                            src="/logo.png"
-                            alt="Bbrains Logo"
-                            width={isCollapsed ? 48 : 280}
-                            height={isCollapsed ? 48 : 80}
-                            className={isCollapsed ? "h-12 w-12 object-contain" : "h-20 w-auto object-contain"}
-                            priority
-                        />
+                        {mounted && (
+                            <Image
+                                src={logoSrc}
+                                alt="Bbrains Logo"
+                                width="150"
+                                height="150"
+                                />
+                        )}
                     </Link>
                 </div>
             </SidebarHeader>

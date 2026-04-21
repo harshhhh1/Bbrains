@@ -118,6 +118,7 @@ export function MobileBottomNav({ user }: MobileBottomNavProps) {
 
                         const NavButton = (
                             <div
+                                suppressHydrationWarning
                                 className="flex flex-col items-center justify-center shrink-0 h-full gap-1 select-none touch-manipulation cursor-pointer"
                                 style={{ minWidth: 64 }}
                                 onPointerDown={startTimer}

@@ -11,45 +11,8 @@ interface ChatSidebarRightProps {
 }
 
 export function ChatSidebarRight({ members, currentUserId, onSelectUser }: ChatSidebarRightProps) {
-  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set())
-
-  interface PresenceEntry {
-    user_id?: string
-  }
-
-  useEffect(() => {
-    if (!currentUserId) return
-
-    const channel = supabase.channel('chat_presence')
-
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState() as Record<string, PresenceEntry[]>
-        const onlineIds = new Set<string>()
-        for (const key in state) {
-          state[key].forEach((presence: PresenceEntry) => {
-            if (presence.user_id) onlineIds.add(presence.user_id)
-          })
-        }
-        setOnlineUserIds(onlineIds)
-      })
-      .subscribe(async (status: string) => {
-        if (status === 'SUBSCRIBED') {
-          await channel.track({
-            user_id: currentUserId,
-            online_at: new Date().toISOString()
-          })
-        }
-      })
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [currentUserId])
-
-  const onlineMembers = members.filter(m => onlineUserIds.has(m.id))
-  // For others in offline
-  const offlineMembers = members.filter(m => !onlineUserIds.has(m.id))
+  const onlineMembers = members.filter(m => m.status === 'online')
+  const offlineMembers = members.filter(m => m.status !== 'online')
 
   const onlineByRole = onlineMembers.reduce((acc, m) => {
     const roleName = m.role?.toLowerCase() === 'moderator' ? 'Teacher' : m.role

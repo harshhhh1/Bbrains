@@ -11,6 +11,7 @@ import { extractMentions, mapApiMember } from "@/features/chat/utils";
 import type { Member, Message } from "@/features/chat/data";
 import { groupMessagesByDate, MAX_ATTACHMENT_BYTES } from "../utils/chat-page";
 import type { PendingAttachment, ReplyingMessage, SelectedMention } from "../types/chat-page";
+import { supabase } from "@/services/supabase/client";
 
 export function useChatPage() {
   const {
@@ -59,6 +60,7 @@ export function useChatPage() {
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [hasNewMessages, setHasNewMessages] = useState(false);
+  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null!);
@@ -138,6 +140,43 @@ export function useChatPage() {
       registerIncomingChatNotification(chatRoomId, "mention");
     }
   }, [chatRoomId, currentUserId, lastIncomingMessage, registerIncomingChatNotification]);
+
+  useEffect(() => {
+    if (!currentUserId || !isConnected) return;
+
+    const channel = supabase.channel("chat_presence");
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState() as Record<string, { user_id?: string }[]>;
+        const onlineIds = new Set<string>();
+        for (const key in state) {
+          state[key].forEach((presence) => {
+            if (presence.user_id) onlineIds.add(presence.user_id);
+          });
+        }
+        setOnlineUserIds(onlineIds);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await channel.track({
+            user_id: currentUserId,
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [currentUserId, isConnected]);
+
+  const membersWithStatus = useMemo(() => {
+    return membersList.map((m) => ({
+      ...m,
+      status: (onlineUserIds.has(m.id) ? "online" : "offline") as "online" | "offline" | "idle",
+    }));
+  }, [membersList, onlineUserIds]);
 
   const groupedMessages = useMemo(() => groupMessagesByDate(messages), [messages]);
 
@@ -239,7 +278,14 @@ export function useChatPage() {
         await editMessage(editingMsgId, content, mentions, mentionIds);
         setEditingMsgId(null);
       } else {
-        await sendMessage(content, uploadedAttachments, mentions, replyingMsg?.id, mentionIds);
+        await sendMessage(
+          content,
+          uploadedAttachments,
+          mentions,
+          replyingMsg?.id,
+          mentionIds,
+          replyingMsg ? { username: replyingMsg.username, content: replyingMsg.content } : undefined
+        );
       }
 
       setMessage("");
@@ -342,19 +388,21 @@ export function useChatPage() {
 
   const handleOpenProfile = useCallback(
     (userId: string) => {
-      const member = membersList.find((item) => item.id === userId);
+      const member = membersWithStatus.find((item) => item.id === userId);
       if (member) {
         setProfileUser(member);
         setShowProfile(true);
       }
     },
-    [membersList]
+    [membersWithStatus]
   );
 
   const handleReply = useCallback((chatMessage: Message) => {
     setReplyingMsg({
       id: chatMessage.id,
       username: chatMessage.user.username,
+      name: chatMessage.user.name,
+      avatar: chatMessage.user.avatar,
       content: chatMessage.content,
     });
     setEditingMsgId(null);
@@ -373,6 +421,21 @@ export function useChatPage() {
   const handleCopy = useCallback((content: string) => {
     navigator.clipboard.writeText(content);
     toast.success("Copied to clipboard");
+  }, []);
+
+  const handleCopyLink = useCallback((messageId: string) => {
+    const url = `${window.location.origin}${window.location.pathname}?msgId=${messageId}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Message link copied!");
+  }, []);
+
+  const handleMention = useCallback((username: string) => {
+    setMessage((prev) => `@${username} ${prev}`);
+    // Focus the input after adding mention
+    window.setTimeout(() => {
+      const input = document.querySelector('input[aria-label="Message input"]') as HTMLInputElement | null;
+      input?.focus();
+    }, 0);
   }, []);
 
   const handleSearchChange = useCallback(
@@ -505,6 +568,8 @@ export function useChatPage() {
       hasNewMessages,
       currentUsername,
       groupedMessages,
+      onlineUserIds,
+      membersList: membersWithStatus,
     },
     refs: {
       messagesEndRef,
@@ -521,6 +586,8 @@ export function useChatPage() {
       handleSelectSearchResult,
       handleReply,
       handleCopy,
+      handleCopyLink,
+      handleMention,
       handleEdit,
       handleOpenProfile,
       handleMessageChange,

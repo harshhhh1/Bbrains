@@ -111,7 +111,7 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
               <TrendingUp className="h-2.5 w-2.5" /> {user.xp.toLocaleString()} XP
             </span>
             <span className="text-[10px] text-foreground/70 flex items-center gap-0.5">
-              <Coins className="h-2.5 w-2.5" /> {user.points?.toLocaleString() ?? 0} Pts
+              <img src="/bcoin.svg" className="h-2.5 w-2.5 mb-0.5" alt="" /> {user.points?.toLocaleString() ?? 0} Pts
             </span>
           </div>
         </div>

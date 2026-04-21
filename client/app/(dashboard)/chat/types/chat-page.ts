@@ -9,6 +9,8 @@ export type SelectedMention = {
 export type ReplyingMessage = {
   id: string;
   username: string;
+  name: string;
+  avatar: string;
   content: string;
 } | null;
 

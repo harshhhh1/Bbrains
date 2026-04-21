@@ -79,7 +79,9 @@ const formatMessage = (msg: ChatMessageRecord | ChatRealtimeMessage): ChatMessag
         replyTo: replyTo ? { 
             messageId: String(replyTo), 
             username: ('replyToDetails' in msg ? msg.replyToDetails?.username : '') || '', 
-            content: ('replyToDetails' in msg ? msg.replyToDetails?.content : String(replyTo)) || String(replyTo)
+            name: ('replyToDetails' in msg ? (msg.replyToDetails?.displayName || msg.replyToDetails?.username || 'user') : '') || 'user',
+            avatar: ('replyToDetails' in msg ? msg.replyToDetails?.avatar : '') || '',
+            content: ('replyToDetails' in msg ? msg.replyToDetails?.content : '...') || '...'
         } : undefined,
         mentions: msg.mentions || [],
         mentionedUserIds,
@@ -120,6 +122,37 @@ export function useChatMessages() {
     const [isSearching, setIsSearching] = useState(false)
     const [lastIncomingMessage, setLastIncomingMessage] = useState<ChatMessageDisplay | null>(null)
     const fetchInFlightRef = useRef(false)
+    // Always-fresh map of messageId -> reply display data, avoids stale closure issues
+    const replyMetaMapRef = useRef<Map<string, { username: string; name: string; avatar: string; content: string }>>(new Map())
+
+    // Helper: add a message's own data to the reply lookup map
+    const registerForReplyLookup = (msg: ChatMessageDisplay) => {
+        replyMetaMapRef.current.set(msg.id, {
+            username: msg.user.username,
+            name: msg.user.name,
+            avatar: msg.user.avatar,
+            content: msg.content,
+        })
+    }
+
+    // Helper: hydrate reply details for a formatted message using the map
+    const hydrateReplyFromMap = (msg: ChatMessageDisplay): ChatMessageDisplay => {
+        if (!msg.replyTo?.messageId) return msg
+        const existing = replyMetaMapRef.current.get(msg.replyTo.messageId)
+        if (!existing) return msg
+        // Only hydrate if username/content is missing
+        if (msg.replyTo.username && msg.replyTo.content && msg.replyTo.content !== '...') return msg
+        return {
+            ...msg,
+            replyTo: {
+                ...msg.replyTo,
+                username: existing.username,
+                name: existing.name,
+                avatar: existing.avatar,
+                content: existing.content,
+            }
+        }
+    }
 
     const fetchMessages = useCallback(async () => {
         if (fetchInFlightRef.current) return
@@ -151,6 +184,8 @@ export function useChatMessages() {
             const response = await chatApi.getMessages(resolvedChatRoomId, 50)
             if (response.success && response.data) {
                 const formatted = sortMessages(response.data.map(formatMessage))
+                // Populate the reply lookup map from newly fetched messages
+                formatted.forEach(registerForReplyLookup)
                 setMessages(formatted)
                 setHasMore(formatted.length === 50)
             }
@@ -173,6 +208,8 @@ export function useChatMessages() {
             if (response.success && response.data) {
                 const formatted = response.data.map(formatMessage)
                 if (formatted.length > 0) {
+                    // Register older messages in the reply lookup map
+                    formatted.forEach(registerForReplyLookup)
                     setMessages((prev) => {
                         let next = [...prev]
                         for (const message of formatted) {
@@ -256,7 +293,8 @@ export function useChatMessages() {
         attachments: ChatAttachment[] = [],
         mentions: string[] = [],
         replyToId?: string,
-        mentionedUserIds: string[] = []
+        mentionedUserIds: string[] = [],
+        replyToDetails?: { username: string; content: string }
     ) => {
         const optimisticId = `optimistic:${crypto.randomUUID()}`
         const profile = currentUserProfile
@@ -275,7 +313,13 @@ export function useChatMessages() {
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             date: new Date().toLocaleDateString(),
             createdAt: new Date().toISOString(),
-            replyTo: replyToId ? { messageId: replyToId, username: '', content: '' } : undefined,
+            replyTo: replyToId ? { 
+                messageId: replyToId, 
+                username: replyToDetails?.username || 'user', 
+                name: replyToDetails?.username || 'user',
+                avatar: '', 
+                content: replyToDetails?.content || '...' 
+            } : undefined,
             mentions,
             mentionedUserIds,
             attachments,
@@ -283,6 +327,8 @@ export function useChatMessages() {
         }
 
         try {
+            // Register the optimistic message itself in the lookup map (so it can be a reply target)
+            registerForReplyLookup(optimisticMessage)
             setMessages((prev) => upsertMessage(prev, optimisticMessage))
 
             const response = await chatApi.sendMessage(content, attachments, mentions, replyToId, mentionedUserIds)
@@ -290,7 +336,16 @@ export function useChatMessages() {
                 throw new Error(response.message || response.error || 'Failed to send message')
             }
 
-            const confirmedMessage = formatMessage(response.data)
+            let confirmedMessage = formatMessage(response.data)
+            // Register confirmed message in the lookup map
+            registerForReplyLookup(confirmedMessage)
+            
+            // Hydrate reply details using the lookup map or optimistic data
+            confirmedMessage = hydrateReplyFromMap(confirmedMessage)
+            if (replyToId && optimisticMessage.replyTo && !confirmedMessage.replyTo?.username) {
+                confirmedMessage = { ...confirmedMessage, replyTo: optimisticMessage.replyTo }
+            }
+            
             setMessages((prev) => {
                 const withoutOptimistic = removeMessage(prev, optimisticId)
                 return upsertMessage(withoutOptimistic, confirmedMessage)
@@ -355,27 +410,61 @@ export function useChatMessages() {
                 },
                 (payload: { eventType: 'INSERT' | 'UPDATE' | 'DELETE'; new: ChatRealtimeMessage; old: { id: string } }) => {
                     if (payload.eventType === 'INSERT') {
-                        const inserted = formatMessage(payload.new)
                         setMessages((prev) => {
+                            const raw = payload.new
+                            let hydrated = { ...raw }
+                            
+                            if (raw.reply_to && !hydrated.replyToDetails) {
+                                // Use always-fresh ref map (no stale closure issue)
+                                const parentId = String(raw.reply_to)
+                                const meta = replyMetaMapRef.current.get(parentId)
+                                if (meta) {
+                                    hydrated.replyToDetails = {
+                                        username: meta.username,
+                                        displayName: meta.name,
+                                        avatar: meta.avatar,
+                                        content: meta.content
+                                    }
+                                }
+                            }
+
+                            let inserted = formatMessage(hydrated)
+                            // Register this new message in the map too
+                            registerForReplyLookup(inserted)
+
                             const optimisticMatch = prev.find(
                                 (message) =>
                                     message.optimistic &&
-                                    message.user.id === inserted.user.id &&
                                     message.content === inserted.content &&
                                     JSON.stringify(message.attachments || []) === JSON.stringify(inserted.attachments || [])
                             )
 
-                            if (optimisticMatch) {
-                                const withoutOptimistic = removeMessage(prev, optimisticMatch.id)
-                                return upsertMessage(withoutOptimistic, inserted)
+                            // If optimistic had better reply info, preserve it
+                            if (optimisticMatch?.replyTo?.username && !inserted.replyTo?.username) {
+                                inserted = { ...inserted, replyTo: optimisticMatch.replyTo }
                             }
 
-                            return upsertMessage(prev, inserted)
+                            const nextState = optimisticMatch 
+                                ? removeMessage(prev, optimisticMatch.id)
+                                : prev;
+                                
+                            const finalState = upsertMessage(nextState, inserted)
+                            setTimeout(() => setLastIncomingMessage(inserted), 0);
+                            return finalState;
                         })
-                        setLastIncomingMessage(inserted)
                     } else if (payload.eventType === 'UPDATE') {
-                        const updated = formatMessage(payload.new)
-                        setMessages((prev) => upsertMessage(prev, updated))
+                        setMessages((prev) => {
+                            // Preserve existing replyTo from state — UPDATE payload never includes replyToDetails
+                            const existing = prev.find(m => m.id === payload.new.id)
+                            const updated = formatMessage(payload.new)
+                            if (existing?.replyTo && !updated.replyTo?.username) {
+                                updated.replyTo = existing.replyTo
+                            } else {
+                                const h = hydrateReplyFromMap(updated)
+                                return upsertMessage(prev, h)
+                            }
+                            return upsertMessage(prev, updated)
+                        })
                     } else if (payload.eventType === 'DELETE') {
                         setMessages((prev) => prev.filter((message) => message.id !== payload.old.id))
                     }

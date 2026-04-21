@@ -37,23 +37,15 @@ export function ProfileDialog({ open, onOpenChange, member }: ProfileDialogProps
                 </DialogTitle>
 
                 <div className="relative w-full">
-                    {/* Header with SVG Banner Mask */}
-                    <div className="relative h-[120px]">
-                        <svg className="block w-full h-full" viewBox="0 0 340 120" preserveAspectRatio="none">
-                            <mask id="dialog-banner-mask">
-                                <rect fill="white" x="0" y="0" width="100%" height="100%" />
-                                <circle fill="black" cx="58" cy="112" r="46" />
-                            </mask>
-                            <foreignObject x="0" y="0" width="100%" height="100%" mask="url(#dialog-banner-mask)">
-                                <div
-                                    className="h-full w-full"
-                                    style={{
-                                        background: 'linear-gradient(45deg, #5865F2, #7289da, #4e5d94)',
-                                        backgroundColor: '#1c1d22'
-                                    }}
-                                />
-                            </foreignObject>
-                        </svg>
+                    {/* Banner Section */}
+                    <div className="relative h-[105px]">
+                        <div
+                            className="h-full w-full"
+                            style={{
+                                background: 'linear-gradient(45deg, #5865F2, #7289da, #4e5d94)',
+                                backgroundColor: '#1c1d22'
+                            }}
+                        />
 
                         <button
                             type="button"
@@ -65,36 +57,41 @@ export function ProfileDialog({ open, onOpenChange, member }: ProfileDialogProps
                         </button>
                     </div>
 
-                    <div className="relative px-4 pb-4">
-                        {/* Avatar with Status Mask */}
-                        <div className="absolute -top-12 left-4">
-                            <div className="relative inline-block">
-                                <svg width="92" height="92" viewBox="0 0 92 92" className="block">
-                                    <mask id="dialog-avatar-mask">
-                                        <circle fill="white" cx="40" cy="40" r="40" />
-                                        <circle fill="black" cx="68" cy="68" r="14" />
-                                    </mask>
-                                    <foreignObject x="0" y="0" width="80" height="80" mask="url(#dialog-avatar-mask)">
-                                        <Avatar className="h-20 w-20 border-0 bg-[#313338]">
-                                            <AvatarImage src={member.avatar || undefined} className="object-cover" />
-                                            <AvatarFallback className="flex items-center justify-center bg-[#5865F2] text-xl font-bold text-white">
-                                                {member.username?.[0] || "U"}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                    </foreignObject>
-                                    {/* Status Dot */}
-                                    <circle cx="68" cy="68" r="10" fill={statusColors[memberStatus]} stroke="#111214" strokeWidth="4" />
-                                </svg>
-                            </div>
+                    {/* Avatar - Overlapping Banner */}
+                    <div className="relative -mt-10 px-4">
+                        <div className="relative h-20 w-20 rounded-full border-[6px] border-[#111214] bg-[#111214]">
+                            <Avatar className="h-full w-full">
+                                <AvatarImage src={member.avatar || undefined} className="object-cover" />
+                                <AvatarFallback className="flex items-center justify-center bg-[#5865F2] text-xl font-bold text-white">
+                                    {member.username?.[0] || "U"}
+                                </AvatarFallback>
+                            </Avatar>
+                            
+                            {/* Status Dot */}
+                            <div 
+                                className="absolute bottom-0 right-0 h-5 w-5 rounded-full border-[3px] border-[#111214]"
+                                style={{ backgroundColor: statusColors[memberStatus] }}
+                            />
                         </div>
+                    </div>
 
+                    {/* Content Section */}
+                    <div className="px-4 pb-4 pt-3">
                         {/* Identity Card Section */}
-                        <div className="mt-14 space-y-3 rounded-[8px] bg-[#1e1f22] p-3 shadow-sm">
+                        <div className="space-y-3 rounded-[8px] bg-[#1e1f22] p-3 shadow-sm">
                             <div>
                                 <h1 className="text-xl font-bold leading-tight text-white">
                                     {member.name}
                                 </h1>
-                                <p className="text-sm font-medium text-[#b5bac1]">@{member.username}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <p className="text-sm font-medium text-[#b5bac1]">@{member.username}</p>
+                                    <span 
+                                        className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-black/20"
+                                        style={{ color: statusColors[memberStatus] }}
+                                    >
+                                        {memberStatus}
+                                    </span>
+                                </div>
                             </div>
 
                             <div className="h-[1px] bg-[#2e3035]" />

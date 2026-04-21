@@ -1,26 +1,59 @@
-import { ChevronRight, Bell, Search } from "lucide-react"
+"use client";
 
-export function ChatHeader() {
-    return (
-        <header className="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-6 bg-white dark:bg-gray-800 shrink-0">
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <a className="hover:text-primary dark:hover:text-white transition-colors" href="#">Bbrains</a>
-                <ChevronRight className="h-4 w-4" />
-                <span className="font-medium text-gray-900 dark:text-white">Global Chat</span>
-            </div>
-            <div className="flex items-center gap-4">
-                <button className="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors relative">
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-                <button className="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white transition-colors">
-                    <Search className="h-5 w-5" />
-                </button>
-                <div className="w-px h-6 bg-gray-200 dark:bg-gray-700"></div>
-                <button className="flex items-center gap-2 lg:hidden text-gray-500">
-                    <span className="material-icons">people</span>
-                </button>
-            </div>
-        </header>
-    )
+import { Hash, Search, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+interface ChatHeaderProps {
+  title: string;
+  messageCount: number;
+  isConnected: boolean;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  showMembers: boolean;
+  setShowMembers: (show: boolean) => void;
+}
+
+export function ChatHeader({
+  title,
+  messageCount,
+  isConnected,
+  searchQuery,
+  setSearchQuery,
+  showMembers,
+  setShowMembers
+}: ChatHeaderProps) {
+  return (
+    <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card rounded-t-lg">
+      <div className="flex items-center gap-2">
+        <Hash className="w-5 h-5 text-muted-foreground" />
+        <h2 className="font-semibold text-foreground">{title}</h2>
+        <Badge variant="secondary" className="text-xs">{messageCount} messages</Badge>
+        <span
+          className={`h-2 w-2 rounded-full ml-2 ${isConnected ? "bg-green-500" : "bg-red-500"}`}
+          title={isConnected ? "Connected" : "Disconnected"}
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search messages..."
+            className="bg-background border border-input rounded-md pl-7 pr-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-ring w-40 placeholder:text-muted-foreground"
+          />
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowMembers(!showMembers)}
+          className="hidden md:flex"
+        >
+          <Users className="w-4 h-4 mr-1" />
+          Members
+        </Button>
+      </div>
+    </div>
+  );
 }

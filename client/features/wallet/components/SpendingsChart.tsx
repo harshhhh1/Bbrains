@@ -4,15 +4,46 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
+import { Transaction } from "@/services/api/client";
+import { format, subMonths, startOfMonth, isWithinInterval, endOfMonth } from "date-fns";
 
-const chartData = [
-  { month: "Jan", sent: 450, received: 800 },
-  { month: "Feb", sent: 320, received: 600 },
-  { month: "Mar", sent: 180, received: 350 },
-];
+interface SpendingsChartProps {
+  transactions: Transaction[];
+}
 
-export function SpendingsChart() {
+export function SpendingsChart({ transactions }: SpendingsChartProps) {
   const [chartFilter, setChartFilter] = useState("this-month");
+
+  // Generate last 6 months list
+  const months = Array.from({ length: 6 }).map((_, i) => {
+    const d = subMonths(new Date(), 5 - i);
+    return {
+      month: format(d, "MMM"),
+      start: startOfMonth(d),
+      end: endOfMonth(d),
+      sent: 0,
+      received: 0,
+    };
+  });
+
+  // Aggregate transactions into months
+  transactions.forEach((txn) => {
+    const date = new Date(txn.transactionDate || txn.createdAt);
+    const amount = Number(txn.amount || 0);
+    const isCredit = txn.type.toLowerCase() === "credit" || txn.type.toLowerCase() === "received" || txn.type.toLowerCase() === "deposit";
+
+    months.forEach((m) => {
+      if (isWithinInterval(date, { start: m.start, end: m.end })) {
+        if (isCredit) {
+          m.received += amount;
+        } else {
+          m.sent += amount;
+        }
+      }
+    });
+  });
+
+  const chartData = months;
 
   return (
     <Card>
@@ -31,14 +62,45 @@ export function SpendingsChart() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
-              <XAxis dataKey="month" className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
-              <YAxis className="text-xs" tick={{ fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+              <XAxis 
+                dataKey="month" 
+                fontSize={12}
+                tick={{ fill: "#94a3b8" }} 
+                axisLine={false} 
+                tickLine={false} 
+                dy={10}
+              />
+              <YAxis 
+                fontSize={12}
+                tick={{ fill: "#94a3b8" }} 
+                axisLine={false} 
+                tickLine={false} 
+                dx={-10}
+              />
               <RechartsTooltip 
-                contentStyle={{ 
-                  backgroundColor: "hsl(var(--card))", 
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                  color: "hsl(var(--foreground))"
+                cursor={{ fill: "hsl(var(--primary))", opacity: 0.05 }}
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="rounded-xl border border-border bg-card/95 p-3 shadow-xl backdrop-blur-md">
+                        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
+                        <div className="space-y-1.5">
+                          {payload.map((entry: any) => (
+                            <div key={entry.name} className="flex items-center gap-3 justify-between min-w-[120px]">
+                              <div className="flex items-center gap-2 text-sm font-medium">
+                                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                                <span className="text-foreground/70">{entry.name}:</span>
+                              </div>
+                              <span className="text-sm font-bold text-foreground">
+                                {entry.value?.toLocaleString()}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
                 }}
               />
               <Bar dataKey="sent" fill="#ef4444" radius={[4, 4, 0, 0]} name="Sent" />

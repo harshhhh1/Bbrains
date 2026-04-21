@@ -10,6 +10,17 @@ import { MessageItem } from "@/features/chat/components/MessageItem";
 import type { Message } from "@/features/chat/data";
 import type { ChatMentionUser } from "@/services/api/client";
 import type { PendingAttachment, ReplyingMessage } from "../types/chat-page";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type ChatMessagePaneProps = {
   loading: boolean;
@@ -41,6 +52,8 @@ type ChatMessagePaneProps = {
   onEdit: (id: string, content: string) => void;
   onDelete: (messageId: string) => Promise<any>;
   onOpenProfile: (userId: string) => void;
+  onMention: (username: string) => void;
+  onCopyLink: (messageId: string) => void;
   onMessageChange: (value: string) => void;
   onSend: () => Promise<void>;
   onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
@@ -84,6 +97,8 @@ export function ChatMessagePane({
   onEdit,
   onDelete,
   onOpenProfile,
+  onMention,
+  onCopyLink,
   onMessageChange,
   onSend,
   onKeyDown,
@@ -96,6 +111,15 @@ export function ChatMessagePane({
   setMentionIndex,
   onScrollToBottom,
 }: ChatMessagePaneProps) {
+  const [msgToDelete, setMsgToDelete] = useState<string | null>(null);
+
+  const handleDeleteConfirm = async () => {
+    if (msgToDelete) {
+      await onDelete(msgToDelete);
+      setMsgToDelete(null);
+    }
+  };
+
   return (
     <div className="relative flex min-w-0 flex-1 flex-col">
       <ScrollArea className="flex-1 p-4 pb-4" containerRef={scrollViewportRef}>
@@ -172,8 +196,10 @@ export function ChatMessagePane({
                           onReply={onReply}
                           onCopy={onCopy}
                           onEdit={onEdit}
-                          onDelete={onDelete}
+                          onDelete={(id) => setMsgToDelete(id)}
                           onOpenProfile={onOpenProfile}
+                          onMention={onMention}
+                          onCopyLink={onCopyLink}
                         />
                       ))}
                     </div>
@@ -217,6 +243,28 @@ export function ChatMessagePane({
         mentionIndex={mentionIndex}
         setMentionIndex={setMentionIndex}
       />
+
+      <AlertDialog open={!!msgToDelete} onOpenChange={(open) => !open && setMsgToDelete(null)}>
+        <AlertDialogContent className="border-none bg-[#313338] text-[#dbdee1] overflow-hidden rounded-[16px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold text-white">Delete Message</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#b5bac1]">
+              Are you sure you want to delete this message? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="bg-[#2b2d31] -mx-6 -mb-6 p-4 mt-4">
+            <AlertDialogCancel className="border-none bg-transparent text-white hover:underline hover:bg-transparent">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => void handleDeleteConfirm()}
+              className="bg-[#da373c] text-white hover:bg-[#a1282c] transition-colors"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

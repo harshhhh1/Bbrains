@@ -15,7 +15,7 @@ export interface Message {
     date: string
     createdAt: string
     editedAt?: string | null
-    replyTo?: { messageId: string; username: string; content: string } | null | string
+    replyTo?: { messageId: string; username: string; name: string; avatar: string; content: string } | null | string
     mentions?: string[]
     mentionedUserIds?: string[]
     attachments?: { url: string; type: string; name?: string }[]
@@ -51,6 +51,12 @@ export interface ApiMessage {
     replyToMessageId?: string | null
     editedAt?: string | null
     createdAt: string
+    replyToDetails?: {
+        username: string
+        displayName?: string
+        avatar?: string
+        content: string
+    }
 }
 
 export interface ApiMember {
