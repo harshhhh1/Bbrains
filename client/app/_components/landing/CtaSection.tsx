@@ -19,15 +19,16 @@ export function CtaSection() {
             {titleLine1}<br className="hidden sm:block" /> {titleLine2}
           </h2>
           
-          <p className="font-patrick text-xl text-white/80 mb-10 max-w-2xl mx-auto">
+          <p className="font-patrick text-xl text-white/95 mb-10 max-w-2xl mx-auto">
             {subtitle}
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-xl mx-auto">
             <input 
-              type="email" 
-              placeholder={placeholder} 
-              className="w-full sm:flex-1 h-14 px-6 bg-transparent border-2 border-white/60 text-white rounded-wobbly font-patrick text-lg placeholder:text-white/40 focus:outline-none focus:border-white focus:ring-2 focus:ring-white/20 transition-all"
+               type="email" 
+               placeholder={placeholder} 
+               aria-label="Email Address"
+               className="w-full sm:flex-1 h-14 px-6 bg-transparent border-2 border-white/60 text-white rounded-wobbly font-patrick text-lg placeholder:text-white/40 focus:outline-none focus:border-white focus:ring-2 focus:ring-white/20 transition-all"
             />
             <HandButton size="lg" variant="default" className="w-full sm:w-auto h-14 bg-white text-hand-pencil hover:bg-white/90 font-kalam text-xl rotate-1">
               {buttonText}

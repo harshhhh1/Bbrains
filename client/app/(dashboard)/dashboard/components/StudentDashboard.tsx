@@ -3,13 +3,32 @@
 import { DailyRewardCard } from "@/features/dashboard/components/DailyRewardCard";
 import { WalletMiniCard } from "@/features/dashboard/components/WalletMiniCard";
 import { AttendanceCard } from "@/features/dashboard/components/AttendanceCard";
-import { LeaderboardCard } from "@/features/dashboard/components/LeaderboardCard";
-import { UpcomingEventsCard } from "@/features/dashboard/components/UpcomingEventsCard";
-import { AnnouncementsCard } from "@/features/dashboard/components/AnnouncementsCard";
-import { MyTasksCard } from "@/features/dashboard/components/MyTasksCard";
 import { DashboardContent } from "@/components/dashboard-content";
 import { LevelWidget } from "@/features/dashboard/components/LevelWidget";
 import { CurrentDate } from "@/features/dashboard/components/CurrentDate";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load heavy cards
+const LeaderboardCard = dynamic(() => import("@/features/dashboard/components/LeaderboardCard").then(mod => mod.LeaderboardCard), {
+  loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+  ssr: true
+});
+
+const MyTasksCard = dynamic(() => import("@/features/dashboard/components/MyTasksCard").then(mod => mod.MyTasksCard), {
+  loading: () => <Skeleton className="h-[400px] w-full rounded-2xl" />,
+  ssr: true
+});
+
+const AnnouncementsCard = dynamic(() => import("@/features/dashboard/components/AnnouncementsCard").then(mod => mod.AnnouncementsCard), {
+  loading: () => <Skeleton className="h-[300px] w-full rounded-2xl" />,
+  ssr: true
+});
+
+const UpcomingEventsCard = dynamic(() => import("@/features/dashboard/components/UpcomingEventsCard").then(mod => mod.UpcomingEventsCard), {
+  loading: () => <Skeleton className="h-[300px] w-full rounded-2xl" />,
+  ssr: true
+});
 
 interface StudentDashboardProps {
   username: string;
@@ -26,6 +45,17 @@ export function StudentDashboard({
   dashboardData, 
   transformedLeaderboard 
 }: StudentDashboardProps) {
+  const initialMyPosition = dashboardData?.stats?.leaderboardRank ? {
+    id: dashboardData?.user?.id || '',
+    rank: dashboardData?.stats?.leaderboardRank,
+    xp: dashboardData?.stats?.xp || 0,
+    points: typeof dashboardData?.wallet?.balance === 'number' ? dashboardData.wallet.balance : 0,
+    username: dashboardData?.user?.username || '',
+    firstName: dashboardData?.user?.firstName || '',
+    lastName: dashboardData?.user?.lastName || '',
+    avatar: dashboardData?.user?.avatar || '',
+  } : null;
+
   return (
     <DashboardContent className="space-y-6">
       {/* Header */}
@@ -56,7 +86,10 @@ export function StudentDashboard({
 
       {/* Mid row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <LeaderboardCard initialLeaderboard={transformedLeaderboard} />
+        <LeaderboardCard 
+          initialLeaderboard={transformedLeaderboard} 
+          initialMyPosition={initialMyPosition}
+        />
         <MyTasksCard />
       </div>
 

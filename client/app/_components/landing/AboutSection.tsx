@@ -17,9 +17,9 @@ export function AboutSection() {
 
         <div className="space-y-8 font-patrick text-xl leading-relaxed text-hand-pencil/90 max-w-3xl mx-auto">
           {paragraphs.map((p, index) => (
-            <p key={index}>
+            <p key={index} {...(p.dropcap ? { "aria-label": p.dropcap + p.text } : {})}>
               {p.dropcap && (
-                <span className="float-left text-5xl font-kalam font-bold text-hand-red mr-2 mt-1.5 leading-none">
+                <span aria-hidden="true" className="float-left text-5xl font-kalam font-bold text-hand-red mr-2 mt-1.5 leading-none">
                   {p.dropcap}
                 </span>
               )}

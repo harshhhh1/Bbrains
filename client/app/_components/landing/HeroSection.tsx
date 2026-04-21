@@ -34,6 +34,7 @@ export function HeroSection() {
             <input 
                type="email" 
                placeholder="Enter your email..." 
+               aria-label="Email Address"
                className="w-full sm:flex-1 h-14 px-6 bg-white border-2 border-hand-pencil text-hand-pencil rounded-wobbly font-patrick text-lg placeholder:text-hand-pencil/40 focus:outline-none focus:ring-2 focus:ring-hand-blue/20 transition-all shadow-[3px_3px_0px_0px_rgba(45,45,45,0.1)]"
             />
             <HandButton size="lg" className="rotate-1 h-14 whitespace-nowrap" asChild>
@@ -47,7 +48,7 @@ export function HeroSection() {
             <HandCard variant="yellow" decoration="tack" className="p-2 sm:p-4 aspect-square max-w-[400px] mx-auto flex items-center justify-center bg-white">
               <div className="w-full h-full rounded-wobblyMd border-2 border-hand-pencil/40 border-dashed flex flex-col items-center justify-center p-8 text-center gap-4 group">
                 <Sparkles className="w-16 h-16 text-hand-blue group-hover:scale-110 transition-transform" strokeWidth={2} />
-                <h3 className="font-kalam text-3xl font-bold">{floatingCard.title}</h3>
+                <h2 className="font-kalam text-3xl font-bold">{floatingCard.title}</h2>
                 <p className="font-patrick text-xl">{floatingCard.subtitle}</p>
                 <HandButton
                   variant="secondary"

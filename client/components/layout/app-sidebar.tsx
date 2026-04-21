@@ -13,8 +13,12 @@ import { usePathname } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getSidebarGroups, resolveRole } from "./sidebarData"
 import type { Role } from "./sidebarData"
-import { UserProfileCard } from "../user-profile-card"
 import { useNotifications } from "../providers/notification-provider"
+import dynamic from "next/dynamic"
+
+const UserProfileCard = dynamic(() => import("../user-profile-card").then(mod => mod.UserProfileCard), {
+    ssr: true
+})
 
 interface AppSidebarProps {
     user?: {
@@ -167,7 +171,7 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
                                         key={user?.imageUrl}
                                         className={`${isCollapsed ? "h-8 w-8" : "h-10 w-10"} rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-800 shrink-0 transition-all duration-200`}
                                     >
-                                        <AvatarImage src={user?.imageUrl || undefined} />
+                                        <AvatarImage src={user?.imageUrl || undefined} alt={user?.fullName || user?.username || "User Avatar"} />
                                         <AvatarFallback name={user?.username} />
                                     </Avatar>
                                     <div className={`absolute -bottom-0.5 -right-0.5 bg-green-500 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800`} />

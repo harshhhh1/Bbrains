@@ -106,7 +106,7 @@ export function NotificationsBell() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative group">
+                <Button variant="ghost" size="icon" aria-label="Notifications" className="relative group">
                     <Bell className="h-5 w-5 transition-transform group-hover:rotate-12" />
                     {unreadCount > 0 && (
                         <Badge 

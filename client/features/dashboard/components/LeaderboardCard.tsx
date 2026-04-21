@@ -13,16 +13,20 @@ import { LeaderboardLikeEntry, TransformedLeaderboardEntry } from "../types";
 
 interface LeaderboardCardProps {
   initialLeaderboard?: TransformedLeaderboardEntry[];
+  initialMyPosition?: TransformedLeaderboardEntry | null;
 }
 
-export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboard }: LeaderboardCardProps) {
+export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboard, initialMyPosition }: LeaderboardCardProps) {
   const [leaderboard, setLeaderboard] = useState<TransformedLeaderboardEntry[]>(initialLeaderboard || []);
-  const [myPosition, setMyPosition] = useState<TransformedLeaderboardEntry | null>(null);
+  const [myPosition, setMyPosition] = useState<TransformedLeaderboardEntry | null>(initialMyPosition || null);
   const [loading, setLoading] = useState(!initialLeaderboard);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'xp' | 'points'>('xp');
 
   const fetchLeaderboard = useCallback(async () => {
+    // Skip if we already have data for the default sort on mount
+    // This check is handled in useEffect
+    
     setLoading(true);
     try {
       const [lbResponse, meResponse] = await Promise.all([
@@ -48,8 +52,13 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
   }, [sortBy]);
 
   useEffect(() => {
+    // Only skip fetch on mount if initialLeaderboard is provided and we are sorting by XP (the default)
+    if (initialLeaderboard && initialLeaderboard.length > 0 && sortBy === 'xp') {
+      setLoading(false);
+      return;
+    }
     fetchLeaderboard();
-  }, [fetchLeaderboard]);
+  }, [fetchLeaderboard, sortBy, initialLeaderboard]);
 
   const getInitials = (firstName?: string, lastName?: string, username?: string) => {
     if (firstName && lastName) {
@@ -88,7 +97,7 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
            <span className="text-sm font-semibold text-muted-foreground">{user.rank}</span>}
         </div>
         <Avatar className="h-8 w-8 border">
-          <AvatarImage src={user.avatar} />
+          <AvatarImage src={user.avatar} alt={user.username} />
           <AvatarFallback name={user.username} className="text-[10px] bg-primary/5 text-primary">
             {getInitials(user.firstName, user.lastName, user.username)}
           </AvatarFallback>
@@ -98,10 +107,10 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
             {user.username} {isMe && <span className="text-[10px] text-primary ml-1">(You)</span>}
           </span>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+            <span className="text-[10px] text-foreground/70 flex items-center gap-0.5">
               <TrendingUp className="h-2.5 w-2.5" /> {user.xp.toLocaleString()} XP
             </span>
-            <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+            <span className="text-[10px] text-foreground/70 flex items-center gap-0.5">
               <Coins className="h-2.5 w-2.5" /> {user.points?.toLocaleString() ?? 0} Pts
             </span>
           </div>
@@ -111,7 +120,7 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
         <span className="text-xs font-bold text-foreground">
           {sortBy === 'xp' ? user.xp.toLocaleString() : (user.points?.toLocaleString() ?? 0)}
         </span>
-        <span className="text-[10px] text-muted-foreground uppercase">{sortBy}</span>
+        <span className="text-[10px] text-foreground/70 uppercase">{sortBy}</span>
       </div>
     </div>
   );
