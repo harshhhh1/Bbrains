@@ -47,6 +47,7 @@ import { useNotifications } from "@/components/providers/notification-provider";
 import { ChatSidebarRight } from "./ChatSidebarRight";
 import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload";
 import { supabase } from "@/services/supabase/client";
+import type { Member } from "@/features/chat/data";
 
 type ChatUserRow = {
   id: string;
@@ -58,6 +59,7 @@ type ChatUserDetailRow = {
   user_id: string;
   first_name?: string | null;
   last_name?: string | null;
+  avatar?: string | null;
 };
 
 // ── Helpers ──
@@ -92,13 +94,13 @@ export default function ChatView() {
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [showMembers, setShowMembers] = useState(true);
-  const [profileUser, setProfileUser] = useState<{ id: string; name: string; username: string; role: string } | null>(null);
+  const [profileUser, setProfileUser] = useState<Member | null>(null);
   const [deleteMsg, setDeleteMsg] = useState<string | null>(null);
   const [hoveredMsg, setHoveredMsg] = useState<string | null>(null);
   const [editingMsg, setEditingMsg] = useState<string | null>(null);
   const [replyingMsg, setReplyingMsg] = useState<{ id: string; username: string; content: string } | null>(null);
   const [editContent, setEditContent] = useState("");
-  const [membersList, setMembersList] = useState<{ id: string; name: string; username: string; role: string }[]>([]);
+  const [membersList, setMembersList] = useState<Member[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -110,7 +112,7 @@ export default function ChatView() {
         .select("id, username, type");
       const { data: details } = await supabase
         .from("user_details")
-        .select("user_id, first_name, last_name");
+        .select("user_id, first_name, last_name, avatar");
 
       if (users) {
         const members = (users as ChatUserRow[]).map((u) => {
@@ -119,7 +121,13 @@ export default function ChatView() {
             id: u.id,
             name: d ? `${d.first_name} ${d.last_name}`.trim() : u.username,
             username: u.username,
-            role: u.type ?? "student",
+            role: (u.type === "admin" || u.type === "superadmin" ? "admin" : u.type === "teacher" ? "moderator" : "member") as "admin" | "moderator" | "member",
+            avatar: d?.avatar || "",
+            pronouns: "they/them",
+            grade: "N/A",
+            roles: [u.type || "student"],
+            type: u.type || "student",
+            status: "offline" as const
           };
         });
         setMembersList(members);
@@ -359,7 +367,18 @@ export default function ChatView() {
                           onMouseEnter={() => setHoveredMsg(msg.id)}
                           onMouseLeave={() => setHoveredMsg(null)}
                         >
-                          <button onClick={() => setProfileUser({ id: msg.user.id, name: msg.user.name, username: msg.user.username, role: msg.user.badge ?? "student" })}>
+                          <button onClick={() => setProfileUser({ 
+                            id: msg.user.id, 
+                            name: msg.user.name, 
+                            username: msg.user.username, 
+                            role: (msg.user.badge?.toLowerCase() === "admin" ? "admin" : msg.user.badge?.toLowerCase() === "mod" ? "moderator" : "member") as "admin" | "moderator" | "member",
+                            avatar: msg.user.avatar || "",
+                            pronouns: "they/them",
+                            grade: "N/A",
+                            roles: [msg.user.badge || "student"],
+                            type: msg.user.badge || "student",
+                            status: "offline" as const
+                          })}>
                             <Avatar className="w-9 h-9 shrink-0 mt-0.5">
                               <AvatarFallback name={msg.user.username} className="bg-primary/10 text-primary text-xs">{msg.user.avatar || msg.user.name.charAt(0)}</AvatarFallback>
                             </Avatar>
@@ -367,7 +386,18 @@ export default function ChatView() {
                           <div className="min-w-0 flex-1">
                             <div className="flex items-baseline gap-2">
                               <button
-                                onClick={() => setProfileUser({ id: msg.user.id, name: msg.user.name, username: msg.user.username, role: msg.user.badge ?? "student" })}
+                                onClick={() => setProfileUser({ 
+                                  id: msg.user.id, 
+                                  name: msg.user.name, 
+                                  username: msg.user.username, 
+                                  role: (msg.user.badge?.toLowerCase() === "admin" ? "admin" : msg.user.badge?.toLowerCase() === "mod" ? "moderator" : "member") as "admin" | "moderator" | "member",
+                                  avatar: msg.user.avatar || "",
+                                  pronouns: "they/them",
+                                  grade: "N/A",
+                                  roles: [msg.user.badge || "student"],
+                                  type: msg.user.badge || "student",
+                                  status: "offline" as const
+                                })}
                                 className="font-semibold text-sm text-foreground hover:underline"
                               >
                                 {msg.user.name}

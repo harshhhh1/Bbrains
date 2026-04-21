@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LeaderboardEntryRow, TopThreePodium } from "./components/LeaderboardEntry"
-import { useLeaderboard } from "./hooks/use-leaderboard"
+import { LeaderboardEntryRow, TopThreePodium } from "./LeaderboardEntry"
+import { useLeaderboard } from "../hooks/use-leaderboard"
 import type { LeaderboardCategory, LeaderboardSort } from "@/lib/types/api"
 
 const CATEGORIES: { value: LeaderboardCategory; label: string }[] = [

@@ -2,14 +2,7 @@ import React, { useEffect, useState } from "react"
 import { supabase } from "@/services/supabase/client"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
-export interface Member {
-  id: string
-  name: string
-  username: string
-  role: string
-  avatar?: string
-}
+import type { Member } from "@/features/chat/data"
 
 interface ChatSidebarRightProps {
   members: Member[]

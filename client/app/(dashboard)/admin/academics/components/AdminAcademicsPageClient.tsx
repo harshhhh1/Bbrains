@@ -2,15 +2,15 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { AcademicsControls } from "./components/AcademicsControls";
-import { AcademicsHeader } from "./components/AcademicsHeader";
-import { AcademicsLoadingState } from "./components/AcademicsLoadingState";
-import { CoursesTable } from "./components/CoursesTable";
-import { StudentsTable } from "./components/StudentsTable";
-import { AssignmentsTable } from "./components/AssignmentsTable";
-import { DeleteDialog } from "./components/DeleteDialog";
-import { CourseFormModal } from "./components/CourseFormModal";
-import { useAcademics } from "./hooks/use-academics";
+import { AcademicsControls } from "./AcademicsControls";
+import { AcademicsHeader } from "./AcademicsHeader";
+import { AcademicsLoadingState } from "./AcademicsLoadingState";
+import { CoursesTable } from "./CoursesTable";
+import { StudentsTable } from "./StudentsTable";
+import { AssignmentsTable } from "./AssignmentsTable";
+import { DeleteDialog } from "./DeleteDialog";
+import { CourseFormModal } from "./CourseFormModal";
+import { useAcademics } from "../hooks/use-academics";
 
 export default function AcademicsPage() {
   const {
