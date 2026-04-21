@@ -16,6 +16,7 @@ import { SubmissionCard } from "./SubmissionCard"
 import { GradeDialog } from "./GradeDialog"
 import { useGrading, type AssignmentFormData } from "../hooks/use-grading"
 import type { ApiAssignment, ApiSubmission } from "@/lib/types/api"
+import { useNotifications } from "@/components/providers/notification-provider"
 
 function isImageFile(filename: string) {
   const base = getFileUrlBase(filename)
@@ -39,6 +40,7 @@ function canPreviewInline(filename: string) {
 
 export function TeacherGradingView() {
   const grading = useGrading()
+  const { registerIncomingAssignmentNotification } = useNotifications()
 
   const [formOpen, setFormOpen] = useState(false)
   const [editingAssignment, setEditingAssignment] = useState<ApiAssignment | null>(null)
@@ -80,7 +82,15 @@ export function TeacherGradingView() {
 
   async function handleReviewSubmit(payload: { reviewStatus: "completed" | "incomplete"; reviewRemark?: string }) {
     if (!reviewTarget) return false
-    return grading.reviewSubmission(reviewTarget.submission.id, payload)
+    return grading.reviewSubmission(
+      reviewTarget.submission.id,
+      payload,
+      (submissionId, assignmentId, reviewStatus) => {
+        if (reviewStatus === "completed") {
+          registerIncomingAssignmentNotification(assignmentId, "grade")
+        }
+      }
+    )
   }
 
   function handleViewFile(fileUrl: string) {

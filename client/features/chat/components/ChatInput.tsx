@@ -13,7 +13,7 @@ interface ChatInputProps {
   setReplyingMsg: (msg: { id: string; username: string; content: string } | null) => void;
   pendingAttachments: { file: File; previewUrl: string }[];
   setPendingAttachments: (attachments: { file: File; previewUrl: string }[]) => void;
-  inputRef: React.RefObject<HTMLInputElement>;
+  inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 export function ChatInput({

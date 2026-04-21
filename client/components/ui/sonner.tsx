@@ -3,9 +3,20 @@
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
+import { useState, useEffect } from "react"
 
-const Toaster = ({ ...props }: ToasterProps) => {
+const ToasterComponent = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
+  const [position, setPosition] = useState<ToasterProps["position"]>("bottom-right")
+
+  useEffect(() => {
+    const updatePosition = () => {
+      setPosition(window.innerWidth < 640 ? "top-center" : "bottom-right")
+    }
+    updatePosition()
+    window.addEventListener("resize", updatePosition)
+    return () => window.removeEventListener("resize", updatePosition)
+  }, [])
 
   return (
     <Sonner
@@ -41,9 +52,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
           toast: "cn-toast",
         },
       }}
+      position={position}
       {...props}
     />
   )
 }
 
-export { Toaster }
+export { ToasterComponent as Toaster }

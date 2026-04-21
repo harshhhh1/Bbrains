@@ -6,7 +6,7 @@ const getBaseUrl = () => {
     return "http://localhost:5000";
 };
 
-async function fetchWithAuth<T>(endpoint: string): Promise<T> {
+async function fetchWithAuth<T>(endpoint: string): Promise<T | null> {
     const token = await getAuthToken();
 
     const response = await fetch(`${getBaseUrl()}${endpoint}`, {
@@ -17,13 +17,13 @@ async function fetchWithAuth<T>(endpoint: string): Promise<T> {
     });
 
     if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        return null;
     }
 
     const data = await response.json();
 
     if (!data.success) {
-        throw new Error(data.message || "Request failed");
+        return null;
     }
 
     return data.data as T;
@@ -44,9 +44,12 @@ export async function fetchProducts(): Promise<ApiProduct[]> {
         fetchWithAuth<ApiProduct[]>("/market/pending"),
     ]);
 
+    const validAll = all ?? [];
+    const validPending = pending ?? [];
+
     const merged = [
-        ...pending,
-        ...all.filter((p) => !pending.some((q) => q.id === p.id)),
+        ...validPending,
+        ...validAll.filter((p) => !validPending.some((q) => q.id === p.id)),
     ];
 
     return merged;

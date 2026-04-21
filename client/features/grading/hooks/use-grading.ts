@@ -16,6 +16,8 @@ interface AssignmentFormData {
   rewardPoints: string
 }
 
+type ReviewSubmissionCallback = (submissionId: number, assignmentId: number, reviewStatus: "completed" | "incomplete") => void;
+
 type CourseStudentEnrollment = {
   user?: ApiUser | null
 } & Partial<ApiUser>
@@ -245,7 +247,7 @@ export function useGrading() {
   }, [])
 
   const reviewSubmission = useCallback(
-    async (submissionId: number, data: { reviewStatus: "completed" | "incomplete"; reviewRemark?: string }) => {
+    async (submissionId: number, data: { reviewStatus: "completed" | "incomplete"; reviewRemark?: string }, onNotification?: ReviewSubmissionCallback) => {
       try {
         setSubmitting(true)
         const response = await assignmentApi.reviewSubmission(submissionId, data)
@@ -257,6 +259,10 @@ export function useGrading() {
           current.map((submission) => (submission.id === submissionId ? response.data! : submission))
         )
 
+        if (onNotification && selectedAssignment) {
+          onNotification(submissionId, selectedAssignment.id, data.reviewStatus)
+        }
+
         toast.success(data.reviewStatus === "completed" ? "Submission marked completed" : "Submission marked incomplete")
         return true
       } catch (error) {
@@ -267,7 +273,7 @@ export function useGrading() {
         setSubmitting(false)
       }
     },
-    []
+    [selectedAssignment]
   )
 
   const selectedAssignmentSummary = useMemo(() => {

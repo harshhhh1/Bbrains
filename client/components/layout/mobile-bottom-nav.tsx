@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { useNotifications } from "@/components/providers/notification-provider"
 
 interface MobileBottomNavProps {
     user?: {
@@ -41,6 +42,8 @@ export function MobileBottomNav({ user }: MobileBottomNavProps) {
     const [openMenu, setOpenMenu] = useState<string | null>(null)
     const longPressTimer = useRef<NodeJS.Timeout | null>(null)
     const isLongPress = useRef(false)
+
+    const { chatUnreadTotal, assignmentUnreadTotal, productUnreadTotal } = useNotifications()
 
     const userRoles = user?.roles || [user?.appRole || user?.type || "student"].filter(Boolean)
     const resolvedRoles = resolveRole(userRoles) as Role[]
@@ -95,6 +98,12 @@ export function MobileBottomNav({ user }: MobileBottomNavProps) {
                         const Icon = item.icon || (LucideIcons as any).Circle || (LucideIcons as any).HelpCircle;
                         const url = String(item.url)
 
+                        const isChat = item.url === "/chat"
+                        const isAssignments = item.url === "/assignments"
+                        const isProducts = item.url === "/products"
+                        const showNotificationBadge = (isChat && chatUnreadTotal > 0) || (isAssignments && assignmentUnreadTotal > 0) || (isProducts && productUnreadTotal > 0)
+                        const badgeCount = isChat ? chatUnreadTotal : isAssignments ? assignmentUnreadTotal : productUnreadTotal
+
                         const startTimer = () => {
                             isLongPress.current = false
                             longPressTimer.current = setTimeout(() => {
@@ -145,6 +154,11 @@ export function MobileBottomNav({ user }: MobileBottomNavProps) {
                                             <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-pulse" />
                                         </div>
                                     )}
+                                    {showNotificationBadge && (
+                                        <div className="absolute -top-1 -right-1">
+                                            <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                                        </div>
+                                    )}
                                 </div>
                                 <span
                                     className={cn(
@@ -156,6 +170,11 @@ export function MobileBottomNav({ user }: MobileBottomNavProps) {
                                 >
                                     {item.title.split('/')[0]}
                                 </span>
+                                {showNotificationBadge && (
+                                    <span className="absolute top-1 right-2 bg-red-500 text-white text-[8px] font-bold rounded-full w-3 h-3 flex items-center justify-center">
+                                        {badgeCount > 9 ? "9+" : badgeCount}
+                                    </span>
+                                )}
                             </div>
                         )
 

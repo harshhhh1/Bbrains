@@ -9,6 +9,8 @@ interface NotificationContextType {
     unreadCount: number
     chatUnreadTotal: number
     chatUnreadByChannel: Record<string, number>
+    assignmentUnreadTotal: number
+    productUnreadTotal: number
     loading: boolean
     fetchNotifications: () => Promise<void>
     refreshUnreadCounts: () => Promise<void>
@@ -16,6 +18,10 @@ interface NotificationContextType {
     markAllRead: () => Promise<void>
     markChannelRead: (channelId: string) => Promise<void>
     registerIncomingChatNotification: (channelId: string, type: "mention" | "reply") => void
+    registerIncomingAssignmentNotification: (assignmentId: number, type: "submission" | "grade") => void
+    registerIncomingProductNotification: (productId: number, type: "approval" | "rejection") => void
+    markAssignmentRead: (assignmentId: string) => Promise<void>
+    markProductRead: (productId: string) => Promise<void>
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
@@ -32,6 +38,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const [notifications, setNotifications] = useState<Notification[]>([])
     const [unreadCount, setUnreadCount] = useState(0)
     const [chatUnreadState, setChatUnreadState] = useState<NotificationUnreadCount>(emptyUnreadState)
+    const [assignmentUnreadCount, setAssignmentUnreadCount] = useState(0)
+    const [productUnreadCount, setProductUnreadCount] = useState(0)
     const [loading, setLoading] = useState(false)
     const [levelUpToast, setLevelUpToast] = useState<{ title: string, description: string } | null>(null)
     const processedNotifications = useRef<Set<number>>(new Set())
@@ -218,11 +226,81 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         ])
     }, [])
 
+    const registerIncomingAssignmentNotification = useCallback((assignmentId: number, type: "submission" | "grade") => {
+        setAssignmentUnreadCount((prev) => prev + 1)
+        setUnreadCount((prev) => prev + 1)
+
+        setNotifications((prev) => [
+            {
+                id: Date.now(),
+                userId: "",
+                title: type === "submission" ? "New Assignment Submission" : "Assignment Graded",
+                message: type === "submission" 
+                    ? "A student has submitted an assignment for review" 
+                    : "Your assignment has been graded",
+                type,
+                relatedId: String(assignmentId),
+                read: false,
+                createdAt: new Date().toISOString(),
+            },
+            ...prev,
+        ])
+    }, [])
+
+    const registerIncomingProductNotification = useCallback((productId: number, type: "approval" | "rejection") => {
+        setProductUnreadCount((prev) => prev + 1)
+        setUnreadCount((prev) => prev + 1)
+
+        setNotifications((prev) => [
+            {
+                id: Date.now(),
+                userId: "",
+                title: type === "approval" ? "Product Approved" : "Product Rejected",
+                message: type === "approval" 
+                    ? "Your product has been approved and is now live on the market" 
+                    : "Your product has been rejected. Check the reason in your products page",
+                type,
+                relatedId: String(productId),
+                read: false,
+                createdAt: new Date().toISOString(),
+            },
+            ...prev,
+        ])
+    }, [])
+
+    const markAssignmentRead = useCallback(async (assignmentId: string) => {
+        setAssignmentUnreadCount((prev) => Math.max(0, prev - 1))
+        setUnreadCount((prev) => Math.max(0, prev - 1))
+
+        setNotifications((prev) =>
+            prev.map((n) =>
+                n.relatedId === assignmentId && (n.type === "submission" || n.type === "grade")
+                    ? { ...n, read: true, readAt: new Date().toISOString() }
+                    : n
+            )
+        )
+    }, [])
+
+    const markProductRead = useCallback(async (productId: string) => {
+        setProductUnreadCount((prev) => Math.max(0, prev - 1))
+        setUnreadCount((prev) => Math.max(0, prev - 1))
+
+        setNotifications((prev) =>
+            prev.map((n) =>
+                n.relatedId === productId && (n.type === "approval" || n.type === "rejection")
+                    ? { ...n, read: true, readAt: new Date().toISOString() }
+                    : n
+            )
+        )
+    }, [])
+
     const value = useMemo(() => ({
         notifications,
         unreadCount,
         chatUnreadTotal: chatUnreadState.total,
         chatUnreadByChannel: chatUnreadState.byChannel,
+        assignmentUnreadTotal: assignmentUnreadCount,
+        productUnreadTotal: productUnreadCount,
         loading,
         fetchNotifications,
         refreshUnreadCounts,
@@ -230,10 +308,16 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         markAllRead,
         markChannelRead,
         registerIncomingChatNotification,
+        registerIncomingAssignmentNotification,
+        registerIncomingProductNotification,
+        markAssignmentRead,
+        markProductRead,
     }), [
         notifications,
         unreadCount,
         chatUnreadState,
+        assignmentUnreadCount,
+        productUnreadCount,
         loading,
         fetchNotifications,
         refreshUnreadCounts,
@@ -241,6 +325,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         markAllRead,
         markChannelRead,
         registerIncomingChatNotification,
+        registerIncomingAssignmentNotification,
+        registerIncomingProductNotification,
+        markAssignmentRead,
+        markProductRead,
     ])
 
     return (
