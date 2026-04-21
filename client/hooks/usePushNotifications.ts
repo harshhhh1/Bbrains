@@ -59,9 +59,9 @@ export function usePushNotifications() {
             return false
         }
 
-        const publicKey = process.env.VAPID_PUBLIC_PUSH_KEY
+        const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
         if (!publicKey) {
-            throw new Error("Missing VAPID_PUBLIC_PUSH_KEY")
+            throw new Error("Missing NEXT_PUBLIC_VAPID_PUBLIC_KEY")
         }
 
         const permission = await Notification.requestPermission()

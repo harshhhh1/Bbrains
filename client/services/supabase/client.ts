@@ -16,7 +16,7 @@ export function getSupabaseClient() {
 
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     throw new Error(
-      'Supabase env missing: set SUPABASE_URL and SUPABASE_ANON_KEY (or SUPABASE_PUBLISHABLE_KEY).'
+      'Supabase env missing: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY).'
     );
   }
   

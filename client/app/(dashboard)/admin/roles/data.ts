@@ -2,7 +2,7 @@ import { getAuthToken } from "@/services/api/client"
 import type { Role, UserWithRoles } from "./_types"
 
 const getBaseUrl = () => {
-    if (process.env.API_URL) return process.env.API_URL
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL
     return "http://localhost:5000"
 }
 
