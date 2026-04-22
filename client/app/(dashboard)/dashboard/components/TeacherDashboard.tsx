@@ -308,7 +308,7 @@ export function TeacherDashboard() {
                             {chapterProgressDraft.map(entry => (
                                 <div key={entry.subject} className="p-3 border rounded-xl">
                                     <div className="flex justify-between mb-2"><Badge>{entry.subject}</Badge><span>{entry.completedChapters}/{entry.totalChapters}</span></div>
-                                    <Progress value={getSubjectProgressPercent(entry)} h-2 />
+                                    <Progress value={getSubjectProgressPercent(entry)} />
                                 </div>
                             ))}
                         </div>

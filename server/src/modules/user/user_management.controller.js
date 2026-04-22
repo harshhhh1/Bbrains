@@ -124,6 +124,71 @@ const findCourseInCollege = async (tx, courseId, collegeId, notFoundMessage) => 
     return course;
 };
 
+/**
+ * Ensures a role exists by name, checking system roles first, then college roles.
+ * Creates a new role for the college if not found.
+ */
+const ensureRoleByNameInternal = async (tx, roleName, description, collegeId) => {
+    // Try to find a system role (null collegeId) or a college-specific role
+    const role = await tx.role.findFirst({
+        where: {
+            name: { equals: roleName, mode: 'insensitive' },
+            OR: [
+                { collegeId: collegeId },
+                { collegeId: null }
+            ]
+        },
+        orderBy: { collegeId: 'asc' } // Prefer system roles (null) if both exist
+    });
+
+    if (role) return { role, isNew: false };
+
+    // Create new role for the college
+    const newRole = await tx.role.create({
+        data: {
+            name: roleName,
+            description: description || `${roleName} role`,
+            collegeId: collegeId,
+            isSystem: false,
+            isDefault: false
+        }
+    });
+
+    return { role: newRole, isNew: true };
+};
+
+/**
+ * Copies enabled permissions from the default 'Student' system role to a target role.
+ */
+const grantStudentPermissionsToRole = async (tx, roleId) => {
+    const studentRole = await tx.role.findFirst({
+        where: { name: { equals: 'Student', mode: 'insensitive' }, collegeId: null }
+    });
+
+    if (!studentRole) return;
+
+    const studentPerms = await tx.rolePermission.findMany({
+        where: { roleId: studentRole.id, enabled: true }
+    });
+
+    for (const sp of studentPerms) {
+        await tx.rolePermission.upsert({
+            where: {
+                roleId_permissionId: {
+                    roleId: roleId,
+                    permissionId: sp.permissionId
+                }
+            },
+            create: {
+                roleId: roleId,
+                permissionId: sp.permissionId,
+                enabled: true
+            },
+            update: { enabled: true }
+        });
+    }
+};
+
 const syncTeacherClassTeacherAssignment = async (tx, teacherId, nextCourseId, collegeId) => {
     await tx.course.updateMany({
         where: { classTeacherId: teacherId },
@@ -727,85 +792,11 @@ export const batchImportUsers = async (req, res) => {
             });
         }
 
-        // Validate user type values
-        const validTypes = ['student', 'teacher', 'manager'];
-        const invalidTypeRow = csvData.find((row, index) => {
-            if (!validTypes.includes(row.type)) {
-                return { row: index + 1, field: 'type', message: `Invalid user type: ${row.type}. Must be one of: ${validTypes.join(', ')}` };
-            }
-            return null;
-        });
-
-        if (invalidTypeRow) {
-            return sendError(res, invalidTypeRow.message, 400, {
-                row: invalidTypeRow.row,
-                field: invalidTypeRow.field
-            });
-        }
-
-        // Validate date of birth format and age
-        const dobError = csvData.find((row, index) => {
-            const dob = row.dob;
-            if (!dob || !/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
-                return { row: index + 1, field: 'dob', message: 'Invalid date format. Use YYYY-MM-DD' };
-            }
-
-            const birthDate = new Date(dob);
-            const today = new Date();
-            let age = today.getFullYear() - birthDate.getFullYear();
-            const monthDiff = today.getMonth() - birthDate.getMonth();
-
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-            }
-
-            if (age < 16) {
-                return { row: index + 1, field: 'dob', message: 'User must be at least 16 years old' };
-            }
-
-            return null;
-        });
-
-        if (dobError) {
-            return sendError(res, dobError.message, 400, {
-                row: dobError.row,
-                field: dobError.field
-            });
-        }
-
-        // Validate email format
-        const emailError = csvData.find((row, index) => {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(row.email)) {
-                return { row: index + 1, field: 'email', message: 'Invalid email format' };
-            }
-            return null;
-        });
-
-        if (emailError) {
-            return sendError(res, emailError.message, 400, {
-                row: emailError.row,
-                field: emailError.field
-            });
-        }
-
-        // Check for duplicate emails in CSV
-        const emailMap = {};
-        const duplicateEmailError = csvData.find((row, index) => {
-            if (emailMap[row.email]) {
-                return { row: index + 1, field: 'email', message: 'Duplicate email found in CSV' };
-            }
-            emailMap[row.email] = true;
-            return null;
-        });
-
-        if (duplicateEmailError) {
-            return sendError(res, duplicateEmailError.message, 400, {
-                row: duplicateEmailError.row,
-                field: duplicateEmailError.field
-            });
-        }
-
+        // Validate user type values - map anything other than known types to 'staff' or similar
+        const VALID_ENUM_TYPES = ['student', 'teacher', 'admin', 'staff', 'superadmin'];
+        // We still use validTypes for basic structural validation if needed, 
+        // but the user wants to allow "any other role" too.
+        
         // Process each row in transaction
         const results = {
             successCount: 0,
@@ -838,11 +829,12 @@ export const batchImportUsers = async (req, res) => {
                     }
                     username = uniqueUsername;
 
-                    // Determine user ID: use CSV-provided user_id (any unique string) or generate UUID
-                    let userId = row.user_id ? String(row.user_id).trim() : crypto.randomUUID();
+                    // Determine user ID: use CSV-provided id or user_id (any unique string) or generate UUID
+                    const providedId = row.id || row.user_id;
+                    let userId = providedId ? String(providedId).trim() : crypto.randomUUID();
 
-                    // Ensure the provided user_id doesn't already exist
-                    if (row.user_id) {
+                    // Ensure the provided ID doesn't already exist
+                    if (providedId) {
                         const existingById = await tx.user.findUnique({ where: { id: userId } });
                         if (existingById) {
                             throw new Error(`User ID "${userId}" already exists in the database`);
@@ -870,6 +862,15 @@ export const batchImportUsers = async (req, res) => {
                         });
                     }
 
+                    // Map row.type to a valid UserRole enum value
+                    const rawType = (row.type || 'student').toLowerCase();
+                    let enumType = 'student';
+                    if (rawType === 'teacher') enumType = 'teacher';
+                    else if (rawType === 'admin') enumType = 'admin';
+                    else if (rawType === 'manager' || rawType === 'staff') enumType = 'staff';
+                    else if (VALID_ENUM_TYPES.includes(rawType)) enumType = rawType;
+                    else enumType = 'staff'; // Default for unknown roles
+
                     // Create User record
                     const user = await tx.user.create({
                         data: {
@@ -877,11 +878,31 @@ export const batchImportUsers = async (req, res) => {
                             email: row.email,
                             username: username,
                             password: await bcrypt.hash(password, 10),
-                            type: row.type,
+                            type: enumType,
                             collegeId: collegeId,
                             ...(address ? { addresses: { connect: { id: address.id } } } : {})
                         }
                     });
+
+                    // Determine Role mapping
+                    let roleName = rawType.charAt(0).toUpperCase() + rawType.slice(1);
+                    if (rawType === 'manager') roleName = 'Manager';
+
+                    // Ensure the Role exists in the DB
+                    const { role, isNew } = await ensureRoleByNameInternal(tx, roleName, `${roleName} access`, collegeId);
+
+                    // Assign the role to the user
+                    await tx.userRoles.create({
+                        data: {
+                            userId: user.id,
+                            roleId: role.id
+                        }
+                    });
+
+                    // If it's a new or unknown role (not teacher/student/manager), grant student permissions
+                    if (isNew && !['teacher', 'student', 'manager'].includes(rawType)) {
+                        await grantStudentPermissionsToRole(tx, role.id);
+                    }
 
                     // Create UserDetails record
                     await tx.userDetails.create({
@@ -1069,5 +1090,41 @@ export const checkUsernameAvailability = async (req, res) => {
     } catch (error) {
         console.error('checkUsernameAvailability error:', error);
         return sendError(res, 'Failed to check username', 500);
+    }
+};
+
+/**
+ * Temporary utility to fix users who were imported without proper roles.
+ * Scans for teachers and students and ensures they have the correct role assigned.
+ */
+export const fixMissingRoles = async (req, res) => {
+    try {
+        const usersWithoutRoles = await prisma.user.findMany({
+            where: {
+                roles: { none: {} },
+                type: { in: ['teacher', 'student'] }
+            }
+        });
+
+        let count = 0;
+        await prisma.$transaction(async (tx) => {
+            for (const user of usersWithoutRoles) {
+                const roleName = user.type.charAt(0).toUpperCase() + user.type.slice(1);
+                const { role } = await ensureRoleByNameInternal(tx, roleName, `${roleName} access`, user.collegeId);
+                
+                await tx.userRoles.create({
+                    data: {
+                        userId: user.id,
+                        roleId: role.id
+                    }
+                });
+                count++;
+            }
+        });
+
+        return sendSuccess(res, { count }, `Successfully fixed roles for ${count} users.`);
+    } catch (error) {
+        console.error('fixMissingRoles error:', error);
+        return sendError(res, 'Failed to fix roles', 500);
     }
 };

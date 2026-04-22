@@ -152,7 +152,7 @@ export interface User {
   username: string;
   firstName?: string;
   lastName?: string;
-  type: "student" | "teacher" | "admin" | "staff";
+  type: "student" | "teacher" | "admin" | "staff" | "manager" | "superadmin";
   college?: {
     id: number;
     name: string;
@@ -767,6 +767,9 @@ export const userApi = {
   },
   checkUsername: async (username: string): Promise<ApiResponse<{ available: boolean; message?: string }>> => {
     return api.get<{ available: boolean; message?: string }>(`/user/check-username/${encodeURIComponent(username)}`);
+  },
+  fixRoles: async (): Promise<ApiResponse<{ count: number }>> => {
+    return api.post<{ count: number }>('/user/fix-roles');
   },
 };
 
