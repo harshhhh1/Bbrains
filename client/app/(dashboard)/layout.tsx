@@ -50,6 +50,8 @@ type LayoutDBUser = {
     wallet?: {
         balance?: number | null;
     } | null;
+    isImpersonating?: boolean;
+    originalType?: string;
 }
 
 import { getCachedUser } from "@/services/shared-data"
@@ -148,6 +150,8 @@ async function DashboardLayout({ children }: { children: React.ReactNode }) {
         createdAt: dbUser?.createdAt || undefined,
         collegeName: dbUser?.college?.name || "Bbrains Academy",
         coins: dbUser?.wallet?.balance || 0,
+        isImpersonating: dbUser?.isImpersonating || false,
+        originalType: dbUser?.originalType,
     };
 
     return (

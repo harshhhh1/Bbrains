@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useUser } from "@/hooks/use-user"
-import { useHasPermission } from "@/components/providers/permissions-provider"
+import { useHasPermission, usePermissionsContext } from "@/components/providers/permissions-provider"
 import { PersonalTransactions } from "./PersonalTransactions"
 import { FinanceTransactionsWorkspace } from "@/features/transactions/components/FinanceTransactionsWorkspace"
 import { DashboardContent } from "@/components/dashboard-content"
@@ -11,13 +11,14 @@ import { Loader2, User, Landmark } from "lucide-react"
 
 export function TransactionsClient() {
     const { user, loading: userLoading } = useUser()
+    const { isLoading: permissionsLoading } = usePermissionsContext()
     const canManageFinance = useHasPermission("manage_finance")
     
     // Fallback role check
     const userRole = (user?.type || "student") as "student" | "teacher" | "admin" | "staff" | "superadmin"
     const isManagerial = ["admin", "superadmin", "manager"].includes(userRole)
 
-    if (userLoading) {
+    if (userLoading || permissionsLoading) {
         return (
             <div className="flex h-[400px] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />

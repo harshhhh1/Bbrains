@@ -61,15 +61,25 @@ export function setAuthToken(token: string | null) {
   }
 }
 
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
 async function makeRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   const token = await getAuthToken();
+  const impersonateCollegeId = getCookie("impersonateCollegeId");
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(impersonateCollegeId ? { 'X-Impersonate-College-Id': impersonateCollegeId } : {}),
     ...options.headers,
   };
 
@@ -306,6 +316,18 @@ export interface ManualTransactionInput {
   note?: string;
   paymentDate: string;
 }
+
+export interface DuesData {
+  totalCourseFee: number;
+  paidAmount: number;
+  dues: number;
+  courses: {
+      id: number;
+      name: string;
+      fee: number;
+  }[];
+}
+
 
 export interface AttendanceData {
   total: number;
@@ -1099,10 +1121,20 @@ export const transactionApi = {
       : '';
     return api.get<Transaction[]>(`/transactions/user/${userId}${query}`);
   },
+  getUserDues: async (userId: string): Promise<ApiResponse<DuesData>> => {
+    return api.get<DuesData>(`/transactions/user/${userId}/dues`);
+  },
   createManualTransaction: async (data: ManualTransactionInput): Promise<ApiResponse<Transaction>> => {
     return api.post<Transaction>('/transactions/manual', data);
   },
+  getDues: async (): Promise<ApiResponse<DuesData>> => {
+    return api.get<DuesData>('/transactions/dues');
+  },
+  payFee: async (data: { amount: number; paymentMode?: string; referenceId?: string; note?: string }): Promise<ApiResponse<Transaction>> => {
+    return api.post<Transaction>('/transactions/pay-fee', data);
+  },
 };
+
 
 export const streakApi = {
   getStreak: async (): Promise<ApiResponse<StreakData>> => {

@@ -33,6 +33,7 @@ interface MessageInputProps {
     mentionQuery: string | null
     mentionIndex: number
     setMentionIndex: React.Dispatch<React.SetStateAction<number>>
+    isMounted?: boolean
 }
 
 export function MessageInput({
@@ -55,7 +56,8 @@ export function MessageInput({
     onMentionSelect,
     mentionQuery,
     mentionIndex,
-    setMentionIndex
+    setMentionIndex,
+    isMounted = false
 }: MessageInputProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -219,30 +221,32 @@ export function MessageInput({
                             className="flex-1 bg-transparent px-4 py-2 text-sm outline-none placeholder:text-muted-foreground"
                         />
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button
-                                    className="px-2 text-muted-foreground hover:text-foreground transition-colors mr-1"
-                                    aria-label="Open emoji picker"
+                        {isMounted && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button
+                                        className="px-2 text-muted-foreground hover:text-foreground transition-colors mr-1"
+                                        aria-label="Open emoji picker"
+                                    >
+                                        <Smile className="w-4 h-4" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    side="top"
+                                    className="h-100 w-fit border-none bg-transparent p-0 shadow-none z-50 mb-2"
                                 >
-                                    <Smile className="w-4 h-4" />
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                align="end"
-                                side="top"
-                                className="h-100 w-fit border-none bg-transparent p-0 shadow-none z-50 mb-2"
-                            >
-                                <EmojiPicker
-                                    className="h-full border shadow-xl bg-ui-light-surface dark:bg-ui-dark-surface rounded-lg overflow-hidden"
-                                    onEmojiSelect={onEmojiSelect}
-                                >
-                                    <EmojiPickerSearch placeholder="Search emoji..." />
-                                    <EmojiPickerContent />
-                                    <EmojiPickerFooter />
-                                </EmojiPicker>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                    <EmojiPicker
+                                        className="h-full border shadow-xl bg-ui-light-surface dark:bg-ui-dark-surface rounded-lg overflow-hidden"
+                                        onEmojiSelect={onEmojiSelect}
+                                    >
+                                        <EmojiPickerSearch placeholder="Search emoji..." />
+                                        <EmojiPickerContent />
+                                        <EmojiPickerFooter />
+                                    </EmojiPicker>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                     </div>
                 </div>
 
