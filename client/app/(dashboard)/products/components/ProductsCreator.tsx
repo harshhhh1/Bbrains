@@ -60,6 +60,7 @@ export function ProductsCreator() {
     price: "", 
     stock: "", 
     imageUrl: "",
+    images: [] as string[],
     productType: "physical" as "digital" | "physical",
     fileUrl: "",
     fileType: "",
@@ -85,7 +86,7 @@ export function ProductsCreator() {
   }, [fetchMyProducts]);
 
   const resetForm = () => {
-    setForm({ name: "", description: "", price: "", stock: "", imageUrl: "", productType: "physical", fileUrl: "", fileType: "" });
+    setForm({ name: "", description: "", price: "", stock: "", imageUrl: "", images: [], productType: "physical", fileUrl: "", fileType: "" });
     setSelectedProduct(null);
   };
 
@@ -97,6 +98,7 @@ export function ProductsCreator() {
       price: product.price.toString(),
       stock: product.stock.toString(),
       imageUrl: product.image || "",
+      images: product.images || [],
       productType: product.productType || "physical",
       fileUrl: product.metadata?.fileUrl || "",
       fileType: product.metadata?.fileType || "",
@@ -133,6 +135,7 @@ export function ProductsCreator() {
         price: Number(form.price),
         stock: form.productType === "physical" ? Number(form.stock) : 999999,
         imageUrl: form.imageUrl,
+        images: form.images,
       };
 
       if (form.productType === "digital" && form.fileUrl) {
@@ -182,12 +185,22 @@ export function ProductsCreator() {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
     try {
+      const file = files[0];
       const url = await uploadFile(file);
       if (url) {
-        setForm(prev => ({ ...prev, imageUrl: url }));
+        setForm(prev => {
+          const newImages = [...prev.images, url];
+          return { 
+            ...prev, 
+            images: newImages,
+            // If no main image yet, set first one as main
+            imageUrl: prev.imageUrl || url 
+          };
+        });
         toast.success("Image uploaded");
       } else {
         toast.error("Failed to upload image");
@@ -195,6 +208,25 @@ export function ProductsCreator() {
     } catch (error) {
       toast.error("Error uploading image");
     }
+  };
+
+  const removeImage = (index: number) => {
+    setForm(prev => {
+      const newImages = prev.images.filter((_, i) => i !== index);
+      return {
+        ...prev,
+        images: newImages,
+        // If we removed the main image, set a new one or clear it
+        imageUrl: prev.imageUrl === prev.images[index] 
+          ? (newImages[0] || "") 
+          : prev.imageUrl
+      };
+    });
+  };
+
+  const setAsMainImage = (url: string) => {
+    setForm(prev => ({ ...prev, imageUrl: url }));
+    toast.success("Set as main image");
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -232,6 +264,7 @@ export function ProductsCreator() {
         price: Number(form.price),
         stock: form.productType === "physical" ? Number(form.stock) : 999999,
         imageUrl: form.imageUrl,
+        images: form.images,
         productType: form.productType,
         fileUrl: form.fileUrl,
         fileType: form.fileType,
@@ -411,11 +444,11 @@ export function ProductsCreator() {
                         </DrawerClose>
                       </div>
                     </DrawerHeader>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35">Product Type</p>
-                      <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl border border-white/10 bg-white/5 p-1.5">
-                        <TabsTrigger value="physical" className="h-11 rounded-xl font-bold">Physical</TabsTrigger>
-                        <TabsTrigger value="digital" className="h-11 rounded-xl font-bold">Digital</TabsTrigger>
+                      <TabsList className="grid h-[56px] w-full grid-cols-2 items-stretch gap-2 rounded-2xl border-white/10 bg-white/5 p-1">
+                        <TabsTrigger value="physical" className="h-full flex items-center justify-center rounded-xl font-bold data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none transition-all px-4">Physical</TabsTrigger>
+                        <TabsTrigger value="digital" className="h-full flex items-center justify-center rounded-xl font-bold data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none transition-all px-4">Digital</TabsTrigger>
                       </TabsList>
                     </div>
                   </div>
@@ -424,18 +457,278 @@ export function ProductsCreator() {
               <div className="flex min-h-0 flex-col overflow-y-auto p-6 sm:p-8">
                 <div className="mx-auto w-full max-w-2xl space-y-8">
                   {/* Forms for Name, Price, Description etc. */}
-                  <div className="space-y-5">
-                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Product Name" className="h-[52px] rounded-2xl bg-white/[0.03]" />
-                    <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" className="min-h-[150px] rounded-2xl bg-white/[0.03]" />
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="Price" className="h-[52px] rounded-2xl bg-white/[0.03]" />
-                      <Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="Stock" className="h-[52px] rounded-2xl bg-white/[0.03]" />
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35 px-1">Product Images</p>
+                      
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {form.images.map((url, index) => (
+                          <div key={index} className={cn(
+                            "group relative aspect-square rounded-2xl overflow-hidden border-2 transition-all",
+                            form.imageUrl === url ? "border-brand-orange ring-2 ring-brand-orange/20" : "border-white/5"
+                          )}>
+                            <Image src={url} alt={`Product ${index}`} fill className="object-cover" />
+                            
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+                              <div className="flex items-center gap-1.5">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setAsMainImage(url)}
+                                  className={cn(
+                                    "h-8 w-8 rounded-full transition-all",
+                                    form.imageUrl === url ? "bg-brand-orange text-white" : "bg-white/10 text-white hover:bg-brand-orange"
+                                  )}
+                                  title="Set as Main"
+                                >
+                                  <Star className="h-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeImage(index)}
+                                  className="h-8 w-8 rounded-full bg-white/10 text-white hover:bg-red-500 hover:text-white"
+                                  title="Remove"
+                                >
+                                  <Trash2 className="h-4 h-4" />
+                                </Button>
+                              </div>
+                              {form.imageUrl === url && (
+                                <Badge className="bg-brand-orange text-[8px] font-black uppercase tracking-widest px-1.5 py-0">Main</Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+
+                        <label className={cn(
+                          "flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/10 bg-white/[0.02] transition-all hover:border-brand-orange/50 hover:bg-white/[0.04]",
+                          isUploading && "pointer-events-none opacity-50"
+                        )}>
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white/40 group-hover:bg-brand-orange/10 group-hover:text-brand-orange">
+                            {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[10px] font-bold text-white/60">Add Image</p>
+                          </div>
+                          <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={isUploading} />
+                        </label>
+                      </div>
+
+                      {isUploading && (
+                        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden mt-2">
+                          <div className="h-full bg-brand-orange transition-all duration-300" style={{ width: `${progress}%` }} />
+                        </div>
+                      )}
                     </div>
+
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35 px-1">Product Details</p>
+                        <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Product Name" className="h-[52px] rounded-2xl bg-white/[0.03] border-white/10" />
+                      </div>
+                      <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" className="min-h-[150px] rounded-2xl bg-white/[0.03] border-white/10" />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="Price" className="h-[52px] rounded-2xl bg-white/[0.03] border-white/10" />
+                        <Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="Stock" className="h-[52px] rounded-2xl bg-white/[0.03] border-white/10" disabled={form.productType === 'digital'} />
+                      </div>
+
+                      {form.productType === 'digital' && (
+                        <div className="space-y-4 pt-4 border-t border-white/5">
+                          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35 px-1">Digital Content</p>
+                          <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-4">
+                            {form.fileUrl ? (
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 rounded-xl bg-brand-orange/10 flex items-center justify-center">
+                                    <FileUp className="h-5 w-5 text-brand-orange" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-bold text-white">File Attached</p>
+                                    <p className="text-xs text-white/40 uppercase tracking-widest">{form.fileType}</p>
+                                  </div>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={() => setForm(prev => ({ ...prev, fileUrl: "", fileType: "" }))} className="text-red-400 hover:bg-red-500/10">Replace</Button>
+                              </div>
+                            ) : (
+                              <label className="flex flex-col items-center justify-center py-6 cursor-pointer group">
+                                <FileUp className="h-8 w-8 text-white/20 group-hover:text-brand-orange transition-colors mb-2" />
+                                <p className="text-sm font-bold text-white/60 group-hover:text-white transition-colors">Upload Digital Content</p>
+                                <p className="text-[10px] text-white/30 uppercase tracking-widest mt-1">PDF, ZIP, MP4 etc.</p>
+                                <input type="file" onChange={handleFileUpload} className="hidden" disabled={isUploading} />
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                     <Button onClick={handleAddProduct} disabled={isSubmitting} className="w-full h-12 bg-brand-orange font-bold rounded-xl mt-4">
                       {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : <Upload className="mr-2" />}
                       {isSubmitting ? "Creating..." : "Create Product"}
                     </Button>
                   </div>
+                </div>
+              </div>
+            </div>
+          </Tabs>
+        </DrawerContent>
+      </Drawer>
+
+      <Drawer
+        direction="right"
+        open={showEditDialog}
+        onOpenChange={(open) => { if (!open) { setShowEditDialog(false); resetForm(); } }}
+      >
+        <DrawerContent className="fixed inset-y-0 right-0 p-0 before:inset-0 before:rounded-none data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-3xl data-[vaul-drawer-direction=right]:lg:max-w-4xl before:border-white/10 before:bg-[radial-gradient(circle_at_top,_rgba(255,122,122,0.12),_transparent_30%),rgba(2,6,23,0.98)] sm:p-0 sm:before:rounded-l-[2rem] border-none shadow-2xl">
+          <Tabs
+            value={form.productType}
+            onValueChange={(v) => setForm(prev => ({ ...prev, productType: v as "digital" | "physical" }))}
+            className="h-full"
+          >
+            <div className="grid h-[100dvh] max-h-[100dvh] grid-cols-1 overflow-hidden xl:grid-cols-[320px_minmax(0,1fr)]">
+              <div className="border-b border-white/10 bg-white/[0.03] p-6 xl:border-r xl:border-b-0 xl:p-8">
+                <div className="flex h-full flex-col justify-between gap-6">
+                  <div className="space-y-6">
+                    <DrawerHeader className="space-y-4 p-0 text-left">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-4">
+                          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/15 ring-1 ring-amber-500/20">
+                            <Pencil className="h-7 w-7 text-amber-500" />
+                          </div>
+                          <div className="space-y-2">
+                            <DrawerTitle className="text-2xl font-black tracking-tight text-white sm:text-3xl">
+                              Edit Product
+                            </DrawerTitle>
+                            <DrawerDescription className="text-white/40 font-medium">
+                              Update details for &quot;{selectedProduct?.name}&quot;
+                            </DrawerDescription>
+                          </div>
+                        </div>
+                        <DrawerClose asChild>
+                          <Button variant="ghost" size="icon" className="rounded-full text-white/60 hover:bg-white/5 hover:text-white">
+                            <X className="h-5 w-5" />
+                          </Button>
+                        </DrawerClose>
+                      </div>
+                    </DrawerHeader>
+                    <div className="space-y-3">
+                      <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35">Product Type</p>
+                      <TabsList className="grid h-[58px] w-full grid-cols-2 items-stretch gap-1 rounded-2xl border border-white/10 bg-white/5 p-1">
+                        <TabsTrigger value="physical" className="h-full flex items-center justify-center rounded-xl font-bold data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none transition-all px-4">Physical</TabsTrigger>
+                        <TabsTrigger value="digital" className="h-full flex items-center justify-center rounded-xl font-bold data-[state=active]:bg-white/10 data-[state=active]:text-white data-[state=active]:shadow-none transition-all px-4">Digital</TabsTrigger>
+                      </TabsList>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex min-h-0 flex-col overflow-y-auto p-6 sm:p-8">
+                <div className="mx-auto w-full max-w-2xl space-y-8">
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35 px-1">Product Images</p>
+                      
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {form.images.map((url, index) => (
+                          <div key={index} className={cn(
+                            "group relative aspect-square rounded-2xl overflow-hidden border-2 transition-all",
+                            form.imageUrl === url ? "border-brand-orange ring-2 ring-brand-orange/20" : "border-white/5"
+                          )}>
+                            <Image src={url} alt={`Product ${index}`} fill className="object-cover" />
+                            
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-2">
+                              <div className="flex items-center gap-1.5">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setAsMainImage(url)}
+                                  className={cn(
+                                    "h-8 w-8 rounded-full transition-all",
+                                    form.imageUrl === url ? "bg-brand-orange text-white" : "bg-white/10 text-white hover:bg-brand-orange"
+                                  )}
+                                  title="Set as Main"
+                                >
+                                  <Star className="h-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeImage(index)}
+                                  className="h-8 w-8 rounded-full bg-white/10 text-white hover:bg-red-500 hover:text-white"
+                                  title="Remove"
+                                >
+                                  <Trash2 className="h-4 h-4" />
+                                </Button>
+                              </div>
+                              {form.imageUrl === url && (
+                                <Badge className="bg-brand-orange text-[8px] font-black uppercase tracking-widest px-1.5 py-0">Main</Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+
+                        <label className={cn(
+                          "flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-white/10 bg-white/[0.02] transition-all hover:border-brand-orange/50 hover:bg-white/[0.04]",
+                          isUploading && "pointer-events-none opacity-50"
+                        )}>
+                          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-white/40 group-hover:bg-brand-orange/10 group-hover:text-brand-orange">
+                            {isUploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Plus className="h-5 w-5" />}
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[10px] font-bold text-white/60">Add Image</p>
+                          </div>
+                          <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={isUploading} />
+                        </label>
+                      </div>
+
+                      {isUploading && (
+                        <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden mt-2">
+                          <div className="h-full bg-brand-orange transition-all duration-300" style={{ width: `${progress}%` }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-5">
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35 px-1">Product Details</p>
+                        <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Product Name" className="h-[52px] rounded-2xl bg-white/[0.03] border-white/10" />
+                      </div>
+                      <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Description" className="min-h-[150px] rounded-2xl bg-white/[0.03] border-white/10" />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="Price" className="h-[52px] rounded-2xl bg-white/[0.03] border-white/10" />
+                        <Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="Stock" className="h-[52px] rounded-2xl bg-white/[0.03] border-white/10" disabled={form.productType === 'digital'} />
+                      </div>
+
+                      {form.productType === 'digital' && (
+                        <div className="space-y-4 pt-4 border-t border-white/5">
+                          <p className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35 px-1">Digital Content</p>
+                          <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-4">
+                            {form.fileUrl ? (
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="h-10 w-10 rounded-xl bg-brand-orange/10 flex items-center justify-center">
+                                    <FileUp className="h-5 w-5 text-brand-orange" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-bold text-white">File Attached</p>
+                                    <p className="text-xs text-white/40 uppercase tracking-widest">{form.fileType}</p>
+                                  </div>
+                                </div>
+                                <Button variant="ghost" size="sm" onClick={() => setForm(prev => ({ ...prev, fileUrl: "", fileType: "" }))} className="text-red-400 hover:bg-red-500/10">Replace</Button>
+                              </div>
+                            ) : (
+                              <label className="flex flex-col items-center justify-center py-6 cursor-pointer group">
+                                <FileUp className="h-8 w-8 text-white/20 group-hover:text-brand-orange transition-colors mb-2" />
+                                <p className="text-sm font-bold text-white/60 group-hover:text-white transition-colors">Upload Digital Content</p>
+                                <p className="text-[10px] text-white/30 uppercase tracking-widest mt-1">PDF, ZIP, MP4 etc.</p>
+                                <input type="file" onChange={handleFileUpload} className="hidden" disabled={isUploading} />
+                              </label>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <Button onClick={handleUpdateProduct} disabled={isSubmitting} className="w-full h-12 bg-brand-orange font-bold rounded-xl mt-4">
+                        {isSubmitting ? <Loader2 className="animate-spin mr-2" /> : <Upload className="mr-2" />}
+                        {isSubmitting ? "Updating..." : "Save Changes"}
+                      </Button>
+                    </div>
                 </div>
               </div>
             </div>

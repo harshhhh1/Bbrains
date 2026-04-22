@@ -29,12 +29,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 type NavbarUser = {
+    id?: string
     imageUrl?: string
     firstName?: string
     lastName?: string
     fullName?: string
     username?: string
     type?: string
+    appRole?: string
+    roles?: string[]
     collegeName?: string
     coins?: number
     isImpersonating?: boolean
@@ -125,7 +128,11 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
 
                         <div className="min-w-0">
                             <div className="hidden items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground md:flex">
-                                <span>{user?.collegeName || "Bbrains Academy"}</span>
+                                <span>
+                                    {(user?.appRole === "superadmin" || user?.appRole === "admin" || user?.type === "admin") && !user?.isImpersonating
+                                        ? "Admin Panel"
+                                        : (user?.collegeName || "Bbrains Academy")}
+                                </span>
                                 <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
                                 <span>{todayLabel}</span>
                             </div>

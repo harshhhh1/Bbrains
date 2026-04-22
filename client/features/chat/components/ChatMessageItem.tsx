@@ -19,6 +19,7 @@ import {
   Link,
   AtSign,
   User,
+  MessageCircle,
 } from "lucide-react";
 import { ChatImagePreview } from "@/components/chat-image-preview";
 import type { Message } from "@/features/chat/data";
@@ -73,7 +74,7 @@ export function ChatMessageItem({
 
   const renderContent = (content: string, mentions?: string[]) => {
     // Regex for URLs
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urlRegex = /https?:\/\/[^\s]+/;
     
     // First, process mentions to protect them from URL regex if they contain dots (unlikely but safe)
     let processed = content;
@@ -100,7 +101,22 @@ export function ChatMessageItem({
       }
       
       // Check for URL
-      if (urlRegex.test(part)) {
+      if (part.startsWith('http')) {
+        if (part.toLowerCase().includes('msgid=')) {
+          return (
+            <a 
+              key={i} 
+              href={part} 
+              className="inline-flex items-center gap-1.5 bg-[#3f4147]/80 hover:bg-[#4a4d54] text-[#c9cdfb] rounded px-2 py-0.5 text-[14px] font-medium transition-colors align-middle mx-0.5 whitespace-nowrap"
+            >
+              <span className="opacity-60 font-normal">#</span> 
+              view message 
+              <span className="opacity-40 text-[10px] mx-0.5">&gt;</span>
+              <MessageCircle className="w-4 h-4 text-[#aeb3e4]" />
+            </a>
+          );
+        }
+        
         return (
           <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
             {part}
@@ -119,7 +135,7 @@ export function ChatMessageItem({
           id={`msg-${msg.id}`}
           className={`group flex items-start gap-3 px-3 py-1.5 rounded-md transition-all relative animate-in fade-in slide-in-from-bottom-4 duration-300 ${isMentioned ? "bg-primary/5 border-l-2 border-primary" :
               isReplyToMe ? "bg-accent/5 border-l-2 border-accent" :
-                isHighlighted ? "bg-primary/10 ring-1 ring-primary/50" :
+                isHighlighted ? "bg-brand-purple/10 ring-1 ring-brand-purple/50 animate-highlight" :
                   "hover:bg-muted/50"
             }`}
           onMouseEnter={() => setHovered(true)}

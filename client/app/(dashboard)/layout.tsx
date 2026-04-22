@@ -148,7 +148,7 @@ async function DashboardLayout({ children }: { children: React.ReactNode }) {
         level: userXp.level,
         xp: userXp.xp,
         createdAt: dbUser?.createdAt || undefined,
-        collegeName: dbUser?.college?.name || "Bbrains Academy",
+        collegeName: dbUser?.college?.name,
         coins: dbUser?.wallet?.balance || 0,
         isImpersonating: dbUser?.isImpersonating || false,
         originalType: dbUser?.originalType,

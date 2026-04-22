@@ -161,59 +161,63 @@ export function OverviewClient({ stats }: OverviewClientProps) {
 
     return (
         <DashboardContent maxWidth="max-w-[96rem]" className="space-y-4">
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
-                <Card className="overflow-hidden border-border/60 bg-gradient-to-br from-card via-card to-primary/5 shadow-sm">
-                    <CardContent className="p-5 sm:p-6">
-                        <div className="flex flex-col gap-6">
-                            <SectionHeader
-                                title="Admin Dashboard"
-                                subtitle="A compact view of people, finance, profile, and institution health."
-                            />
+            <div className="grid gap-4 xl:grid-cols-12">
+                <div className="xl:col-span-8 min-w-0">
+                    <Card className="h-full overflow-hidden border-border/60 bg-gradient-to-br from-card via-card to-primary/5 shadow-sm">
+                        <CardContent className="p-5 sm:p-6">
+                            <div className="flex flex-col gap-6">
+                                <SectionHeader
+                                    title="Admin Dashboard"
+                                    subtitle="A compact view of people, finance, profile, and institution health."
+                                />
 
-                            <div className="space-y-3">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                                        {stats.institution?.name || "Institution Workspace"}
-                                    </span>
-                                    <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                        {stats.people.studentToTeacherRatio ? `${stats.people.studentToTeacherRatio}:1 student-teacher ratio` : "Ratio unavailable"}
-                                    </span>
-                                </div>
+                                <div className="space-y-3">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className="rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                                            {stats.institution?.name || "Institution Workspace"}
+                                        </span>
+                                        <span className="rounded-full bg-muted px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                                            {stats.people.studentToTeacherRatio ? `${stats.people.studentToTeacherRatio}:1 student-teacher ratio` : "Ratio unavailable"}
+                                        </span>
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-[2.5rem]">
-                                        Leadership snapshot for {fullName}
-                                    </h1>
-                                    <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
-                                        All the useful admin information stays on one screen now, grouped into denser cards so staffing, revenue, and institution details are easy to scan without the page feeling empty.
-                                    </p>
+                                    <div className="space-y-2">
+                                        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-[2.5rem]">
+                                            Leadership snapshot for {fullName}
+                                        </h1>
+                                        <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+                                            All the useful admin information stays on one screen now, grouped into denser cards so staffing, revenue, and institution details are easy to scan without the page feeling empty.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                <Card className="border-border/60 bg-card/95 shadow-sm">
-                    <CardContent className="grid h-full gap-3 p-4 sm:grid-cols-2 xl:grid-cols-1">
-                        <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Today</p>
-                            <p className="mt-2 text-base font-semibold text-foreground">{currentDate}</p>
-                            <p className="mt-1 text-sm text-muted-foreground">Keep tabs on operations without opening extra pages.</p>
-                        </div>
+                <div className="xl:col-span-4 min-w-0">
+                    <Card className="h-full border-border/60 bg-card/95 shadow-sm">
+                        <CardContent className="grid h-full gap-3 p-4 sm:grid-cols-2 xl:grid-cols-1">
+                            <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Today</p>
+                                <p className="mt-2 text-base font-semibold text-foreground">{currentDate}</p>
+                                <p className="mt-1 text-sm text-muted-foreground">Keep tabs on operations without opening extra pages.</p>
+                            </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
-                            <CompactStat label="Teachers" value={stats.people.teachers} tone="border-blue-200/60 bg-blue-500/5" />
-                            <CompactStat label="Managers" value={stats.people.managers} tone="border-amber-200/60 bg-amber-500/5" />
-                            <CompactStat label="Staff" value={stats.people.staff} tone="border-emerald-200/60 bg-emerald-500/5" />
-                            <CompactStat label="Students" value={stats.people.students} tone="border-primary/20 bg-primary/5" />
-                        </div>
-                    </CardContent>
-                </Card>
+                            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
+                                <CompactStat label="Teachers" value={stats.people.teachers} tone="border-blue-200/60 bg-blue-500/5" />
+                                <CompactStat label="Managers" value={stats.people.managers} tone="border-amber-200/60 bg-amber-500/5" />
+                                <CompactStat label="Staff" value={stats.people.staff} tone="border-emerald-200/60 bg-emerald-500/5" />
+                                <CompactStat label="Students" value={stats.people.students} tone="border-primary/20 bg-primary/5" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.9fr)]">
-                <div className="grid gap-4">
-                    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="grid gap-4 xl:grid-cols-12">
+                <div className="grid gap-4 xl:col-span-7 min-w-0">
+                    <div className="grid gap-4 lg:grid-cols-2">
                         <OverviewLinkCard href="/admin/stats">
                             <CardHeader className="space-y-1 pb-3">
                                 <div className="flex items-start justify-between gap-3">
@@ -343,7 +347,7 @@ export function OverviewClient({ stats }: OverviewClientProps) {
                     </OverviewLinkCard>
                 </div>
 
-                <div className="grid gap-4">
+                <div className="grid gap-4 xl:col-span-5 min-w-0">
                     <OverviewLinkCard href="/settings">
                         <CardHeader className="space-y-1 pb-3">
                             <div className="flex items-start justify-between gap-3">
@@ -430,7 +434,7 @@ export function OverviewClient({ stats }: OverviewClientProps) {
                                         <div className="rounded-2xl border border-border/60 bg-background/75 p-4">
                                             <div className="flex items-center gap-2 text-muted-foreground">
                                                 <CalendarDays className="size-4" />
-                                                <span className="text-[11px] font-semibold uppercase tracking-[0.16em]">Registered On</span>
+                                                <span className="text-[11px] font-semibold uppercase tracking-[0.18em]">Registered On</span>
                                             </div>
                                             <p className="mt-2 text-sm font-medium text-foreground">{formatDate(stats.institution.createdAt)}</p>
                                         </div>

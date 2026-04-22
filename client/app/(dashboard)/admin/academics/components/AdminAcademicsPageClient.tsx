@@ -7,12 +7,15 @@ import { AcademicsHeader } from "./AcademicsHeader";
 import { AcademicsLoadingState } from "./AcademicsLoadingState";
 import { CoursesTable } from "./CoursesTable";
 import { StudentsTable } from "./StudentsTable";
+import { TeachersTab } from "./TeachersTab";
 import { AssignmentsTable } from "./AssignmentsTable";
 import { DeleteDialog } from "./DeleteDialog";
 import { CourseFormModal } from "./CourseFormModal";
 import { useAcademics } from "../hooks/use-academics";
+import { useState } from "react";
 
 export default function AcademicsPage() {
+    const [teacherModalOpen, setTeacherModalOpen] = useState(false);
   const {
     tab,
     setTab,
@@ -23,6 +26,7 @@ export default function AcademicsPage() {
     deleting,
     courses,
     students,
+    teachers,
     assignments,
     loading,
     canCreateCourse,
@@ -33,7 +37,16 @@ export default function AcademicsPage() {
     courseModalOpen,
     setCourseModalOpen,
     onCourseCreated,
+    router,
   } = useAcademics();
+
+  const handleAddOverride = () => {
+    if (tab === "teachers") {
+      setTeacherModalOpen(true);
+      return;
+    }
+    handleAddClick();
+  };
 
   if (loading && courses.length === 0) {
     return <AcademicsLoadingState />;
@@ -44,6 +57,7 @@ export default function AcademicsPage() {
       <AcademicsHeader
         coursesCount={courses.length}
         studentsCount={students.length}
+        teachersCount={teachers.length}
         assignmentsCount={assignments.length}
       />
 
@@ -53,7 +67,7 @@ export default function AcademicsPage() {
             tab={tab}
             search={search}
             onSearchChange={setSearch}
-            onAddClick={handleAddClick}
+            onAddClick={handleAddOverride}
             canAdd={canCreateCourse || canManageCourse}
           />
         </div>
@@ -75,6 +89,19 @@ export default function AcademicsPage() {
           <Card className="overflow-hidden rounded-2xl border border-border/70 bg-card/90">
             <CardContent className="p-0">
               <StudentsTable students={students} search={search} onDelete={(id) => setDeleteId(id)} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="teachers" className="mt-0">
+          <Card className="overflow-hidden rounded-2xl border border-border/70 bg-card/90">
+            <CardContent className="p-0">
+              <TeachersTab 
+                loading={loading} 
+                initialTeachers={teachers as any} 
+                createOpen={teacherModalOpen}
+                onCreateOpenChange={setTeacherModalOpen}
+              />
             </CardContent>
           </Card>
         </TabsContent>

@@ -232,10 +232,10 @@ export default function RolesPage() {
 
   if (!user) {
     return (
-      <div className="flex h-[calc(100vh-4.5rem)] items-center justify-center py-8 text-[#dbdee1]">
+      <div className="flex h-[calc(100vh-4.5rem)] items-center justify-center py-8 text-foreground">
         <div className="text-center">
           <h2 className="mb-2 text-lg font-semibold">Please log in to manage roles</h2>
-          <p className="text-sm text-[#80848e]">No active session found.</p>
+          <p className="text-sm text-muted-foreground">No active session found.</p>
         </div>
       </div>
     );
@@ -243,10 +243,10 @@ export default function RolesPage() {
 
   if (!user.collegeId) {
     return (
-      <div className="flex h-[calc(100vh-4.5rem)] items-center justify-center py-8 text-[#dbdee1]">
+      <div className="flex h-[calc(100vh-4.5rem)] items-center justify-center py-8 text-foreground">
         <div className="text-center">
           <h2 className="mb-2 text-lg font-semibold">College not set</h2>
-          <p className="text-sm text-[#80848e]">This page needs `user.collegeId` to load roles.</p>
+          <p className="text-sm text-muted-foreground">This page needs `user.collegeId` to load roles.</p>
         </div>
       </div>
     );
@@ -256,15 +256,15 @@ export default function RolesPage() {
   const currentCollegeId = user.collegeId!;
 
   return (
-    <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden bg-[#313338] text-[#dbdee1] font-sans">
+    <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden bg-background text-foreground font-sans">
       {/* Left Panel: Role List */}
       <div
         className={`${
           isMobileListVisible ? "flex" : "hidden"
-        } md:flex w-full md:w-64 lg:w-80 flex-col bg-[#2b2d31] border-r border-black/20`}
+        } md:flex w-full md:w-64 lg:w-80 flex-col bg-card border-r border-border/60`}
       >
         {loadError ? (
-          <div className="p-4 text-sm text-[#f23f43]">{loadError}</div>
+          <div className="p-4 text-sm text-destructive">{loadError}</div>
         ) : null}
         <RoleList 
           roles={roles} 
@@ -281,7 +281,7 @@ export default function RolesPage() {
       <div
         className={`${
           !isMobileListVisible ? "flex" : "hidden"
-        } md:flex flex-1 flex-col bg-[#313338] overflow-hidden relative`}
+        } md:flex flex-1 flex-col bg-background overflow-hidden relative`}
       >
         {selectedRole ? (
           <RoleDetail 
@@ -294,7 +294,7 @@ export default function RolesPage() {
             isUserSuperAdmin={isUserSuperAdmin}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-[#80848e]">
+          <div className="flex h-full items-center justify-center text-muted-foreground">
             Select a role to manage its settings
           </div>
         )}

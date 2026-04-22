@@ -119,9 +119,46 @@ export function TeacherFormFields({ form, onChange, disabled, showPasswordFields
                     options={classTeacherOptions}
                     disabled={disabled}
                 />
-                <div className="col-span-2">
+                <div className="col-span-2 space-y-4">
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
+                            Quick Select Subjects
+                        </label>
+                        <div className="flex flex-wrap gap-2 p-3 rounded-2xl border border-dashed border-border/60 bg-muted/30">
+                            {Array.from(new Set(courses.flatMap(c => c.subjects || []))).sort().map(subject => {
+                                const isSelected = form.teacherSubjectsText.split(/\r?\n|,/).map(s => s.trim()).includes(subject);
+                                return (
+                                    <button
+                                        key={subject}
+                                        type="button"
+                                        onClick={() => {
+                                            const current = form.teacherSubjectsText.split(/\r?\n|,/).map(s => s.trim()).filter(Boolean);
+                                            let next;
+                                            if (current.includes(subject)) {
+                                                next = current.filter(s => s !== subject);
+                                            } else {
+                                                next = [...current, subject];
+                                            }
+                                            onChange({ ...form, teacherSubjectsText: next.join("\n") });
+                                        }}
+                                        className={`px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-200 border
+                                            ${isSelected 
+                                                ? "bg-brand-purple text-white border-brand-purple shadow-md scale-105" 
+                                                : "bg-background text-muted-foreground border-border/50 hover:border-brand-purple/50 hover:text-brand-purple"
+                                            }`}
+                                    >
+                                        {subject}
+                                    </button>
+                                );
+                            })}
+                            {courses.length === 0 && (
+                                <p className="text-[10px] text-muted-foreground italic">No courses found to extract subjects from.</p>
+                            )}
+                        </div>
+                    </div>
+
                     <FormTextarea
-                        label="Subjects"
+                        label="Final Subject List"
                         required
                         value={form.teacherSubjectsText}
                         onChange={(value) => onChange({ ...form, teacherSubjectsText: value })}
