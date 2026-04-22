@@ -124,9 +124,20 @@ export default function MarketProductDetail() {
     if (!product) return [];
     const imgs: string[] = [];
     if (product.image) imgs.push(product.image);
+    if (product.images && Array.isArray(product.images)) imgs.push(...product.images);
     if (product.metadata?.previewImages) imgs.push(...product.metadata.previewImages);
     return [...new Set(imgs)];
   }, [product]);
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedIndex((prev) => (prev + 1) % allImages.length);
+  };
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
 
   useEffect(() => {
     async function fetchProduct(pid: number) {
@@ -299,30 +310,64 @@ export default function MarketProductDetail() {
           <div className="md:col-span-7 space-y-6">
             <div className="relative aspect-[4/5] md:aspect-square rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-white/[0.03] border border-white/5 group shadow-2xl">
               {allImages[selectedIndex] ? (
-                <Image 
-                  src={encodeImageUrl(allImages[selectedIndex])} 
-                  alt={product.name} 
-                  fill 
-                  className="object-cover transition-transform duration-1000 group-hover:scale-105" 
-                  priority
-                />
+                <div className="relative h-full w-full">
+                  <Image 
+                    src={encodeImageUrl(allImages[selectedIndex])} 
+                    alt={product.name} 
+                    fill 
+                    className="object-cover transition-all duration-700 group-hover:scale-105" 
+                    priority
+                  />
+                  
+                  {/* Carousel Controls */}
+                  {allImages.length > 1 && (
+                    <>
+                      <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handlePrevImage}
+                          className="h-12 w-12 rounded-2xl bg-black/40 backdrop-blur-md text-white hover:bg-brand-orange"
+                        >
+                          <ChevronLeft className="w-6 h-6" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleNextImage}
+                          className="h-12 w-12 rounded-2xl bg-black/40 backdrop-blur-md text-white hover:bg-brand-orange"
+                        >
+                          <ChevronRight className="w-6 h-6" />
+                        </Button>
+                      </div>
+                      
+                      {/* Indicators */}
+                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 px-4 py-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10">
+                        {allImages.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setSelectedIndex(idx)}
+                            className={cn(
+                              "h-1.5 rounded-full transition-all duration-300",
+                              selectedIndex === idx ? "w-6 bg-brand-orange" : "w-1.5 bg-white/30"
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-4">
                   <Package className="w-20 h-20 text-white/5" />
                   <span className="text-xs font-black uppercase tracking-widest text-white/20">No Preview Available</span>
                 </div>
               )}
-              {/* Image Indicators (Mobile style) */}
-              <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md">
-                {allImages.map((_, idx) => (
-                  <div key={idx} className={cn("h-1.5 rounded-full transition-all duration-300", selectedIndex === idx ? "w-6 bg-brand-orange" : "w-1.5 bg-white/30")} />
-                ))}
-              </div>
             </div>
 
             {/* Thumbnails (Desktop) */}
             {allImages.length > 1 && (
-              <div className="hidden md:grid grid-cols-5 gap-4">
+              <div className="hidden md:grid grid-cols-6 gap-3">
                 {allImages.map((img, idx) => (
                   <button
                     key={idx}

@@ -52,9 +52,9 @@ export function PermissionMatrix({ roles }: PermissionMatrixProps) {
                                     return (
                                         <TableCell key={roleId} className="text-center">
                                             {hasPerm ? (
-                                                <span className="text-green-600">✓</span>
+                                                <span className="text-emerald-600 font-bold">✓</span>
                                             ) : (
-                                                <span className="text-muted-foreground">—</span>
+                                                <span className="text-muted-foreground/30">—</span>
                                             )}
                                         </TableCell>
                                     )

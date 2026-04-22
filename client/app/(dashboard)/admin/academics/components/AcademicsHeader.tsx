@@ -1,14 +1,16 @@
-import { BookOpen, ClipboardList, Users } from "lucide-react";
+import { BookOpen, ClipboardList, Users, UserCheck } from "lucide-react";
 
 interface AcademicsHeaderProps {
   coursesCount: number;
   studentsCount: number;
+  teachersCount: number;
   assignmentsCount: number;
 }
 
 export function AcademicsHeader({
   coursesCount,
   studentsCount,
+  teachersCount,
   assignmentsCount,
 }: AcademicsHeaderProps) {
   const statCards = [
@@ -23,6 +25,12 @@ export function AcademicsHeader({
       value: studentsCount,
       icon: Users,
       accent: "from-emerald-500/20 to-teal-500/10 border-emerald-500/30",
+    },
+    {
+      label: "Teachers",
+      value: teachersCount,
+      icon: UserCheck,
+      accent: "from-purple-500/20 to-indigo-500/10 border-purple-500/30",
     },
     {
       label: "Assignments",
@@ -45,7 +53,7 @@ export function AcademicsHeader({
           <p className="text-sm text-muted-foreground">Manage courses, enrollments, and assignments from one workspace.</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {statCards.map((stat) => {
             const Icon = stat.icon;
             return (

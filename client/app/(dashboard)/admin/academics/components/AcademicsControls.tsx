@@ -1,7 +1,7 @@
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Plus, BookOpen, GraduationCap, ClipboardList } from "lucide-react";
+import { Search, Plus, BookOpen, GraduationCap, ClipboardList, Users } from "lucide-react";
 
 interface AcademicsControlsProps {
   tab: string;
@@ -17,6 +17,7 @@ export function AcademicsControls({ tab, search, onSearchChange, onAddClick, can
       <TabsList>
         <TabsTrigger value="courses"><BookOpen className="w-4 h-4 mr-1" /> Courses</TabsTrigger>
         <TabsTrigger value="students"><GraduationCap className="w-4 h-4 mr-1" /> Students</TabsTrigger>
+        <TabsTrigger value="teachers"><Users className="w-4 h-4 mr-1" /> Teachers</TabsTrigger>
         <TabsTrigger value="assignments"><ClipboardList className="w-4 h-4 mr-1" /> Assignments</TabsTrigger>
       </TabsList>
       <div className="flex gap-2">
@@ -30,7 +31,7 @@ export function AcademicsControls({ tab, search, onSearchChange, onAddClick, can
           />
         </div>
         <Button onClick={onAddClick} disabled={!canAdd}>
-          <Plus className="w-4 h-4 mr-1" /> Add {tab === "courses" ? "Course" : tab === "students" ? "Student" : "Assignment"}
+          <Plus className="w-4 h-4 mr-1" /> Add {tab === "courses" ? "Course" : tab === "students" ? "Student" : tab === "teachers" ? "Teacher" : "Assignment"}
         </Button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { api, courseApi, userApi, assignmentApi } from "@/services/api/client";
-import { Course, AdminAssignment, Student } from "../types";
+import { Course, AdminAssignment, Student, Teacher } from "../types";
 import { toast } from "sonner";
 import { useHasPermission } from "@/components/providers/permissions-provider";
 
@@ -17,20 +17,23 @@ export function useAcademics() {
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [assignments, setAssignments] = useState<AdminAssignment[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [coursesRes, studentsRes, assignmentsRes] = await Promise.all([
+      const [coursesRes, studentsRes, teachersRes, assignmentsRes] = await Promise.all([
         courseApi.getCourses(),
         userApi.getStudents(),
+        userApi.getTeachers(),
         assignmentApi.getAssignments(),
       ]);
 
       if (coursesRes.success) setCourses(coursesRes.data || []);
       if (studentsRes.success) setStudents(studentsRes.data || []);
+      if (teachersRes.success) setTeachers(teachersRes.data || []);
       if (assignmentsRes.success) setAssignments(assignmentsRes.data || []);
     } catch (error) {
       console.error("Failed to fetch academics data:", error);
@@ -52,6 +55,11 @@ export function useAcademics() {
 
     if (tab === "students") {
       router.push("/admin/students");
+      return;
+    }
+
+    if (tab === "teachers") {
+      // Handled by AcademicsPageClient state
       return;
     }
 
@@ -108,6 +116,7 @@ export function useAcademics() {
     deleting,
     courses,
     students,
+    teachers,
     assignments,
     loading,
     canCreateCourse,
@@ -118,5 +127,6 @@ export function useAcademics() {
     courseModalOpen,
     setCourseModalOpen,
     onCourseCreated: (course: Course) => setCourses((prev) => [course, ...prev]),
+    router,
   };
 }

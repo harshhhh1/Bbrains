@@ -78,14 +78,14 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
   return (
     <div className="flex h-full flex-col">
       {isSystemLocked && (
-          <div className="m-5 rounded bg-[#f59e0b]/10 p-3 text-sm text-[#f59e0b] border border-[#f59e0b]/20">
+          <div className="m-5 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-600 border border-amber-500/20">
             This is a system role. Its name and color are protected, but you can still manage its permissions and members.
           </div>
         )}
       <div className="p-6 pt-1 space-y-6 flex-1">
         {/* Name */}
         <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-[#dbdee1]">
+          <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Role Name
           </label>
           <input
@@ -93,13 +93,13 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={isSuperAdmin || isSystemLocked}
-            className="w-full rounded bg-[#1e1f22] p-2.5 text-sm text-[#dbdee1] outline-none focus:ring-2 focus:ring-[#5865f2] disabled:opacity-50"
+            className="w-full rounded-lg bg-muted/50 p-2.5 text-sm text-foreground outline-none border border-transparent focus:border-primary/20 transition-colors disabled:opacity-50"
           />
         </div>
 
         {/* Color */}
         <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-[#dbdee1]">
+          <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             Role Color
           </label>
           <div className="flex items-center gap-4">
@@ -108,14 +108,14 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
               value={color}
               onChange={(e) => setColor(e.target.value)}
               disabled={isSuperAdmin || isSystemLocked}
-              className="h-10 w-20 cursor-pointer rounded bg-[#1e1f22] p-1 disabled:opacity-50"
+              className="h-10 w-20 cursor-pointer rounded-lg bg-muted/50 p-1 border-none disabled:opacity-50"
             />
-            <div className="text-sm text-[#949ba4] font-mono">{color}</div>
+            <div className="text-sm text-muted-foreground font-mono">{color}</div>
           </div>
         </div>
 
         {isSuperAdmin && (
-          <div className="rounded bg-[#f23f42]/10 p-3 text-sm text-[#f23f42] border border-[#f23f42]/20">
+          <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20">
             You cannot edit the display properties of the SuperAdmin role.
           </div>
         )}
@@ -123,40 +123,40 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
         
 
         {canDeleteRole && (
-          <div className="border-t border-black/20 pt-6">
-            <div className="rounded-lg border border-[#f23f42]/20 bg-[#f23f42]/5 p-4">
+          <div className="border-t border-border/60 pt-6">
+            <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4">
               <div className="flex items-start gap-3">
-                <AlertTriangle className="size-5 text-[#f23f42] shrink-0 mt-0.5" />
+                <AlertTriangle className="size-5 text-destructive shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <h3 className="text-sm font-semibold text-[#f23f42]">Danger Zone</h3>
-                  <p className="mt-1 text-xs text-[#949ba4]">
+                  <h3 className="text-sm font-bold text-destructive uppercase tracking-tight">Danger Zone</h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Once you delete this role, it cannot be recovered. Users with this role will lose it.
                   </p>
                   {!showDeleteConfirm ? (
                     <button
                       onClick={() => setShowDeleteConfirm(true)}
-                      className="mt-3 inline-flex items-center gap-2 rounded bg-[#f23f42] px-4 py-2 text-sm font-medium text-white hover:bg-[#d32f33] transition-colors"
+                      className="mt-4 inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-destructive/90 transition-colors"
                     >
-                      <Trash2 className="size-4" />
+                      <Trash2 className="size-3.5" />
                       Delete Role
                     </button>
                   ) : (
-                    <div className="mt-3 space-y-3">
-                      <div className="rounded bg-[#1e1f22] p-3 text-xs text-[#dbdee1]">
+                    <div className="mt-4 space-y-3">
+                      <div className="rounded-lg bg-background p-3 text-xs text-foreground border border-border/60">
                         Are you sure you want to delete <strong>{role.name}</strong>? This action is permanent.
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setShowDeleteConfirm(false)}
                           disabled={isDeleting}
-                          className="px-4 py-2 text-sm font-medium text-[#949ba4] hover:text-[#dbdee1] transition-colors disabled:opacity-50"
+                          className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleDelete}
                           disabled={isDeleting}
-                          className="rounded bg-[#f23f42] px-4 py-2 text-sm font-medium text-white hover:bg-[#d32f33] transition-colors disabled:opacity-50"
+                          className="rounded-lg bg-destructive px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-destructive/90 transition-colors disabled:opacity-50"
                         >
                           {isDeleting ? "Deleting..." : "Confirm Delete"}
                         </button>
@@ -172,20 +172,20 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
 
       {/* Unsaved Changes Bar */}
       {hasChanges && !isSuperAdmin && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl animate-in slide-in-from-bottom-5 rounded-lg bg-[#111214] p-3 shadow-lg flex items-center justify-between">
-          <p className="text-sm text-white font-medium pl-2">Careful — you have unsaved changes!</p>
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl animate-in slide-in-from-bottom-5 rounded-2xl bg-card p-4 shadow-2xl border border-border/60 flex items-center justify-between z-50">
+          <p className="text-sm text-foreground font-semibold pl-2">Careful — you have unsaved changes!</p>
           <div className="flex gap-2">
             <button
               onClick={handleReset}
               disabled={isSaving}
-              className="px-4 py-2 text-sm font-medium text-white hover:underline disabled:opacity-50"
+              className="px-4 py-2 text-sm font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
             >
               Reset
             </button>
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="rounded bg-[#248046] px-4 py-2 text-sm font-medium text-white hover:bg-[#1a6334] transition-colors disabled:opacity-50"
+              className="rounded-xl bg-primary px-6 py-2 text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
             >
               {isSaving ? "Saving..." : "Save Changes"}
             </button>

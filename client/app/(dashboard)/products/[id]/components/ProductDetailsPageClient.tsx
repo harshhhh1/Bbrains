@@ -59,8 +59,9 @@ export default function ProductDetailPage() {
           setProduct(data);
           const imgs: string[] = [];
           if (data.image) imgs.push(data.image);
+          if (data.images && Array.isArray(data.images)) imgs.push(...data.images);
           if (data.metadata?.previewImages) imgs.push(...data.metadata.previewImages);
-        setImages([...new Set(imgs)]);
+          setImages([...new Set(imgs)]);
       } else {
         toast.error("Product not found");
         router.push("/products");

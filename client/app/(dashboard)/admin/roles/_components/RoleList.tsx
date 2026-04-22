@@ -64,12 +64,12 @@ function SortableRoleItem({
     <div ref={setNodeRef} style={style} className="group">
       <button
         onClick={onSelect}
-        className={`flex w-full items-center justify-between rounded p-2 text-left transition-colors ${
+        className={`flex w-full items-center justify-between rounded-lg p-2 text-left transition-colors ${
           isSelected
-            ? "bg-[#404249] text-white"
+            ? "bg-muted/80 text-foreground"
             : isLocked
-            ? "text-[#6d6f78] cursor-default opacity-70"
-            : "text-[#949ba4] hover:bg-[#35373c] hover:text-[#dbdee1]"
+            ? "text-muted-foreground/50 cursor-default opacity-70"
+            : "text-muted-foreground hover:bg-muted hover:text-foreground"
         }`}
       >
         <div className="flex items-center gap-2 truncate">
@@ -79,26 +79,26 @@ function SortableRoleItem({
               {...listeners}
               className="cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <GripVertical className="size-3.5 text-[#6d6f78]" />
+              <GripVertical className="size-3.5 text-muted-foreground/60" />
             </div>
           )}
           {isLocked && (
             <div className="w-5 flex items-center justify-center">
-              <Lock className="size-3 text-[#6d6f78]" />
+              <Lock className="size-3 text-muted-foreground/60" />
             </div>
           )}
           <div
             className="flex size-3 shrink-0 items-center justify-center rounded-full"
             style={{ backgroundColor: role.color || "#99aab5" }}
           >
-            {isSuperAdminRole && <Shield className="size-2 text-[#2b2d31]" />}
+            {isSuperAdminRole && <Shield className="size-2 text-background" />}
           </div>
           <span className="truncate text-sm font-medium">{role.name}</span>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
           {role.isDefault && (
-            <span className="rounded bg-[#5865f2]/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-[#5865f2]">
+            <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase text-primary">
               Default
             </span>
           )}
@@ -220,14 +220,14 @@ export default function RoleList({
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-black/20">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-[#949ba4]">
+      <div className="flex items-center justify-between p-4 border-b border-border/60">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
           Roles
         </h2>
         <button
           onClick={handleCreateRole}
           disabled={isCreating}
-          className="text-[#949ba4] hover:text-[#dbdee1] transition-colors"
+          className="text-muted-foreground hover:text-foreground transition-colors"
           title="Create Role"
         >
           <Plus className="size-4" />
@@ -242,9 +242,9 @@ export default function RoleList({
             placeholder="Search roles"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded bg-[#1e1f22] py-1.5 pl-8 pr-3 text-sm text-[#dbdee1] placeholder-[#949ba4] outline-none"
+            className="w-full rounded-lg bg-muted/50 py-1.5 pl-8 pr-3 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-transparent focus:border-primary/20 transition-colors"
           />
-          <Search className="absolute left-2.5 top-2 size-4 text-[#949ba4]" />
+          <Search className="absolute left-2.5 top-2 size-4 text-muted-foreground/60" />
         </div>
       </div>
 
