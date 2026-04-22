@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Trash2, Shield } from "lucide-react";
+import { Pencil, Trash2, Shield, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -21,9 +21,10 @@ interface UsersTableProps {
   onEdit?: (user: ApiUser) => void;
   onDelete: (userId: string) => void;
   onManageRoles: (user: ApiUser) => void;
+  onView?: (user: ApiUser) => void;
 }
 
-export function UsersTable({ users, loading, onEdit, onDelete, onManageRoles }: UsersTableProps) {
+export function UsersTable({ users, loading, onEdit, onDelete, onManageRoles, onView }: UsersTableProps) {
   return (
     <Card>
       <CardContent className="p-0">
@@ -60,7 +61,7 @@ export function UsersTable({ users, loading, onEdit, onDelete, onManageRoles }: 
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Avatar className="w-8 h-8">
-                            <AvatarFallback name={user.username} className="bg-primary/10 text-primary text-xs">
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
                               {firstName.charAt(0) || user.username.charAt(0)}
                               {lastName.charAt(0)}
                             </AvatarFallback>
@@ -102,6 +103,17 @@ export function UsersTable({ users, loading, onEdit, onDelete, onManageRoles }: 
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
+                          {onView && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              onClick={() => onView(user)}
+                              title="View Details & Finances"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"

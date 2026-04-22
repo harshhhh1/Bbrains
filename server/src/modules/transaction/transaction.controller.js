@@ -1,6 +1,7 @@
 import { z } from 'zod';
+import prisma from '../../utils/prisma.js';
 import { createAuditLog } from '../../utils/auditLog.js';
-import { createManualTransactionRecord, getRecordedTransactionsForActor, getTransactions, getTransactionById, getUserTransactions } from './transaction.service.js';
+import { createManualTransactionRecord, getRecordedTransactionsForActor, getTransactions, getTransactionById, getUserTransactions, getStudentDues } from './transaction.service.js';
 import { sendSuccess, sendPaginated, sendError } from '../../utils/response.js';
 
 const manualTransactionSchema = z.object({
@@ -155,3 +156,62 @@ export const getUserTransactionsList = async (req, res) => {
         return sendError(res, 'Failed to fetch transactions', 500);
     }
 };
+
+// GET /transactions/dues or /transactions/user/:userId/dues
+export const getDues = async (req, res) => {
+    try {
+        const userId = req.params.userId || req.user.id;
+        
+        // If an admin/manager is requesting for another user, verify college boundary
+        if (req.params.userId && req.params.userId !== req.user.id) {
+            const targetUser = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { collegeId: true }
+            });
+            if (!targetUser || targetUser.collegeId !== req.user.collegeId) {
+                return sendError(res, 'User not found or inaccessible', 404);
+            }
+        }
+
+        const duesData = await getStudentDues(userId);
+        return sendSuccess(res, duesData);
+    } catch (error) {
+        console.error(error);
+        return sendError(res, 'Failed to fetch dues', 500);
+    }
+};
+
+// POST /transactions/pay-fee
+export const payFee = async (req, res) => {
+    try {
+        // Students can pay their own fee
+        const { amount, paymentMode, referenceId, note } = req.body;
+        
+        if (!amount || amount <= 0) {
+            return sendError(res, 'Invalid amount', 400);
+        }
+
+        const payload = {
+            category: 'fee',
+            targetUserId: req.user.id,
+            amount: Number(amount),
+            paymentMode: paymentMode || 'other',
+            referenceId: referenceId || '',
+            note: note || 'Self-initiated fee payment',
+            paymentDate: new Date().toISOString()
+        };
+
+        // Reuse the record logic - it will create a credit for institution and debit for student
+        const transaction = await createManualTransactionRecord(req.user, payload);
+
+        await createAuditLog(req.user.id, 'FINANCE', 'CREATE', 'TransactionHistory', String(transaction?.id || ''), {
+            after: payload
+        }, `Self-recorded fee payment`);
+
+        return sendSuccess(res, transaction, 'Fee payment recorded successfully', 201);
+    } catch (error) {
+        console.error(error);
+        return sendError(res, error?.message || 'Failed to record fee payment', 400);
+    }
+};
+

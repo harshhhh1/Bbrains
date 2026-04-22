@@ -69,7 +69,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "Cookie"]
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-Impersonate-College-Id"]
 }));
 
 // Global Middleware

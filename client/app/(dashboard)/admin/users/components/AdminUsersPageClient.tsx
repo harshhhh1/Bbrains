@@ -13,6 +13,7 @@ import { StatsCards } from "../_components/StatsCards";
 import { UserFilters } from "../_components/UserFilters";
 import { UsersTable } from "../_components/UsersTable";
 import { UserRolesDialog } from "../_components/UserRolesDialog";
+import { UserDetailsDrawer } from "../_components/UserDetailsDrawer";
 import { DeleteConfirmationDialog } from "../_components/DeleteConfirmationDialog";
 import { ManagerForm } from "../_components/ManagerForm";
 import { emptyManagerForm, hasManagerRole, type ManagerForm as ManagerFormType } from "../_types";
@@ -25,6 +26,8 @@ export default function ManageUsersPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [showDialog, setShowDialog] = useState(false);
+  const [showDetailsDrawer, setShowDetailsDrawer] = useState(false);
+  const [selectedUserDetails, setSelectedUserDetails] = useState<ApiUser | null>(null);
   const [form, setForm] = useState<ManagerFormType>(emptyManagerForm);
   const [submitting, setSubmitting] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -333,10 +336,19 @@ export default function ManageUsersPage() {
         loading={loading}
         onDelete={setDeleteId}
         onManageRoles={setRoleDialogUser}
+        onView={(user) => {
+          setSelectedUserDetails(user);
+          setShowDetailsDrawer(true);
+        }}
       />
 
       {mounted && (
         <>
+          <UserDetailsDrawer
+            open={showDetailsDrawer}
+            onOpenChange={setShowDetailsDrawer}
+            user={selectedUserDetails}
+          />
           <CrudDrawer
             open={showDialog}
             onClose={() => !submitting && setShowDialog(false)}

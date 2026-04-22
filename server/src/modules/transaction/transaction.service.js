@@ -410,3 +410,58 @@ export const createManualTransactionRecord = async (actor, payload) => {
         return hydrated || null;
     });
 };
+
+export const getStudentDues = async (userId) => {
+    // 1. Get student's enrollments and their course fees
+    const enrollments = await prisma.enrollment.findMany({
+        where: { userId },
+        include: {
+            course: {
+                select: {
+                    id: true,
+                    name: true,
+                    feePerStudent: true,
+                }
+            }
+        }
+    });
+
+    if (!enrollments.length) {
+        return {
+            totalCourseFee: 0,
+            paidAmount: 0,
+            dues: 0,
+            courses: []
+        };
+    }
+
+    const totalCourseFee = enrollments.reduce((sum, e) => sum + Number(e.course.feePerStudent || 0), 0);
+
+    // 2. Get total paid fees (successful 'fee' category debit transactions for the user)
+    const paidTransactions = await prisma.transactionHistory.aggregate({
+        where: {
+            userId,
+            category: 'fee',
+            type: 'debit',
+            status: 'success',
+        },
+        _sum: {
+            amount: true
+        }
+    });
+
+    const paidAmount = Number(paidTransactions._sum.amount || 0);
+    const dues = Math.max(0, totalCourseFee - paidAmount);
+
+    return {
+        totalCourseFee,
+        paidAmount,
+        dues,
+        courses: enrollments.map(e => ({
+            id: e.course.id,
+            name: e.course.name,
+            fee: Number(e.course.feePerStudent || 0)
+        }))
+    };
+};
+

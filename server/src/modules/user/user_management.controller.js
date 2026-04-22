@@ -216,6 +216,25 @@ export const getMe = async (req, res) => {
     try {
         const userData = await getUserDetailsByID(req.user.id);
         if (!userData) return sendError(res, 'User not found', 404);
+
+        // Handle impersonation overrides
+        if (req.user.isImpersonating) {
+            const college = await prisma.college.findUnique({
+                where: { id: req.user.collegeId },
+                select: { id: true, name: true, regNo: true }
+            });
+            if (college) {
+                userData.collegeId = college.id;
+                userData.college = college;
+                userData.type = 'admin';
+                userData.isImpersonating = true;
+                userData.originalType = req.user.originalType;
+                // Add admin role to roles array for frontend sidebar logic
+                if (!userData.roles) userData.roles = [];
+                userData.roles = [{ role: { name: 'admin' } }];
+            }
+        }
+
         return sendSuccess(res, userData);
     } catch (error) {
         console.error('getMe error:', error);

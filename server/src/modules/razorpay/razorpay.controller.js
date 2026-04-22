@@ -1,4 +1,4 @@
-import { createOrder, verifyPayment, recordFeePayment } from './razorpay.service.js';
+import { createOrder, verifyPayment, recordFeePayment, recordPaymentFailure } from './razorpay.service.js';
 import { sendSuccess, sendError } from '../../utils/response.js';
 import { z } from 'zod';
 
@@ -154,5 +154,32 @@ export const handleWebhook = async (req, res) => {
   } catch (error) {
     console.error('Error handling Razorpay webhook:', error);
     return sendError(res, 'Webhook processing failed', 500);
+  }
+};
+
+/**
+ * POST /api/razorpay/record-failure
+ * Record a failed payment attempt
+ */
+export const logPaymentFailure = async (req, res) => {
+  try {
+    const { amount, studentId, errorDescription, errorCode, paymentId } = req.body;
+    
+    if (!amount) {
+      return sendError(res, 'Amount is required', 400);
+    }
+    
+    const transaction = await recordPaymentFailure(req.user, {
+      amount,
+      studentId: studentId || req.user.id,
+      errorDescription,
+      errorCode,
+      paymentId
+    });
+    
+    return sendSuccess(res, transaction, 'Failure recorded successfully');
+  } catch (error) {
+    console.error('Error recording payment failure:', error);
+    return sendError(res, 'Failed to record failure', 500);
   }
 };

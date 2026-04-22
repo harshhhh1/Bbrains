@@ -2,15 +2,18 @@
 
 import { DataTable } from "@/features/admin/components/DataTable"
 import { fullName, fmtCurrency, type ApiUser } from "../_types"
+import { Button } from "@/components/ui/button"
+import { Eye } from "lucide-react"
 
 interface StudentsTableProps {
     loading: boolean
     data: ApiUser[]
     onEdit?: (student: ApiUser) => void
     onDelete?: (student: ApiUser) => void
+    onView?: (student: ApiUser) => void
 }
 
-export function StudentsTable({ loading, data, onEdit, onDelete }: StudentsTableProps) {
+export function StudentsTable({ loading, data, onEdit, onDelete, onView }: StudentsTableProps) {
     const columns = [
         { key: "username", label: "Username" },
         { key: "email", label: "Email" },
@@ -50,6 +53,11 @@ export function StudentsTable({ loading, data, onEdit, onDelete }: StudentsTable
             columns={columns}
             onEdit={onEdit}
             onDelete={onDelete}
+            extraActions={(r) => onView && (
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => onView(r)}>
+                    <Eye className="size-3.5" />
+                </Button>
+            )}
         />
     )
 }

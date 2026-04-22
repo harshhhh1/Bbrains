@@ -18,6 +18,7 @@ import {
   Trash2,
   Link,
   AtSign,
+  User,
 } from "lucide-react";
 import { ChatImagePreview } from "@/components/chat-image-preview";
 import type { Message } from "@/features/chat/data";
@@ -71,21 +72,42 @@ export function ChatMessageItem({
   const isOwn = msg.user.id === currentUserId;
 
   const renderContent = (content: string, mentions?: string[]) => {
-    if (!mentions || mentions.length === 0) return content;
-    let result = content;
-    mentions.forEach((m) => {
-      result = result.replace(`@${m}`, `%%MENTION_${m}%%`);
+    // Regex for URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    
+    // First, process mentions to protect them from URL regex if they contain dots (unlikely but safe)
+    let processed = content;
+    const protectedMentions: Record<string, string> = {};
+    
+    mentions?.forEach((m, i) => {
+      const placeholder = `%%MENTION_VAR_${i}%%`;
+      protectedMentions[placeholder] = m;
+      processed = processed.replace(new RegExp(`@${m}`, 'g'), placeholder);
     });
-    const parts = result.split(/(%%MENTION_\w+%%)/);
+
+    // Split by URLs and Mentions
+    const parts = processed.split(/(https?:\/\/[^\s]+|%%MENTION_VAR_\d+%%)/g);
+
     return parts.map((part, i) => {
-      const match = part.match(/%%MENTION_(\w+)%%/);
-      if (match) {
+      // Check for Mention
+      if (part.startsWith('%%MENTION_VAR_')) {
+        const username = protectedMentions[part];
         return (
-          <span key={i} className="bg-primary/20 text-primary rounded px-1 font-medium">
-            @{match[1]}
+          <span key={i} className="bg-primary/20 text-primary rounded px-1 font-medium cursor-pointer hover:bg-primary/30" onClick={() => onMention(username)}>
+            @{username}
           </span>
         );
       }
+      
+      // Check for URL
+      if (urlRegex.test(part)) {
+        return (
+          <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">
+            {part}
+          </a>
+        );
+      }
+      
       return part;
     });
   };
@@ -95,12 +117,11 @@ export function ChatMessageItem({
       <ContextMenuTrigger>
         <div
           id={`msg-${msg.id}`}
-          className={`group flex items-start gap-3 px-3 py-1.5 rounded-md transition-all relative animate-in fade-in slide-in-from-bottom-4 duration-300 ${
-            isMentioned ? "bg-primary/5 border-l-2 border-primary" : 
-            isReplyToMe ? "bg-accent/5 border-l-2 border-accent" :
-            isHighlighted ? "bg-primary/10 ring-1 ring-primary/50" :
-            "hover:bg-muted/50"
-          }`}
+          className={`group flex items-start gap-3 px-3 py-1.5 rounded-md transition-all relative animate-in fade-in slide-in-from-bottom-4 duration-300 ${isMentioned ? "bg-primary/5 border-l-2 border-primary" :
+              isReplyToMe ? "bg-accent/5 border-l-2 border-accent" :
+                isHighlighted ? "bg-primary/10 ring-1 ring-primary/50" :
+                  "hover:bg-muted/50"
+            }`}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
         >
@@ -139,23 +160,23 @@ export function ChatMessageItem({
             ) : (
               <>
                 {msg.replyTo && typeof msg.replyTo !== 'string' && (
-                    <p className="mb-1 text-xs text-muted-foreground border-l-2 border-primary pl-2 italic">
-                      Replying to @{msg.replyTo.username || 'user'}: {msg.replyTo.content.slice(0,30)}{msg.replyTo.content.length > 30 ? '...' : ''}
-                    </p>
+                  <p className="mb-1 text-xs text-muted-foreground border-l-2 border-primary pl-2 italic">
+                    Replying to @{msg.replyTo.username || 'user'}: {msg.replyTo.content.slice(0, 30)}{msg.replyTo.content.length > 30 ? '...' : ''}
+                  </p>
                 )}
                 <p className="text-sm text-foreground/90 wrap-break-word">{renderContent(msg.content, msg.mentions)}</p>
               </>
             )}
             {msg.attachments && msg.attachments.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {msg.attachments.map((att, idx) => (
-                    <ChatImagePreview
-                      key={`${msg.id}-att-${idx}`}
-                      attachment={att}
-                      className="max-w-[200px]"
-                    />
-                  ))}
-                </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {msg.attachments.map((att, idx) => (
+                  <ChatImagePreview
+                    key={`${msg.id}-att-${idx}`}
+                    attachment={att}
+                    className="max-w-[200px]"
+                  />
+                ))}
+              </div>
             )}
           </div>
 
@@ -203,6 +224,10 @@ export function ChatMessageItem({
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent className="w-56">
+        <ContextMenuItem onClick={() => onProfileOpen(msg)}>
+          <User className="w-4 h-4 mr-2" />
+          View Profile
+        </ContextMenuItem>
         <ContextMenuItem onClick={() => onReply({ id: msg.id, username: msg.user.username, content: msg.content })}>
           <Reply className="w-4 h-4 mr-2" />
           Reply
@@ -223,8 +248,8 @@ export function ChatMessageItem({
         {isOwn && (
           <>
             <ContextMenuSeparator />
-            <ContextMenuItem 
-              variant="destructive" 
+            <ContextMenuItem
+              variant="destructive"
               onClick={() => onDelete(msg.id)}
             >
               <Trash2 className="w-4 h-4 mr-2" />

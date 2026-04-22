@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Loader2, ArrowLeft, Building2, Mail, Hash, MapPin, User, Edit, Pause, Play, Trash2 } from "lucide-react";
+import { Loader2, ArrowLeft, Building2, Mail, Hash, MapPin, User, Edit, Pause, Play, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { api } from "@/services/api/client";
@@ -93,6 +93,13 @@ export default function CollegeDetailPage() {
     }
   };
 
+  const handleViewAsAdmin = () => {
+    document.cookie = `impersonateCollegeId=${college.id}; path=/; max-age=86400; SameSite=Lax`;
+    toast.success(`Switching context to ${college.name}`);
+    router.push("/dashboard");
+    router.refresh();
+  };
+
   if (loading) {
     return (
       <div className="flex h-[50vh] items-center justify-center">
@@ -127,6 +134,11 @@ export default function CollegeDetailPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <Button variant="default" onClick={handleViewAsAdmin} className="bg-emerald-600 hover:bg-emerald-700">
+            <Eye className="mr-2 size-4" />
+            View College
+          </Button>
+
           <Button variant="outline" onClick={() => setIsEditModalOpen(true)}>
             <Edit className="mr-2 size-4" />
             Edit Profile

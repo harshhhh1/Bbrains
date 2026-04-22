@@ -139,9 +139,9 @@ export const usePermissionsContext = () => useContext(PermissionsContext);
 export function useHasPermission(key: string): boolean {
   const { hasPermission, isLoading } = usePermissionsContext();
   
-  // While loading, we don't know yet - return true to avoid blocking UI
+  // While loading, we don't know yet - return false to avoid unauthorized calls
   // The actual check will happen once permissions are loaded
-  if (isLoading) return true;
+  if (isLoading) return false;
   
   return hasPermission(key);
 }

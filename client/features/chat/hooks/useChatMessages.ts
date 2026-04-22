@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { supabase } from '@/services/supabase/client'
+import { getSocket } from '@/lib/socket'
 import {
     chatApi,
     dashboardApi,
@@ -327,31 +327,22 @@ export function useChatMessages() {
         }
 
         try {
-            // Register the optimistic message itself in the lookup map (so it can be a reply target)
+            // Register the optimistic message itself in the lookup map
             registerForReplyLookup(optimisticMessage)
             setMessages((prev) => upsertMessage(prev, optimisticMessage))
 
-            const response = await chatApi.sendMessage(content, attachments, mentions, replyToId, mentionedUserIds)
-            if (!response.success || !response.data) {
-                throw new Error(response.message || response.error || 'Failed to send message')
-            }
+            const socket = await getSocket();
+            socket.emit("chat:send", {
+                content,
+                attachments,
+                mentions,
+                replyToMessageId: replyToId,
+                mentionedUserIds
+            });
 
-            let confirmedMessage = formatMessage(response.data)
-            // Register confirmed message in the lookup map
-            registerForReplyLookup(confirmedMessage)
-            
-            // Hydrate reply details using the lookup map or optimistic data
-            confirmedMessage = hydrateReplyFromMap(confirmedMessage)
-            if (replyToId && optimisticMessage.replyTo && !confirmedMessage.replyTo?.username) {
-                confirmedMessage = { ...confirmedMessage, replyTo: optimisticMessage.replyTo }
-            }
-            
-            setMessages((prev) => {
-                const withoutOptimistic = removeMessage(prev, optimisticId)
-                return upsertMessage(withoutOptimistic, confirmedMessage)
-            })
-
-            return response
+            // Note: We don't wait for response here as we'll get it via chat:new
+            // But we keep the function async for compatibility
+            return { success: true };
         } catch (error) {
             setMessages((prev) => removeMessage(prev, optimisticId))
             console.error('Failed to send message:', error)
@@ -361,11 +352,9 @@ export function useChatMessages() {
 
     const deleteMessage = async (messageId: string) => {
         try {
-            const response = await chatApi.deleteMessage(messageId)
-            if (response.success) {
-                setMessages((prev) => prev.filter((message) => message.id !== messageId))
-            }
-            return response
+            const socket = await getSocket();
+            socket.emit("chat:delete", { messageId });
+            return { success: true };
         } catch (error) {
             console.error('Failed to delete message:', error)
             throw error
@@ -379,12 +368,9 @@ export function useChatMessages() {
         mentionedUserIds: string[] = []
     ) => {
         try {
-            const response = await chatApi.editMessage(messageId, content, mentions, mentionedUserIds)
-            if (response.success && response.data) {
-                const updated = formatMessage(response.data)
-                setMessages((prev) => upsertMessage(prev, updated))
-            }
-            return response
+            const socket = await getSocket();
+            socket.emit("chat:edit", { messageId, content, mentions, mentionedUserIds });
+            return { success: true };
         } catch (error) {
             console.error('Failed to edit message:', error)
             throw error
@@ -396,88 +382,66 @@ export function useChatMessages() {
     }, [fetchMessages])
 
     useEffect(() => {
-        if (!chatRoomId) return
+        if (!chatRoomId || !currentUserId) return
 
-        const channel = supabase
-            .channel(`chat_room_${chatRoomId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*',
-                    schema: 'public',
-                    table: 'chat_messages',
-                    filter: `chat_id=eq.${chatRoomId}`
-                },
-                (payload: { eventType: 'INSERT' | 'UPDATE' | 'DELETE'; new: ChatRealtimeMessage; old: { id: string } }) => {
-                    if (payload.eventType === 'INSERT') {
-                        setMessages((prev) => {
-                            const raw = payload.new
-                            let hydrated = { ...raw }
-                            
-                            if (raw.reply_to && !hydrated.replyToDetails) {
-                                // Use always-fresh ref map (no stale closure issue)
-                                const parentId = String(raw.reply_to)
-                                const meta = replyMetaMapRef.current.get(parentId)
-                                if (meta) {
-                                    hydrated.replyToDetails = {
-                                        username: meta.username,
-                                        displayName: meta.name,
-                                        avatar: meta.avatar,
-                                        content: meta.content
-                                    }
-                                }
-                            }
+        let socketInstance: any = null
 
-                            let inserted = formatMessage(hydrated)
-                            // Register this new message in the map too
-                            registerForReplyLookup(inserted)
+        const initSocket = async () => {
+            const socket = await getSocket()
+            socketInstance = socket
 
-                            const optimisticMatch = prev.find(
-                                (message) =>
-                                    message.optimistic &&
-                                    message.content === inserted.content &&
-                                    JSON.stringify(message.attachments || []) === JSON.stringify(inserted.attachments || [])
-                            )
+            socket.emit('chat:join', { userId: currentUserId, chatId: chatRoomId })
 
-                            // If optimistic had better reply info, preserve it
-                            if (optimisticMatch?.replyTo?.username && !inserted.replyTo?.username) {
-                                inserted = { ...inserted, replyTo: optimisticMatch.replyTo }
-                            }
+            socket.on('chat:new', (msg: ChatRealtimeMessage) => {
+                setMessages((prev) => {
+                    let inserted = formatMessage(msg)
+                    registerForReplyLookup(inserted)
 
-                            const nextState = optimisticMatch 
-                                ? removeMessage(prev, optimisticMatch.id)
-                                : prev;
-                                
-                            const finalState = upsertMessage(nextState, inserted)
-                            setTimeout(() => setLastIncomingMessage(inserted), 0);
-                            return finalState;
-                        })
-                    } else if (payload.eventType === 'UPDATE') {
-                        setMessages((prev) => {
-                            // Preserve existing replyTo from state — UPDATE payload never includes replyToDetails
-                            const existing = prev.find(m => m.id === payload.new.id)
-                            const updated = formatMessage(payload.new)
-                            if (existing?.replyTo && !updated.replyTo?.username) {
-                                updated.replyTo = existing.replyTo
-                            } else {
-                                const h = hydrateReplyFromMap(updated)
-                                return upsertMessage(prev, h)
-                            }
-                            return upsertMessage(prev, updated)
-                        })
-                    } else if (payload.eventType === 'DELETE') {
-                        setMessages((prev) => prev.filter((message) => message.id !== payload.old.id))
-                    }
-                }
-            )
-            .subscribe((status: string) => {
-                setIsConnected(status === 'SUBSCRIBED')
+                    const optimisticMatch = prev.find(
+                        (m) =>
+                            m.optimistic &&
+                            m.content === inserted.content &&
+                            JSON.stringify(m.attachments || []) === JSON.stringify(inserted.attachments || [])
+                    )
+
+                    const nextState = optimisticMatch 
+                        ? removeMessage(prev, optimisticMatch.id)
+                        : prev;
+                        
+                    const finalState = upsertMessage(nextState, inserted)
+                    setTimeout(() => setLastIncomingMessage(inserted), 0);
+                    return finalState;
+                })
             })
 
-        return () => {
-            supabase.removeChannel(channel)
+            socket.on('chat:edited', (msg: ChatRealtimeMessage) => {
+                setMessages((prev) => {
+                    const updated = formatMessage(msg)
+                    return upsertMessage(prev, updated)
+                })
+            })
+
+            socket.on('chat:deleted', (payload: { messageId: string }) => {
+                setMessages((prev) => removeMessage(prev, payload.messageId))
+            })
+
+            socket.on('connect', () => setIsConnected(true))
+            socket.on('disconnect', () => setIsConnected(false))
+            setIsConnected(socket.connected)
         }
-    }, [chatRoomId])
+
+        void initSocket()
+
+        return () => {
+            if (socketInstance) {
+                socketInstance.off('chat:new')
+                socketInstance.off('chat:edited')
+                socketInstance.off('chat:deleted')
+                socketInstance.off('connect')
+                socketInstance.off('disconnect')
+            }
+        }
+    }, [chatRoomId, currentUserId])
 
     return {
         messages,

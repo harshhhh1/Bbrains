@@ -5,12 +5,14 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "@/context/theme"
+import { Button } from "@/components/ui/button"
 import {
     
     CalendarDays,
     LogOut,
     User,
     Coins,
+    ChevronLeft,
 } from "lucide-react"
 import { getBaseUrl, setAuthToken } from "@/services/api/client"
 import { NotificationsBell } from "@/components/shell/NotificationsBell"
@@ -35,6 +37,7 @@ type NavbarUser = {
     type?: string
     collegeName?: string
     coins?: number
+    isImpersonating?: boolean
 }
 
 function toTitleCase(value: string) {
@@ -105,6 +108,12 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
         router.refresh()
     }
 
+    const handleStopImpersonating = () => {
+        document.cookie = "impersonateCollegeId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        router.push("/colleges");
+        router.refresh();
+    };
+
     return (
         <nav className="sticky top-0 z-(--z-nav) border-b border-border/60 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/65">
             <div className="mx-auto flex h-19 items-center gap-3 px-4 md:px-6">
@@ -146,6 +155,17 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                 </div>
 
                 <div className="flex items-center justify-end gap-2 md:gap-3">
+                    {user?.isImpersonating && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleStopImpersonating}
+                            className="hidden h-9 items-center gap-2 border-emerald-500/30 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 hover:text-emerald-700 lg:flex"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                            Back to Colleges
+                        </Button>
+                    )}
                     <div className="hidden items-center gap-2 rounded-2xl border border-border/70 bg-card/70 p-1 shadow-sm sm:flex">
                         <div className="rounded-xl bg-background/80">
                             <ThemeSwitcher />

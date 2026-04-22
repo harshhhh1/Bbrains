@@ -87,3 +87,29 @@ export const recordFeePayment = async (user, paymentData, feeDetails) => {
     return transaction;
   });
 };
+
+/**
+ * Record a failed Razorpay payment attempt
+ * @param {Object} user - User attempting the payment
+ * @param {Object} failureData - Failure details
+ * @returns {Promise<Object>} Created (failed) transaction record
+ */
+export const recordPaymentFailure = async (user, failureData) => {
+  return await prisma.transactionHistory.create({
+    data: {
+      userId: user.id,
+      recordedById: user.id,
+      relatedUserId: failureData.studentId || user.id,
+      entryGroupId: crypto.randomUUID(),
+      transactionDate: new Date(),
+      amount: Number(failureData.amount),
+      type: 'debit',
+      category: 'fee',
+      status: 'failed',
+      paymentMode: 'card',
+      referenceId: failureData.paymentId || null,
+      primaryRecord: true,
+      note: `FAILED Razorpay payment attempt - Error: ${failureData.errorDescription || 'Unknown'}${failureData.errorCode ? ` (${failureData.errorCode})` : ''}`,
+    },
+  });
+};

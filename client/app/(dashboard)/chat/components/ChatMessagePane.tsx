@@ -242,6 +242,7 @@ export function ChatMessagePane({
         mentionQuery={mentionQuery}
         mentionIndex={mentionIndex}
         setMentionIndex={setMentionIndex}
+        isMounted={isMounted}
       />
 
       <AlertDialog open={!!msgToDelete} onOpenChange={(open) => !open && setMsgToDelete(null)}>

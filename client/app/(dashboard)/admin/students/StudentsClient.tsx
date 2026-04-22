@@ -9,6 +9,7 @@ import { ConfirmDialog } from "@/features/admin/components/ConfirmDialog"
 import { CrudDrawer } from "@/features/admin/components/CrudDrawer"
 import { StudentsTable } from "./_components/StudentsTable"
 import { StudentForm } from "./_components/StudentForm"
+import { UserDetailsDrawer } from "../users/_components/UserDetailsDrawer"
 import { fetchStudents } from "./data"
 import { emptyStudentForm, initStudentForm, type ApiUser, type StudentForm as StudentFormType } from "./_types"
 import { useHasPermission } from "@/components/providers/permissions-provider"
@@ -24,6 +25,8 @@ export function StudentsClient({ initialStudents }: StudentsClientProps) {
     const [courses, setCourses] = useState<Course[]>([])
     const [loading, setLoading] = useState(false)
     const [modalOpen, setModalOpen] = useState(false)
+    const [detailsOpen, setDetailsOpen] = useState(false)
+    const [selectedStudent, setSelectedStudent] = useState<ApiUser | null>(null)
     const [editing, setEditing] = useState<ApiUser | null>(null)
     const [form, setForm] = useState<StudentFormType>(emptyStudentForm)
     const [submitting, setSubmitting] = useState(false)
@@ -157,7 +160,22 @@ export function StudentsClient({ initialStudents }: StudentsClientProps) {
                 } : undefined}
             />
 
-            <StudentsTable loading={loading} data={students} onEdit={canManageStudent ? openEdit : undefined} onDelete={canManageStudent ? setDeleteTarget : undefined} />
+            <StudentsTable 
+                loading={loading} 
+                data={students} 
+                onEdit={canManageStudent ? openEdit : undefined} 
+                onDelete={canManageStudent ? setDeleteTarget : undefined} 
+                onView={(s) => {
+                    setSelectedStudent(s)
+                    setDetailsOpen(true)
+                }}
+            />
+
+            <UserDetailsDrawer
+                open={detailsOpen}
+                onOpenChange={setDetailsOpen}
+                user={selectedStudent}
+            />
 
             <CrudDrawer
                 open={modalOpen}
