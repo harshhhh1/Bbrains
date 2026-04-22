@@ -18,12 +18,14 @@ interface ProductsClientProps {
 export function ProductsClient({ initialProducts }: ProductsClientProps) {
     const { user, loading: userLoading } = useUser()
     
-    // Check permissions
-    const canManageProducts = useHasPermission("manage_products") // Admin-level global catalog
-    const canApproveProducts = useHasPermission("approve_products") || canManageProducts // Teacher/Manager level
-    
     // Fallback role check if specific permissions aren't set
     const userRole = user?.type || "student"
+    
+    // Check permissions
+    const hasManagePerm = useHasPermission("manage_products")
+    const canManageProducts = hasManagePerm && userRole !== "admin" // Hide for admin as requested
+    const canApproveProducts = useHasPermission("approve_products") || hasManagePerm || userRole === "teacher" || userRole === "manager" // Allow teachers & managers to approve
+
     const isManagerial = ["admin", "superadmin", "teacher", "manager"].includes(userRole)
 
     if (userLoading) {
@@ -50,7 +52,7 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
                 <div className="flex items-center justify-between border-b pb-4">
                     <div>
                         <h1 className="text-2xl font-bold tracking-tight">Marketplace Hub</h1>
-                        <p className="text-muted-foreground text-sm">Manage your listings, approvals, and the global catalog.</p>
+                        <p className="text-muted-foreground text-sm">Manage your listings, approvals{canManageProducts ? ", and the global catalog." : "."}</p>
                     </div>
                     <TabsList className="bg-muted/50 p-1">
                         <TabsTrigger value="my-products" className="gap-2">

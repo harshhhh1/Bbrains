@@ -3,9 +3,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { BriefcaseBusiness, Upload } from "lucide-react";
+import { BriefcaseBusiness, Upload, ShieldCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { api } from "@/services/api/client";
+import { api, userApi } from "@/services/api/client";
 import { getAuthToken, getBaseUrl } from "@/services/api/client";
 import type { ApiUser } from "@/lib/types/api";
 import { CrudDrawer } from "@/features/admin/components/CrudDrawer";
@@ -36,6 +36,7 @@ export default function ManageUsersPage() {
   const [mounted, setMounted] = useState(false);
   const [roles, setRoles] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
+  const [isFixingRoles, setIsFixingRoles] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -169,6 +170,24 @@ export default function ManageUsersPage() {
       return true;
     });
   }, [search, typeFilter, users]);
+  
+  const handleFixRoles = async () => {
+    try {
+      setIsFixingRoles(true);
+      const response = await userApi.fixRoles();
+      if (response.success) {
+        toast.success(`Roles fixed: ${response.data?.count || 0} users updated`);
+        await loadUsers();
+      } else {
+        toast.error(response.message || "Failed to fix roles");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fix roles");
+    } finally {
+      setIsFixingRoles(false);
+    }
+  };
 
   function handleAddUser() {
     setForm(emptyManagerForm);
@@ -276,6 +295,20 @@ export default function ManageUsersPage() {
            onTypeFilterChange={setTypeFilter}
          />
          <div className="flex gap-2">
+           <button
+             type="button"
+             onClick={handleFixRoles}
+             disabled={isFixingRoles}
+             className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+             title="Scan for users with missing roles and fix them"
+           >
+             {isFixingRoles ? (
+               <Loader2 className="h-4 w-4 animate-spin text-primary" />
+             ) : (
+               <ShieldCheck className="h-4 w-4 text-primary" />
+             )}
+             Fix Permissions
+           </button>
            <button
              type="button"
              onClick={handleAddUser}

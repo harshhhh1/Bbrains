@@ -518,7 +518,7 @@ const createTeacher = async (data) => {
     return await createManagedUser({
         ...data,
         type: 'teacher',
-        assignRoleNames: [],
+        assignRoleNames: ['Teacher'],
     });
 };
 
@@ -526,7 +526,7 @@ const createStudent = async (data) => {
     return await createManagedUser({
         ...data,
         type: 'student',
-        assignRoleNames: [],
+        assignRoleNames: ['Student'],
     });
 };
 

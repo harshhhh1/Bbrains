@@ -3,7 +3,7 @@ import {
     getMe, getUserByUsername, getStudents, getTeachers, getStaff,
     getStudentByUsername, getTeacherByUsername,
     addTeacher, addStudent, addManager, addAdmin, getManagers, getAdmins, updateTeacher, updateStudent, deleteTeacher, searchUser,
-    checkUsernameAvailability, batchImportUsers
+    checkUsernameAvailability, batchImportUsers, fixMissingRoles
 } from './user_management.controller.js';
 import { editUser, removeUser, dailyClaim } from './user_actions.controller.js';
 import { createDetails, getMyDetails, updateMyDetails, getUserDetails } from './userDetails.controller.js';
@@ -61,6 +61,7 @@ router.post('/claim-daily', verifyToken, dailyClaim);
 
 // Batch import users from CSV
 router.post('/batch-import', verifyToken, authorize('admin', 'manager', 'superadmin'), upload.single('file'), batchImportUsers);
+router.post('/fix-roles', verifyToken, authorize('admin', 'manager', 'superadmin', 'superadmin'), fixMissingRoles);
 
 // Get user by username (must be LAST due to :username param matching)
 router.get('/:username', verifyToken, getUserByUsername);
