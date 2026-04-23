@@ -24,6 +24,13 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
 
   if (request.method !== 'GET') return
+  
+  const url = new URL(request.url)
+
+  // Skip API requests and cross-origin requests
+  if (url.origin !== self.location.origin || url.pathname.startsWith('/api')) {
+    return
+  }
 
   // Offline fallback for navigation requests.
   if (request.mode === 'navigate') {
@@ -39,17 +46,23 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Cache-first for static assets (images, CSS, JS, etc.)
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request)
-        .then((response) => {
-          // Optionally, cache new static assets here (dynamic caching)
-          return response;
-        })
-        .catch(() => undefined); // Could fallback to a generic offline asset if desired
-    })
-  );
+  const isStaticAsset = 
+    url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|woff2?|ico|json|webmanifest)$/) ||
+    PRECACHE_URLS.includes(url.pathname)
+
+  if (isStaticAsset) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached
+        return fetch(request)
+          .then((response) => {
+            // Optionally, cache new static assets here (dynamic caching)
+            return response
+          })
+          .catch(() => undefined)
+      })
+    )
+  }
 })
 
 self.addEventListener('push', (event) => {
