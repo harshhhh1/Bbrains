@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 
 export const getCachedUser = cache(async (token: string) => {
     try {
-        const baseUrl = process.env.API_URL || 'http://localhost:5000'
+        const baseUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
         const cookieStore = await cookies()
         const impersonateCollegeId = cookieStore.get('impersonateCollegeId')?.value
 
