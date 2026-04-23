@@ -135,12 +135,15 @@ export function ProductsCreator() {
         price: Number(form.price),
         stock: form.productType === "physical" ? Number(form.stock) : 999999,
         imageUrl: form.imageUrl,
-        images: form.images,
+        metadata: {
+          images: form.images,
+        },
       };
 
       if (form.productType === "digital" && form.fileUrl) {
         data.metadata = {
           ...(selectedProduct.metadata || {}),
+          ...data.metadata,
           fileUrl: form.fileUrl,
           fileType: form.fileType || "file",
         };
@@ -264,11 +267,10 @@ export function ProductsCreator() {
         price: Number(form.price),
         stock: form.productType === "physical" ? Number(form.stock) : 999999,
         imageUrl: form.imageUrl,
-        images: form.images,
         productType: form.productType,
         fileUrl: form.fileUrl,
         fileType: form.fileType,
-        metadata: { category: "product" }
+        metadata: { category: "product", images: form.images }
       });
 
       if (response.success) {

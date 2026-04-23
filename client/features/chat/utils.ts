@@ -45,7 +45,7 @@ export function mapApiMessage(m: ApiMessage): Message {
         date: new Date(m.createdAt).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" }),
         createdAt: m.createdAt,
         editedAt: m.editedAt ?? null,
-        replyTo: m.replyToMessageId ? { messageId: m.replyToMessageId, username: "", content: "" } : null,
+        replyTo: m.replyToMessageId ? { messageId: m.replyToMessageId, username: "", name: "", avatar: "", content: "" } : null,
         mentions: m.mentions || [],
         mentionedUserIds: m.mentionedUserIds || [],
         attachments: m.attachments || [],

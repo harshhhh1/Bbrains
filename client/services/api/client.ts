@@ -261,6 +261,32 @@ export interface WalletData {
   };
 }
 
+export interface MoneyRequest {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  amount: number;
+  reason: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+  fromUser?: {
+    id: string;
+    username: string;
+    displayName?: string;
+    avatarUrl?: string;
+    userDetails?: {
+      firstName?: string;
+      lastName?: string;
+    };
+  };
+  toUser?: {
+    id: string;
+    username: string;
+    displayName?: string;
+    avatarUrl?: string;
+  };
+}
+
 export interface Transaction {
   id: string | number;
   userId: string;
@@ -620,7 +646,9 @@ export interface ChatMessageRecord {
   replyTo?: string | null;
   replyToDetails?: {
     username: string;
+    displayName?: string;
     content: string;
+    avatar?: string;
   };
   attachments: ChatAttachment[];
   createdAt: string;
@@ -879,6 +907,18 @@ export const walletApi = {
   },
   getHistory: async (): Promise<ApiResponse<Transaction[]>> => {
     return api.get<Transaction[]>('/wallet/history');
+  },
+  createRequest: async (toUserId: string, amount: number, reason: string): Promise<ApiResponse<MoneyRequest>> => {
+    return api.post<MoneyRequest>('/wallet/requests', { toUserId, amount, reason });
+  },
+  getIncomingRequests: async (): Promise<ApiResponse<MoneyRequest[]>> => {
+    return api.get<MoneyRequest[]>('/wallet/requests/incoming');
+  },
+  getOutgoingRequests: async (): Promise<ApiResponse<MoneyRequest[]>> => {
+    return api.get<MoneyRequest[]>('/wallet/requests/outgoing');
+  },
+  respondToRequest: async (requestId: string, accept: boolean, pin: string): Promise<ApiResponse<void>> => {
+    return api.post<void>(`/wallet/requests/${requestId}/respond`, { accept, pin });
   },
 };
 
@@ -1279,6 +1319,7 @@ export interface ProductMetadata {
   fileUrl?: string;
   fileType?: string;
   previewImages?: string[];
+  images?: string[];
   themeConfig?: Record<string, unknown>;
   version?: string;
   downloads?: number;

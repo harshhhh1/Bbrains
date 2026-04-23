@@ -83,13 +83,13 @@ function PinDialog({
 
   return (
     <Drawer open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setPin(""); }} direction="right">
-      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-border before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
         <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
           <DrawerHeader className="border-b border-border/60 p-6 text-left">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
-                <div className="w-12 h-12 bg-brand-orange/10 rounded-2xl flex items-center justify-center mb-2">
-                  <CheckCircle2 className="w-6 h-6 text-brand-orange" />
+                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-2">
+                  <CheckCircle2 className="w-6 h-6 text-primary" />
                 </div>
                 <DrawerTitle className="text-xl font-black">Confirm Purchase</DrawerTitle>
                 <DrawerDescription className="text-sm font-medium text-muted-foreground">{description}</DrawerDescription>
@@ -110,7 +110,7 @@ function PinDialog({
                     <InputOTPSlot
                       key={i}
                       index={i}
-                      className="h-14 w-11 rounded-xl border-border bg-muted/20 text-xl font-black focus:border-brand-orange/50 focus:ring-2 focus:ring-brand-orange/20"
+                      className="h-14 w-11 rounded-xl border-border bg-muted/20 text-xl font-black focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
                     />
                   ))}
                 </InputOTPGroup>
@@ -122,7 +122,7 @@ function PinDialog({
             <Button
               onClick={handleSubmit}
               disabled={pin.length < 6 || isProcessing}
-              className="w-full h-14 rounded-2xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black uppercase tracking-widest shadow-lg shadow-brand-orange/20 transition-all active:scale-95 disabled:opacity-50"
+              className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
             >
               {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirm & Pay"}
             </Button>
@@ -296,23 +296,23 @@ export default function MarketPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
             <h1 className="text-4xl md:text-6xl font-black tracking-tighter leading-none flex items-center gap-4 text-foreground">
-              <Store className="w-10 h-10 md:w-14 md:h-14 text-brand-orange" />
+              <Store className="w-10 h-10 md:w-14 md:h-14 text-primary" />
               Campus Market
             </h1>
             <p className="text-muted-foreground font-medium text-lg tracking-tight">Browse and acquire verified educational products</p>
           </div>
           <div className="flex items-center gap-3">
             <Link href="/products">
-              <Button variant="outline" className="h-12 px-6 rounded-xl border-2 font-black uppercase tracking-widest text-[10px] hover:bg-white/5">
+              <Button variant="outline" className="h-12 px-6 rounded-xl border-2 font-black uppercase tracking-widest text-[10px] hover:bg-muted">
                 <Package className="w-4 h-4 mr-2" />
                 My Products
               </Button>
             </Link>
-            <Button className="h-12 px-6 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 relative" onClick={() => setShowCart(true)}>
+            <Button className="h-12 px-6 rounded-xl bg-secondary hover:bg-muted border border-border relative" onClick={() => setShowCart(true)}>
               <ShoppingCart className="w-4 h-4 mr-2" />
               <span className="font-black text-[10px] uppercase tracking-widest">Cart</span>
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 h-6 w-6 bg-brand-orange text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg ring-4 ring-background">
+                <span className="absolute -top-2 -right-2 h-6 w-6 bg-primary text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-lg ring-4 ring-background">
                   {cartCount}
                 </span>
               )}
@@ -326,22 +326,22 @@ export default function MarketPage() {
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-14 pl-12 rounded-2xl bg-muted/30 border-muted focus:border-brand-orange/50 transition-all font-bold text-lg placeholder:text-muted-foreground/30"
+            className="h-14 pl-12 rounded-2xl bg-muted/30 border-muted focus:border-primary/50 transition-all font-bold text-lg placeholder:text-muted-foreground/30"
           />
         </div>
 
         {loading ? (
           <div className="py-32 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="w-12 h-12 animate-spin text-brand-orange" />
-            <p className="text-sm font-black uppercase tracking-[0.3em] text-white/20 animate-pulse">Loading Marketplace...</p>
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <p className="text-sm font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse">Loading Marketplace...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="py-32 text-center space-y-4">
-            <div className="w-20 h-20 bg-white/5 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
-              <Package className="w-10 h-10 text-white/10" />
+            <div className="w-20 h-20 bg-muted rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+              <Package className="w-10 h-10 text-muted-foreground/30" />
             </div>
-            <h3 className="text-2xl font-black text-white/40 tracking-tight">No products found</h3>
-            <p className="text-white/20 font-medium">Try broadening your search</p>
+            <h3 className="text-2xl font-black text-foreground tracking-tight">No products found</h3>
+            <p className="text-muted-foreground font-medium">Try broadening your search</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -353,13 +353,13 @@ export default function MarketPage() {
               return (
                 <Card
                   key={product.id}
-                  className="group relative overflow-hidden rounded-2xl border-muted bg-muted/[0.1] backdrop-blur-sm hover:border-brand-orange/30 transition-all duration-300"
+                  className="group relative overflow-hidden rounded-2xl border-muted bg-muted/[0.1] backdrop-blur-sm hover:border-primary/30 transition-all duration-300"
                   style={{ animationDelay: `${idx * 30}ms` }}
                 >
                   <CardContent className="p-4 md:p-5">
                     <div className="flex gap-4 md:gap-6">
                       <Link href={`/market/${product.id}`} className="shrink-0">
-                        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden bg-white/[0.03]">
+                        <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden bg-muted/30">
                           {product.image ? (
                             <Image
                               src={encodeImageUrl(product.image)}
@@ -369,7 +369,7 @@ export default function MarketPage() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <Package className="w-8 h-8 text-white/10" />
+                              <Package className="w-8 h-8 text-muted-foreground/20" />
                             </div>
                           )}
                         </div>
@@ -379,7 +379,7 @@ export default function MarketPage() {
                         <div className="space-y-2">
                           <div className="flex items-start justify-between gap-3">
                             <Link href={`/market/${product.id}`} className="group/title">
-                              <h3 className="font-bold text-lg text-foreground group-hover/title:text-brand-orange transition-colors line-clamp-1">
+                              <h3 className="font-bold text-lg text-foreground group-hover/title:text-primary transition-colors line-clamp-1">
                                 {product.name}
                               </h3>
                             </Link>
@@ -405,7 +405,7 @@ export default function MarketPage() {
                               </span>
                             </div>
 
-                            <span className="text-xl font-black text-brand-orange flex items-center gap-1.5">
+                            <span className="text-xl font-black text-primary flex items-center gap-1.5">
                               <img src="/bcoin.svg" className="h-6 w-6" alt="" />
                               {product.price}
                             </span>
@@ -430,11 +430,11 @@ export default function MarketPage() {
 
                         <div className="flex items-center gap-3 mt-3">
                           {isOutOfStock ? (
-                            <Button disabled className="h-10 px-6 rounded-xl bg-white/5 text-white/20 font-bold cursor-not-allowed">
+                            <Button disabled className="h-10 px-6 rounded-xl bg-muted text-muted-foreground font-bold cursor-not-allowed">
                               Out of Stock
                             </Button>
                           ) : inCart > 0 ? (
-                            <div className="flex items-center bg-white/5 rounded-xl border border-white/10 p-1">
+                            <div className="flex items-center bg-muted rounded-xl border border-border p-1">
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
@@ -460,7 +460,7 @@ export default function MarketPage() {
                               size="sm"
                               onClick={() => addToCart(product.id)}
                               disabled={processingItems.has(product.id)}
-                              className="h-10 px-5 rounded-xl bg-white/5 hover:bg-brand-orange text-white border border-white/10 hover:border-brand-orange transition-all font-bold"
+                              className="h-10 px-5 rounded-xl bg-secondary hover:bg-primary text-primary-foreground border border-border hover:border-primary transition-all font-bold"
                             >
                               {processingItems.has(product.id) ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShoppingCart className="w-4 h-4 mr-2" />}
                               Add to Cart
@@ -470,7 +470,7 @@ export default function MarketPage() {
                             <Button
                               size="sm"
                               onClick={() => { setBuyProduct(product); setQuantity(1); setShowBuyConfirm(true); }}
-                              className="h-10 px-5 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-bold"
+                              className="h-10 px-5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold"
                             >
                               Buy Now
                             </Button>
@@ -486,13 +486,13 @@ export default function MarketPage() {
         )}
 
         <Drawer open={showCart} onOpenChange={setShowCart} direction="right">
-          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-border before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
             <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
               <DrawerHeader className="border-b border-border/60 p-6 text-left">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-brand-orange/10 rounded-2xl flex items-center justify-center">
-                      <ShoppingCart className="w-6 h-6 text-brand-orange" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
+                      <ShoppingCart className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                       <DrawerTitle className="text-xl font-black tracking-tight">Your Cart</DrawerTitle>
@@ -510,8 +510,8 @@ export default function MarketPage() {
               <div className="flex-1 overflow-y-auto p-6 space-y-5">
                 {cartCount === 0 ? (
                   <div className="py-12 text-center space-y-4">
-                    <ShoppingCart className="w-16 h-16 text-white/5 mx-auto" />
-                    <p className="text-white/40 font-bold uppercase tracking-widest text-[10px]">Cart is empty</p>
+                    <ShoppingCart className="w-16 h-16 text-muted-foreground/20 mx-auto" />
+                    <p className="text-muted-foreground font-bold uppercase tracking-widest text-[10px]">Cart is empty</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -519,15 +519,15 @@ export default function MarketPage() {
                       const product = products.find((p) => p.id === Number(id));
                       if (!product) return null;
                       return (
-                        <div key={id} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5">
-                          <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-white/5 shrink-0">
-                            {product.image ? <Image src={product.image} alt={product.name} fill className="object-cover" /> : <Package className="w-6 h-6 text-white/5 m-4" />}
+                        <div key={id} className="flex items-center gap-4 p-3 rounded-xl bg-muted border border-border">
+                          <div className="relative h-14 w-14 rounded-lg overflow-hidden bg-muted shrink-0">
+                            {product.image ? <Image src={product.image} alt={product.name} fill className="object-cover" /> : <Package className="w-6 h-6 text-muted-foreground/20 m-4" />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-white truncate text-sm">{product.name}</p>
-                            <p className="text-xs font-bold text-brand-orange">{product.price} B-Coins</p>
+                            <p className="text-xs font-bold text-primary">{product.price} B-Coins</p>
                           </div>
-                          <div className="flex items-center bg-black/20 rounded-lg p-0.5">
+                          <div className="flex items-center bg-primary/10 rounded-lg p-0.5">
                             <Button 
                               variant="ghost" 
                               size="icon" 
@@ -558,11 +558,11 @@ export default function MarketPage() {
               {cartCount > 0 && (
                 <div className="p-6 border-t border-border/60 bg-muted/5 space-y-4">
                   <div className="flex justify-between items-end">
-                    <span className="text-xs font-bold text-white/30 uppercase tracking-wider">Total</span>
-                    <span className="text-3xl font-black text-white tabular-nums tracking-tighter">{cartTotal} <span className="text-sm text-brand-orange">B-Coins</span></span>
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total</span>
+                    <span className="text-3xl font-black text-white tabular-nums tracking-tighter">{cartTotal} <span className="text-sm text-primary">B-Coins</span></span>
                   </div>
                   <Button
-                    className="w-full h-12 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black uppercase tracking-widest shadow-lg shadow-brand-orange/20"
+                    className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest shadow-lg shadow-primary/20"
                     onClick={() => { setShowCart(false); setShowBuyConfirm(true); setBuyProduct(null); }}
                   >
                     Checkout
@@ -576,8 +576,8 @@ export default function MarketPage() {
         <AlertDialog open={showBuyConfirm} onOpenChange={setShowBuyConfirm}>
           <AlertDialogContent className="rounded-3xl border-border bg-background/95 backdrop-blur-2xl p-8 shadow-2xl">
             <AlertDialogHeader className="space-y-4">
-              <div className="w-16 h-16 bg-brand-orange/10 rounded-3xl flex items-center justify-center">
-                <Store className="w-8 h-8 text-brand-orange" />
+              <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center">
+                <Store className="w-8 h-8 text-primary" />
               </div>
               <AlertDialogTitle className="text-2xl font-black tracking-tight text-foreground">Confirm Purchase</AlertDialogTitle>
               <AlertDialogDescription className="text-base font-medium text-muted-foreground leading-relaxed">
@@ -587,10 +587,10 @@ export default function MarketPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-6 gap-3">
-              <AlertDialogCancel className="h-12 rounded-xl border-white/10 bg-transparent text-white/40 font-bold hover:bg-white/5">Cancel</AlertDialogCancel>
+              <AlertDialogCancel className="h-12 rounded-xl border-border bg-transparent text-muted-foreground font-bold hover:bg-muted">Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmBuy}
-                className="h-12 rounded-xl bg-brand-orange hover:bg-brand-orange/90 text-white font-black px-8"
+                className="h-12 rounded-xl bg-primary hover:bg-primary/90 text-white font-black px-8"
               >
                 Continue to Payment
               </AlertDialogAction>

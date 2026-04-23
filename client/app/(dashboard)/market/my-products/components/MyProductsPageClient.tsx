@@ -186,7 +186,7 @@ export default function MyProductsPage() {
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="flex items-center gap-2 text-3xl font-black tracking-tight text-foreground">
-              <Package className="h-8 w-8 text-brand-orange" />
+              <Package className="h-8 w-8 text-primary" />
               Inventory Control
             </h1>
             <p className="mt-1 text-sm font-medium text-muted-foreground">Manage and track your campus marketplace listings</p>
@@ -197,7 +197,7 @@ export default function MyProductsPage() {
                 resetForm();
                 setShowAddDialog(true);
               }}
-              className="h-12 rounded-xl bg-brand-orange px-6 font-bold text-white shadow-lg shadow-brand-orange/20 transition-all hover:scale-105 hover:bg-brand-orange/90"
+              className="h-12 rounded-xl bg-primary px-6 font-bold text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:bg-primary/90"
             >
               <Plus className="mr-2 h-5 w-5" /> List New Product
             </Button>
@@ -206,7 +206,7 @@ export default function MyProductsPage() {
 
         {loading ? (
           <div className="flex flex-col items-center justify-center gap-4 py-32">
-            <Loader2 className="h-10 w-10 animate-spin text-brand-orange" />
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
             <p className="animate-pulse text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Inventory...</p>
           </div>
         ) : products.length === 0 ? (
@@ -227,8 +227,8 @@ export default function MyProductsPage() {
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {products.map((product) => (
-              <Card key={product.id} className="group overflow-hidden rounded-[2rem] border-white/5 bg-white/[0.02] backdrop-blur-sm transition-all duration-300 hover:border-brand-orange/30">
-                <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-white/[0.03] p-4">
+              <Card key={product.id} className="group overflow-hidden rounded-[2rem] border-border bg-muted backdrop-blur-sm transition-all duration-300 hover:border-primary/30">
+                <div className="relative flex aspect-square items-center justify-center overflow-hidden border-border bg-muted/30 p-4">
                   {product.image ? (
                     <Image
                       src={product.image}
@@ -247,26 +247,26 @@ export default function MyProductsPage() {
                 </div>
                 <CardContent className="p-6">
                   <div className="mb-2 flex items-start justify-between gap-4">
-                    <h3 className="line-clamp-1 text-lg font-black text-foreground transition-colors group-hover:text-brand-orange">{product.name}</h3>
+                    <h3 className="line-clamp-1 text-lg font-black text-foreground transition-colors group-hover:text-primary">{product.name}</h3>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleEditClick(product)}
-                      className="h-8 w-8 rounded-lg transition-colors hover:bg-brand-orange/10 hover:text-brand-orange"
+                      className="h-8 w-8 rounded-lg transition-colors hover:bg-primary/10 hover:text-primary"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </div>
                   <p className="mt-2 min-h-[2rem] line-clamp-2 text-xs font-medium leading-relaxed text-muted-foreground">{product.description}</p>
 
-                  <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-6">
+                  <div className="mt-6 flex items-center justify-between border-t border-border pt-6">
                     <div className="flex flex-col">
                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Price</span>
-                      <span className="text-xl font-black text-brand-orange">{product.price} <span className="text-[10px] opacity-60">B-Coins</span></span>
+                      <span className="text-xl font-black text-primary">{product.price} <span className="text-[10px] opacity-60">B-Coins</span></span>
                     </div>
                     <div className="flex flex-col items-end">
                       <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Stock</span>
-                      <span className="text-lg font-black text-white/80">{product.stock}</span>
+                      <span className="text-lg font-black text-foreground">{product.stock}</span>
                     </div>
                   </div>
 
@@ -285,17 +285,17 @@ export default function MyProductsPage() {
         )}
 
         <Drawer open={showAddDialog} onOpenChange={(open) => { if (!open) { setShowAddDialog(false); resetForm(); } }} direction="right">
-          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-border before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
             <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
               <DrawerHeader className="border-b border-border/60 p-6 text-left">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange/10">
-                      <Plus className="h-6 w-6 text-brand-orange" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+                      <Plus className="h-6 w-6 text-primary" />
                     </div>
                     <div>
                       <DrawerTitle className="text-xl font-black tracking-tight">List New Asset</DrawerTitle>
-                      <DrawerDescription className="font-medium text-white/40">Provide specifications for your marketplace entry</DrawerDescription>
+                      <DrawerDescription className="font-medium text-muted-foreground">Provide specifications for your marketplace entry</DrawerDescription>
                     </div>
                   </div>
                   <DrawerClose asChild>
@@ -308,10 +308,10 @@ export default function MyProductsPage() {
 
               <div className="flex-1 overflow-y-auto p-6 space-y-8">
                 <div className="flex flex-col gap-2">
-                  <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Visual Representation</label>
+                  <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Visual Representation</label>
                   <div className={cn(
-                    "group/img relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-white/10 bg-white/[0.02] transition-all",
-                    isUploading && "animate-pulse border-brand-orange/30"
+                    "group/img relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-border bg-card transition-all",
+                    isUploading && "animate-pulse border-primary/30"
                   )}>
                     {form.imageUrl ? (
                       <>
@@ -324,15 +324,15 @@ export default function MyProductsPage() {
                       </>
                     ) : isUploading ? (
                       <div className="flex flex-col items-center gap-3">
-                        <Loader2 className="h-8 w-8 animate-spin text-brand-orange" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-orange">{progress}%</span>
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">{progress}%</span>
                       </div>
                     ) : (
                       <>
-                        <ImageIcon className="mb-4 h-10 w-10 text-white/10" />
+                        <ImageIcon className="mb-4 h-10 w-10 text-muted-foreground/30" />
                         <label className="cursor-pointer">
                           <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                          <span className="rounded-xl border border-white/5 bg-white/5 px-4 py-2 text-xs font-bold text-white/60 transition-colors hover:bg-white/10">
+                          <span className="rounded-xl border border-border bg-muted px-4 py-2 text-xs font-bold text-muted-foreground/70 transition-colors hover:bg-muted">
                             Upload Image
                           </span>
                         </label>
@@ -343,42 +343,42 @@ export default function MyProductsPage() {
 
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Asset Name</label>
+                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Asset Name</label>
                     <Input
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       placeholder="e.g. Premium Study Notes"
-                      className="h-12 rounded-xl border-white/5 bg-white/5 font-bold transition-all placeholder:text-white/10 focus:border-brand-orange/50"
+                      className="h-12 rounded-xl border-border bg-muted font-bold transition-all placeholder:text-muted-foreground/30 focus:border-primary/50"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Description</label>
+                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Description</label>
                     <Textarea
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
                       placeholder="Detail the capabilities and quality of your asset..."
-                      className="min-h-[100px] resize-none rounded-xl border-white/5 bg-white/5 font-medium transition-all placeholder:text-white/10 focus:border-brand-orange/50"
+                      className="min-h-[100px] resize-none rounded-xl border-border bg-muted font-medium transition-all placeholder:text-muted-foreground/30 focus:border-primary/50"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Price (B-Coins)</label>
+                      <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Price (B-Coins)</label>
                       <Input
                         type="number"
                         value={form.price}
                         onChange={(e) => setForm({ ...form, price: e.target.value })}
                         placeholder="0"
-                        className="h-12 rounded-xl border-white/5 bg-white/5 font-black transition-all focus:border-brand-orange/50"
+                        className="h-12 rounded-xl border-border bg-muted font-black transition-all focus:border-primary/50"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Available Stock</label>
+                      <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Available Stock</label>
                       <Input
                         type="number"
                         value={form.stock}
                         onChange={(e) => setForm({ ...form, stock: e.target.value })}
                         placeholder="0"
-                        className="h-12 rounded-xl border-white/5 bg-white/5 font-black transition-all focus:border-brand-orange/50"
+                        className="h-12 rounded-xl border-border bg-muted font-black transition-all focus:border-primary/50"
                       />
                     </div>
                   </div>
@@ -389,7 +389,7 @@ export default function MyProductsPage() {
                 <Button
                   onClick={handleAddProduct}
                   disabled={isSubmitting || isUploading}
-                  className="w-full h-12 rounded-xl bg-brand-orange px-8 font-black text-white shadow-lg shadow-brand-orange/20 hover:bg-brand-orange/90"
+                  className="w-full h-12 rounded-xl bg-primary px-8 font-black text-white shadow-lg shadow-primary/20 hover:bg-primary/90"
                 >
                   {isSubmitting ? (
                     <>
@@ -409,19 +409,19 @@ export default function MyProductsPage() {
         </Drawer>
 
         <Drawer open={showEditDialog} onOpenChange={(open) => { if (!open) { setShowEditDialog(false); resetForm(); } }} direction="right">
-          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
+          <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-border before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
             <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
               <DrawerHeader className="border-b border-border/60 p-6 text-left">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange/10">
-                      <Pencil className="h-6 w-6 text-brand-orange" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+                      <Pencil className="h-6 w-6 text-primary" />
                     </div>
                     <div>
                       <DrawerTitle className="text-xl font-black tracking-tight">
                         {selectedProduct?.approval === "approved" ? "Request Edit Review" : "Update Asset"}
                       </DrawerTitle>
-                      <DrawerDescription className="font-medium text-white/40">
+                      <DrawerDescription className="font-medium text-muted-foreground">
                         {selectedProduct?.approval === "approved"
                           ? "Approved products require admin review for updates."
                           : "Modify specifications for your marketplace entry"}
@@ -438,10 +438,10 @@ export default function MyProductsPage() {
 
               <div className="flex-1 overflow-y-auto p-6 space-y-8">
                 <div className="flex flex-col gap-2">
-                  <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Visual Representation</label>
+                  <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Visual Representation</label>
                   <div className={cn(
-                    "group/img relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-white/10 bg-white/[0.02] transition-all",
-                    isUploading && "animate-pulse border-brand-orange/30"
+                    "group/img relative flex aspect-square flex-col items-center justify-center overflow-hidden rounded-[2rem] border-2 border-dashed border-border bg-card transition-all",
+                    isUploading && "animate-pulse border-primary/30"
                   )}>
                     {form.imageUrl ? (
                       <>
@@ -454,15 +454,15 @@ export default function MyProductsPage() {
                       </>
                     ) : isUploading ? (
                       <div className="flex flex-col items-center gap-3">
-                        <Loader2 className="h-8 w-8 animate-spin text-brand-orange" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-brand-orange">{progress}%</span>
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary">{progress}%</span>
                       </div>
                     ) : (
                       <>
-                        <ImageIcon className="mb-4 h-10 w-10 text-white/10" />
+                        <ImageIcon className="mb-4 h-10 w-10 text-muted-foreground/30" />
                         <label className="cursor-pointer">
                           <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                          <span className="rounded-xl border border-white/5 bg-white/5 px-4 py-2 text-xs font-bold text-white/60 transition-colors hover:bg-white/10">
+                          <span className="rounded-xl border border-border bg-muted px-4 py-2 text-xs font-bold text-muted-foreground/70 transition-colors hover:bg-muted">
                             Upload Image
                           </span>
                         </label>
@@ -473,42 +473,42 @@ export default function MyProductsPage() {
 
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Asset Name</label>
+                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Asset Name</label>
                     <Input
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       placeholder="e.g. Premium Study Notes"
-                      className="h-12 rounded-xl border-white/5 bg-white/5 font-bold transition-all placeholder:text-white/10 focus:border-brand-orange/50"
+                      className="h-12 rounded-xl border-border bg-muted font-bold transition-all placeholder:text-muted-foreground/30 focus:border-primary/50"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Description</label>
+                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Description</label>
                     <Textarea
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
                       placeholder="Detail the capabilities and quality of your asset..."
-                      className="min-h-[100px] resize-none rounded-xl border-white/5 bg-white/5 font-medium transition-all placeholder:text-white/10 focus:border-brand-orange/50"
+                      className="min-h-[100px] resize-none rounded-xl border-border bg-muted font-medium transition-all placeholder:text-muted-foreground/30 focus:border-primary/50"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Price (B-Coins)</label>
+                      <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Price (B-Coins)</label>
                       <Input
                         type="number"
                         value={form.price}
                         onChange={(e) => setForm({ ...form, price: e.target.value })}
                         placeholder="0"
-                        className="h-12 rounded-xl border-white/5 bg-white/5 font-black transition-all focus:border-brand-orange/50"
+                        className="h-12 rounded-xl border-border bg-muted font-black transition-all focus:border-primary/50"
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/30">Available Stock</label>
+                      <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Available Stock</label>
                       <Input
                         type="number"
                         value={form.stock}
                         onChange={(e) => setForm({ ...form, stock: e.target.value })}
                         placeholder="0"
-                        className="h-12 rounded-xl border-white/5 bg-white/5 font-black transition-all focus:border-brand-orange/50"
+                        className="h-12 rounded-xl border-border bg-muted font-black transition-all focus:border-primary/50"
                       />
                     </div>
                   </div>
@@ -519,7 +519,7 @@ export default function MyProductsPage() {
                 <Button
                   onClick={handleUpdateProduct}
                   disabled={isSubmitting || isUploading}
-                  className="w-full h-12 rounded-xl bg-brand-orange px-8 font-black text-white shadow-lg shadow-brand-orange/20 hover:bg-brand-orange/90"
+                  className="w-full h-12 rounded-xl bg-primary px-8 font-black text-white shadow-lg shadow-primary/20 hover:bg-primary/90"
                 >
                   {isSubmitting ? (
                     <>
