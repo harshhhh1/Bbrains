@@ -87,8 +87,8 @@ function OverviewLinkCard({
     children: ReactNode
 }) {
     return (
-        <Link href={href} className="block h-full">
-            <Card className={`h-full border-border/60 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md ${className}`}>
+        <Link href={href} className="block min-w-0">
+            <Card className={`min-w-0 border-border/60 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md ${className}`}>
                 {children}
             </Card>
         </Link>
@@ -161,8 +161,8 @@ export function OverviewClient({ stats }: OverviewClientProps) {
 
     return (
         <DashboardContent maxWidth="max-w-[96rem]" className="space-y-4">
-            <div className="grid gap-4 xl:grid-cols-12">
-                <div className="xl:col-span-8 min-w-0">
+            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,8fr)_minmax(20rem,4fr)]">
+                <div className="min-w-0 md:col-span-2 xl:col-span-1">
                     <Card className="h-full overflow-hidden border-border/60 bg-gradient-to-br from-card via-card to-primary/5 shadow-sm">
                         <CardContent className="p-5 sm:p-6">
                             <div className="flex flex-col gap-6">
@@ -195,7 +195,7 @@ export function OverviewClient({ stats }: OverviewClientProps) {
                     </Card>
                 </div>
 
-                <div className="xl:col-span-4 min-w-0">
+                <div className="min-w-0 md:col-span-2 xl:col-span-1">
                     <Card className="h-full border-border/60 bg-card/95 shadow-sm">
                         <CardContent className="grid h-full gap-3 p-4 sm:grid-cols-2 xl:grid-cols-1">
                             <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
@@ -215,9 +215,9 @@ export function OverviewClient({ stats }: OverviewClientProps) {
                 </div>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-12">
-                <div className="grid gap-4 xl:col-span-7 min-w-0">
-                    <div className="grid gap-4 lg:grid-cols-2">
+            <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+                <div className="grid min-w-0 content-start gap-4">
+                    <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
                         <OverviewLinkCard href="/admin/stats">
                             <CardHeader className="space-y-1 pb-3">
                                 <div className="flex items-start justify-between gap-3">
@@ -347,7 +347,7 @@ export function OverviewClient({ stats }: OverviewClientProps) {
                     </OverviewLinkCard>
                 </div>
 
-                <div className="grid gap-4 xl:col-span-5 min-w-0">
+                <div className="grid min-w-0 content-start gap-4">
                     <OverviewLinkCard href="/settings">
                         <CardHeader className="space-y-1 pb-3">
                             <div className="flex items-start justify-between gap-3">

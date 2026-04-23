@@ -559,7 +559,6 @@ export function useChatPage() {
       mentionQuery,
       mentionIndex,
       mentionSuggestions,
-      membersList,
       pendingAttachments,
       uploadError,
       searchQuery,

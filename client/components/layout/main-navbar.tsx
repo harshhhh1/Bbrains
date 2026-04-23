@@ -7,14 +7,14 @@ import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "@/context/theme"
 import { Button } from "@/components/ui/button"
 import {
-    
+
     CalendarDays,
     LogOut,
     User,
     Coins,
     ChevronLeft,
 } from "lucide-react"
-import { getBaseUrl, setAuthToken } from "@/services/api/client"
+import { getBaseUrl, setAuthToken, marketApi, type Product } from "@/services/api/client"
 import { NotificationsBell } from "@/components/shell/NotificationsBell"
 import { ThemeSwitcher } from "@/components/shell/theme-switcher"
 import { SidebarTrigger } from "@/components/ui/sidebar"
@@ -79,10 +79,30 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
     const { currentTheme, themes } = useTheme()
     const [mounted, setMounted] = React.useState(false)
     const [todayLabel, setTodayLabel] = React.useState("")
+    const [dynamicProduct, setDynamicProduct] = React.useState<Product | null>(null)
 
     React.useEffect(() => {
         setMounted(true)
     }, [])
+
+    // Fetch product details if on market product page
+    React.useEffect(() => {
+        const segments = pathname.split("/").filter(Boolean)
+        const isMarketProduct = segments[0] === "market" && segments[1] && segments.length === 2
+        
+        if (isMarketProduct) {
+            const productId = parseInt(segments[1])
+            if (!isNaN(productId)) {
+                marketApi.getProduct(productId).then(resp => {
+                    if (resp.success && resp.data) {
+                        setDynamicProduct(resp.data)
+                    }
+                }).catch(console.error)
+            }
+        } else {
+            setDynamicProduct(null)
+        }
+    }, [pathname])
 
     const isDark = themes.find(t => t.id === currentTheme)?.isDark || false
     const logoSrc = isDark ? "/logo-white.png" : "/logo-dark.png"
@@ -121,7 +141,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
         <nav className="sticky top-0 z-(--z-nav) border-b border-border/60 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/65">
             <div className="mx-auto flex h-19 items-center gap-3 px-4 md:px-6">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
-                   
+
                     <SidebarTrigger aria-label="Toggle Sidebar" className="hidden md:flex h-11 w-11 rounded-2xl border border-border/70 bg-card/80 text-foreground shadow-sm transition hover:bg-card" />
 
                     <div className="flex min-w-0 items-center gap-3">
@@ -139,16 +159,18 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
 
                             <div className="flex min-w-0 items-center gap-2">
                                 <h1 className="truncate text-lg font-bold tracking-tight text-foreground md:text-xl">
-                                    {pageTitle}
+                                    {dynamicProduct 
+                                        ? `${dynamicProduct.name} by ${dynamicProduct.creator?.userDetails?.firstName || dynamicProduct.creator?.username || "Scholar"}`
+                                        : pageTitle}
                                 </h1>
-                                
+
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div className="hidden items-center justify-end flex-1 xl:flex mr-4">
-                     <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/50 px-4 py-2 shadow-sm ring-1 ring-border/5">
+                    <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/50 px-4 py-2 shadow-sm ring-1 ring-border/5">
                         <div className="flex h-9 w-9 items-center justify-center">
                             <Image src="/bcoin.svg" width={36} height={36} alt="BCoin" className="drop-shadow-sm" />
                         </div>
@@ -199,7 +221,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                                     </p>
                                 </div>
 
-                                <Avatar 
+                                <Avatar
                                     key={user?.imageUrl}
                                     className="h-9 w-9 rounded-2xl border border-border/70 shadow-sm md:h-10 md:w-10"
                                 >
@@ -212,7 +234,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                         <DropdownMenuContent align="end" className="mt-2 w-64 rounded-2xl border-border/70 p-2">
                             <DropdownMenuLabel className="px-3 py-2">
                                 <div className="flex items-center gap-3">
-                                    <Avatar 
+                                    <Avatar
                                         key={user?.imageUrl}
                                         className="h-10 w-10 rounded-2xl border border-border/70"
                                     >

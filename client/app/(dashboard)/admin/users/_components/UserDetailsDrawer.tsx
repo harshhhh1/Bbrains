@@ -25,7 +25,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { transactionApi, type ApiUser, type Transaction, type DuesData } from "@/services/api/client";
+import { transactionApi, type User as ApiUser, type Transaction, type DuesData } from "@/services/api/client";
 import { toast } from "sonner";
 
 interface UserDetailsDrawerProps {

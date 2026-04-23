@@ -39,7 +39,9 @@ type ChatRealtimeMessage = {
     attachments?: ChatAttachment[]
     replyToDetails?: {
         username: string
+        displayName?: string
         content: string
+        avatar?: string
     }
 }
 
@@ -123,11 +125,12 @@ export function useChatMessages() {
     const [lastIncomingMessage, setLastIncomingMessage] = useState<ChatMessageDisplay | null>(null)
     const fetchInFlightRef = useRef(false)
     // Always-fresh map of messageId -> reply display data, avoids stale closure issues
-    const replyMetaMapRef = useRef<Map<string, { username: string; name: string; avatar: string; content: string }>>(new Map())
+    const replyMetaMapRef = useRef<Map<string, { messageId: string; username: string; name: string; avatar: string; content: string }>>(new Map())
 
     // Helper: add a message's own data to the reply lookup map
     const registerForReplyLookup = (msg: ChatMessageDisplay) => {
         replyMetaMapRef.current.set(msg.id, {
+            messageId: msg.id,
             username: msg.user.username,
             name: msg.user.name,
             avatar: msg.user.avatar,
@@ -137,6 +140,21 @@ export function useChatMessages() {
 
     // Helper: hydrate reply details for a formatted message using the map
     const hydrateReplyFromMap = (msg: ChatMessageDisplay): ChatMessageDisplay => {
+        if (typeof msg.replyTo === 'string') {
+            const existing = replyMetaMapRef.current.get(msg.replyTo)
+            if (!existing) return msg
+            if (msg.replyTo && msg.replyTo !== '...') return msg
+            return {
+                ...msg,
+                replyTo: {
+                    messageId: existing.messageId,
+                    username: existing.username,
+                    name: existing.name,
+                    avatar: existing.avatar,
+                    content: existing.content,
+                }
+            }
+        }
         if (!msg.replyTo?.messageId) return msg
         const existing = replyMetaMapRef.current.get(msg.replyTo.messageId)
         if (!existing) return msg

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertCircle, ArrowUpRight, ArrowDownLeft, QrCode, ScanLine } from "lucide-react";
+import { AlertCircle, ArrowUpRight, ArrowDownLeft, QrCode, ScanLine, Inbox } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DashboardContent } from "@/components/dashboard-content";
 
 // API and Types
-import { walletApi, transactionApi, dashboardApi, Transaction, WalletData, User } from "@/services/api/client";
+import { walletApi, transactionApi, dashboardApi, Transaction, WalletData, User, MoneyRequest } from "@/services/api/client";
 
 // Modular Components
 import { WalletHero } from "@/features/wallet/components/WalletHero";
@@ -21,26 +22,34 @@ export default function WalletPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [pendingRequests, setPendingRequests] = useState<MoneyRequest[]>([]);
 
   // Dialog States
   const [showSendDialog, setShowSendDialog] = useState(false);
   const [showQrDialog, setShowQrDialog] = useState(false);
   const [showScanDialog, setShowScanDialog] = useState(false);
+  const [showRequestDialog, setShowRequestDialog] = useState(false);
+  const [showRequestsDialog, setShowRequestsDialog] = useState(false);
   const [scannedWalletId, setScannedWalletId] = useState("");
 
   const fetchData = async () => {
     try {
-      const [walletRes, txnRes, userRes] = await Promise.all([
+      const [walletRes, txnRes, userRes, requestsRes] = await Promise.all([
         walletApi.getWallet(),
         transactionApi.getMyTransactions({ limit: 100 }),
         dashboardApi.getUser(),
+        walletApi.getIncomingRequests(),
       ]);
 
       if (walletRes.success && walletRes.data) setWallet(walletRes.data);
       if (userRes.success && userRes.data) setUser(userRes.data);
       if (txnRes.success && txnRes.data) {
         const txnData = (txnRes.data as { data?: Transaction[] })?.data || txnRes.data;
-        setTransactions(Array.isArray(txnData) ? txnData : []);
+        const allTxns = Array.isArray(txnData) ? txnData : [];
+        setTransactions(allTxns.filter((t: Transaction) => t.paymentMode === 'wallet'));
+      }
+      if (requestsRes.success && requestsRes.data) {
+        setPendingRequests(requestsRes.data.filter((r) => r.status === 'pending'));
       }
     } catch (err) {
       setError("Failed to load wallet data");
@@ -96,17 +105,22 @@ export default function WalletPage() {
                   <ArrowUpRight className="w-6 h-6 text-destructive" />
                   <span className="text-sm">Send Money</span>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col gap-2">
-                  <ArrowDownLeft className="w-6 h-6 text-green-600" />
-                  <span className="text-sm">Receive</span>
+                <Button variant="outline" className="h-auto py-4 flex flex-col gap-2" onClick={() => setShowRequestDialog(true)}>
+                  <ArrowDownLeft className="w-6 h-6 text-primary" />
+                  <span className="text-sm">Request</span>
+                </Button>
+                <Button variant="outline" className="h-auto py-4 flex flex-col gap-2 relative" onClick={() => setShowRequestsDialog(true)}>
+                  <Inbox className="w-6 h-6 text-primary" />
+                  <span className="text-sm">Requests</span>
+                  {pendingRequests.length > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 text-[10px] bg-destructive border-destructive text-destructive-foreground justify-center">
+                      {pendingRequests.length}
+                    </Badge>
+                  )}
                 </Button>
                 <Button variant="outline" className="h-auto py-4 flex flex-col gap-2" onClick={() => setShowQrDialog(true)}>
                   <QrCode className="w-6 h-6 text-primary" />
                   <span className="text-sm">Show QR</span>
-                </Button>
-                <Button variant="outline" className="h-auto py-4 flex flex-col gap-2" onClick={() => setShowScanDialog(true)}>
-                  <ScanLine className="w-6 h-6 text-primary" />
-                  <span className="text-sm">Scan QR</span>
                 </Button>
               </div>
             </CardContent>
@@ -130,9 +144,15 @@ export default function WalletPage() {
           setShowQrDialog={setShowQrDialog}
           showScanDialog={showScanDialog}
           setShowScanDialog={setShowScanDialog}
+          showRequestDialog={showRequestDialog}
+          setShowRequestDialog={setShowRequestDialog}
+          showRequestsDialog={showRequestsDialog}
+          setShowRequestsDialog={setShowRequestsDialog}
+          pendingRequests={pendingRequests}
+          setPendingRequests={setPendingRequests}
           prefilledWalletId={scannedWalletId}
           onScanSuccess={handleScanSuccess}
-          onTransferSuccess={fetchData} // Refresh data on success
+          onTransferSuccess={fetchData}
         />
       </div>
     </DashboardContent>
