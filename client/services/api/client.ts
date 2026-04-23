@@ -53,7 +53,8 @@ export function setAuthToken(token: string | null) {
   if (token) {
     localStorage.setItem("auth_token", token);
     // Set cookie for server-side access (Expires in 30 days)
-    document.cookie = `token=${token}; path=/; max-age=2592000; SameSite=Lax; Secure`;
+    const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `token=${token}; path=/; max-age=2592000; SameSite=Lax${secure}`;
   } else {
     localStorage.removeItem("auth_token");
     // Remove cookie
