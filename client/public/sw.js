@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 const CACHE_NAME = 'bbrains-pwa-v1'
-const PRECACHE_URLS = ['/offline', '/icon-192.png', '/icon-512.png', '/manifest.webmanifest']
+const PRECACHE_URLS = ['/offline', '/manifest-icon-192.maskable.png', '/manifest-icon-512.maskable.png', '/manifest.webmanifest']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
