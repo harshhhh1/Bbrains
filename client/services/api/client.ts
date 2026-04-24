@@ -426,10 +426,10 @@ export interface Event {
   id: string | number;
   title: string;
   description?: string;
+  banner?: string;
   date: string;
   startDate: string;
   endDate: string;
-  time?: string;
   location?: string;
   type?: string;
 }
@@ -1001,8 +1001,11 @@ export const eventApi = {
     title: string;
     description?: string;
     date: string;
-    time?: string;
+    banner?: string;
+    startdate: string;
+    enddate: string;
     location?: string;
+    type?: string;
   }): Promise<ApiResponse<Event>> => {
     return api.post<Event>('/events', data);
   },

@@ -113,10 +113,10 @@ export function UpcomingEventsCard({ initialEvents }: UpcomingEventsCardProps) {
                 <div className="flex-1 space-y-1">
                   <p className="font-medium text-sm">{event.title}</p>
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    {event.time && (
+                    {(event as any).time && (
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {event.time}
+                        {(event as any).time}
                       </span>
                     )}
                     {event.location && (

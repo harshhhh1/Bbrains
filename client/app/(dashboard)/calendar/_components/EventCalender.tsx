@@ -34,7 +34,7 @@ export function EventCalender({ events = [] }: EventCalenderProps) {
                         <div key={event.id} className="border border-gray-100 dark:border-gray-800 rounded-md p-3 border-t-4 odd:border-t-blue-200 even:border-t-purple-300 bg-gray-50/50 dark:bg-gray-800/30">
                             <div className="flex items-center justify-between">
                                 <h1 className="font-semibold text-gray-700 dark:text-gray-200 text-sm">{event.title}</h1>
-                                <span className="text-[10px] text-gray-400">{event.time || "All day"}</span>
+                                <span className="text-[10px] text-gray-400">{(event as any).time || "All day"}</span>
                             </div>
                             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{event.description}</p>
                         </div>
