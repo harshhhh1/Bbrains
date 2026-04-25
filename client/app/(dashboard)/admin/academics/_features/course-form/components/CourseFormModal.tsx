@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Course } from "../../types";
+import { Course } from "../../../types";
 import { useCourseForm } from "../hooks/useCourseForm";
 import { EmptySubjectState, SubjectEntryRow } from "./SubjectEntryRow";
 
