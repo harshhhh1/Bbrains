@@ -107,15 +107,17 @@ export const acknowledgeAnnouncement = async (req, res, next) => {
         const id = parseInt(req.params.id);
         const userId = req.user?.id;
 
-        if (!id || isNaN(id)) return res.status(400).json({ success: false, message: "Invalid announcement ID" });
+        if (!id || isNaN(id)) {
+            return res.status(400).json({ success: false, message: "Invalid announcement ID: must be a number" });
+        }
         if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
 
-        const [announcement, existingAck] = await Promise.all([
-            prisma.announcement.findUnique({ where: { id } }),
-            prisma.acknowledged.findFirst({ where: { announcementId: id, userId } })
-        ]);
+        const announcement = await prisma.announcement.findUnique({ where: { id } });
+        if (!announcement) {
+            return res.status(404).json({ success: false, message: "Announcement not found" });
+        }
 
-        if (!announcement) throw new NotFoundError('Announcement not found');
+        const existingAck = await prisma.acknowledged.findFirst({ where: { announcementId: id, userId } });
         if (existingAck) return res.status(200).json({ success: true, message: "Already acknowledged" });
 
         await prisma.acknowledged.create({ data: { announcementId: id, userId } });
