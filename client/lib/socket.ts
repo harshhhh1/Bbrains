@@ -13,8 +13,11 @@ export const getSocket = async (): Promise<Socket> => {
 
     socket = io(socketUrl, {
         auth: { token },
-        transports: ["websocket"],
+        transports: ["websocket", "polling"],
         withCredentials: true,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
     });
 
     socket.on("connect", () => {

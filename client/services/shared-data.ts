@@ -2,29 +2,39 @@ import { cache } from 'react';
 import { cookies } from 'next/headers';
 
 export const getCachedUser = cache(async (token: string) => {
-    try {
-        const baseUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-        const cookieStore = await cookies()
-        const impersonateCollegeId = cookieStore.get('impersonateCollegeId')?.value
+    const baseUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const cookieStore = await cookies()
+    const impersonateCollegeId = cookieStore.get('impersonateCollegeId')?.value
 
-        const response = await fetch(`${baseUrl}/user/me`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                ...(impersonateCollegeId ? { 'X-Impersonate-College-Id': impersonateCollegeId } : {}),
-            },
-            // We want it to be per-request, but deduplicated within same request
-            // Next.js fetch cache is separate from react cache()
-        })
+    const fetchWithRetry = async (retries = 2, delay = 500): Promise<any> => {
+        try {
+            const response = await fetch(`${baseUrl}/user/me`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    ...(impersonateCollegeId ? { 'X-Impersonate-College-Id': impersonateCollegeId } : {}),
+                },
+                next: { revalidate: 0 } // Ensure we get fresh data
+            })
 
-        if (!response.ok) return null
+            if (response.ok) {
+                const result = await response.json()
+                if (result.success && result.data) return result.data
+            }
 
-        const result = await response.json()
-        if (result.success && result.data) {
-            return result.data
+            if (retries > 0) {
+                await new Promise(resolve => setTimeout(resolve, delay))
+                return fetchWithRetry(retries - 1, delay * 2)
+            }
+            return null
+        } catch (error) {
+            if (retries > 0) {
+                await new Promise(resolve => setTimeout(resolve, delay))
+                return fetchWithRetry(retries - 1, delay * 2)
+            }
+            return null
         }
-        return null
-    } catch {
-        return null
     }
+
+    return fetchWithRetry()
 });

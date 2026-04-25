@@ -245,23 +245,44 @@ export function useChatMessages() {
         }
     }, [chatRoomId, hasMore, loadingMore, messages])
 
+    const lastSearchQueryRef = useRef<string>('')
+    const searchRequestIdRef = useRef<number>(0)
+
     const searchMessages = useCallback(async (query: string) => {
-        if (!query.trim()) {
+        const trimmedQuery = query.trim()
+        lastSearchQueryRef.current = trimmedQuery
+        
+        if (!trimmedQuery) {
             setSearchResults([])
             setIsSearching(false)
             return
         }
 
+        const requestId = ++searchRequestIdRef.current
+
         try {
             setIsSearching(true)
-            const response = await chatApi.searchMessages(query, 50, chatRoomId)
-            if (response.success && response.data) {
-                setSearchResults(response.data.map(formatMessage))
+            const response = await chatApi.searchMessages(trimmedQuery, 50, chatRoomId)
+            
+            if (requestId === searchRequestIdRef.current && lastSearchQueryRef.current === trimmedQuery) {
+                if (response.success && response.data) {
+                    setSearchResults(response.data.map(formatMessage))
+                } else {
+                    // Only clear if the request actually succeeded with empty results
+                    setSearchResults([])
+                    if (response.error) {
+                        console.error('Search API error:', response.error)
+                    }
+                }
             }
         } catch (error) {
             console.error('Failed to search messages:', error)
+            // Don't clear results on error to avoid "disappearing" UI flicker
+            // unless we're just starting out
         } finally {
-            setIsSearching(false)
+            if (requestId === searchRequestIdRef.current) {
+                setIsSearching(false)
+            }
         }
     }, [chatRoomId])
 

@@ -109,6 +109,14 @@ const authenticateSocketUser = async (socket) => {
     const dbUser = await prisma.user.findUnique({
         where: { id: decoded.id },
         include: {
+            userDetails: {
+                select: {
+                    avatar: true,
+                    firstName: true,
+                    lastName: true,
+                    sex: true
+                }
+            },
             roles: {
                 include: {
                     role: {
