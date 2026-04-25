@@ -58,13 +58,24 @@ export function getViewCopy(view: PersonalTransactionKind | null) {
 export function downloadReceipt(transaction: Transaction, user: User | null) {
   const fmt = (n: number | string) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(Number(n || 0))
-  const fmtDate = (v?: string) =>
-    v ? new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(v)) : "—"
+  const fmtDateTime = (v?: string) =>
+    v ? new Intl.DateTimeFormat("en-IN", { 
+      day: "2-digit", 
+      month: "short", 
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true 
+    }).format(new Date(v)) : "—"
   const fmtCat = (v?: string | null) =>
     (v || "Other").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
   const studentName =
     [user?.userDetails?.firstName, user?.userDetails?.lastName].filter(Boolean).join(" ") || user?.username || "—"
   const isFailed = transaction.status === "failed"
+
+  // Extract Razorpay Order ID if present in note
+  const orderIdMatch = transaction.note?.match(/Order ID: (order_[a-zA-Z0-9]+)/);
+  const razorpayOrderId = orderIdMatch ? orderIdMatch[1] : null;
 
   const html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"/>
@@ -101,14 +112,16 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;padding:48px}
     <div class="amount"><span>Amount</span>${fmt(transaction.amount)}</div>
     <div class="grid">
       <div class="field"><span class="lbl">Student</span><span class="val">${studentName}</span></div>
-      <div class="field"><span class="lbl">Date</span><span class="val">${fmtDate(transaction.createdAt)}</span></div>
+      <div class="field"><span class="lbl">Date & Time</span><span class="val">${fmtDateTime(transaction.transactionDate as string)}</span></div>
       <div class="field"><span class="lbl">Category</span><span class="val">${fmtCat(transaction.category)}</span></div>
-      <div class="field"><span class="lbl">Type</span><span class="val">${(transaction.type || "—").toUpperCase()}</span></div>
+      <div class="field"><span class="lbl">Payment Method</span><span class="val">${(transaction.paymentMode || "—").toUpperCase()}</span></div>
     </div>
     <hr class="divider"/>
     <div class="grid">
       <div class="field"><span class="lbl">Transaction ID</span><span class="val">${transaction.id || "—"}</span></div>
-      <div class="field"><span class="lbl">Reference</span><span class="val">${transaction.referenceId || "No reference"}</span></div>
+      <div class="field"><span class="lbl">Payment ID (Razorpay)</span><span class="val">${transaction.referenceId || "—"}</span></div>
+      ${razorpayOrderId ? `<div class="field"><span class="lbl">Order ID (Razorpay)</span><span class="val">${razorpayOrderId}</span></div>` : ""}
+      ${transaction.note && !razorpayOrderId ? `<div class="field" style="grid-column:span 2"><span class="lbl">Note</span><span class="val">${transaction.note}</span></div>` : ""}
       ${transaction.description ? `<div class="field" style="grid-column:span 2"><span class="lbl">Description</span><span class="val">${transaction.description}</span></div>` : ""}
     </div>
   </div>
