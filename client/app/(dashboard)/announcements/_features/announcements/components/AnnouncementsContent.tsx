@@ -89,7 +89,11 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
 
       const collegeId = a.collegeId;
       const isGlobal = a.isGlobal;
-      const matchesCollege = isGlobal || collegeId === undefined || collegeId === null || collegeId === currentCollegeId;
+      // Use string comparison for collegeId to be safe against type mismatches
+      const matchesCollege = isGlobal || 
+                            collegeId === undefined || 
+                            collegeId === null || 
+                            String(collegeId) === String(currentCollegeId);
 
       return matchesQuery && matchesCollege;
     }
@@ -111,12 +115,11 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
         description: newAnnouncement.trim(),
         category: "general",
         image: attachedImage || undefined,
-        // Include collegeId so the backend associates this announcement with the correct college
         ...(currentCollegeId ? { collegeId: currentCollegeId } : {})
       });
       
       if (response.success && response.data) {
-        setAnnouncements([response.data, ...announcements]);
+        setAnnouncements((prev) => [response.data!, ...prev]);
         setVisibleCount((current) => Math.max(current, ANNOUNCEMENTS_PAGE_SIZE));
         setNewAnnouncementTitle("");
         setNewAnnouncement("");
@@ -152,7 +155,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
       const response = await announcementApi.deleteAnnouncement(announcementToDelete);
       
       if (response.success) {
-        setAnnouncements(announcements.filter(a => String(a.id) !== announcementToDelete));
+        setAnnouncements((prev) => prev.filter(a => String(a.id) !== announcementToDelete));
         toast.success("Announcement deleted successfully");
       } else {
         toast.error(response.message || "Failed to delete announcement");
@@ -167,19 +170,34 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
   };
 
   const handleAcknowledge = async (id: string) => {
+    // String "undefined" or "null" or empty means something is wrong with the data model in state
+    if (!id || id === "undefined" || id === "null" || isNaN(Number(id))) {
+      console.error("Attempted to acknowledge with invalid ID:", id);
+      toast.error("Invalid announcement data. Please refresh.");
+      return;
+    }
+
     setAcknowledging(id);
     try {
       const response = await announcementApi.acknowledgeAnnouncement(id);
       
-      if (response.success && response.data) {
-        setAnnouncements(announcements.map(a => 
-          String(a.id) === id ? response.data! : a
-        ));
-        toast.success("Acknowledged successfully");
+      if (response.success) {
+        if (response.data && response.data.id) {
+          setAnnouncements((prev) => prev.map(a => 
+            String(a.id) === String(id) ? response.data! : a
+          ));
+          toast.success("Acknowledged successfully");
+        } else if (response.message === "Already acknowledged") {
+          toast.info("You have already acknowledged this announcement");
+        } else {
+          // Success true but no data - usually shouldn't happen if backend is correct
+          console.warn("Acknowledgment successful but no data returned", response);
+        }
       } else {
         toast.error(response.message || "Failed to acknowledge");
       }
     } catch (err) {
+      console.error("Acknowledgment error:", err);
       toast.error("Failed to acknowledge");
     } finally {
       setAcknowledging(null);
