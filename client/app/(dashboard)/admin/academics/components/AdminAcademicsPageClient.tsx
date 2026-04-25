@@ -10,7 +10,7 @@ import { StudentsTable } from "./StudentsTable";
 import { TeachersTab } from "./TeachersTab";
 import { AssignmentsTable } from "./AssignmentsTable";
 import { DeleteDialog } from "./DeleteDialog";
-import { CourseFormModal } from "./CourseFormModal";
+import { CourseFormModal } from "../_features/course-form";
 import { useAcademics } from "../hooks/use-academics";
 import { useState } from "react";
 

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { dashboardApi, feeApi } from "@/services/api/client";
+import { downloadReceipt } from "../../transactions/utils";
 
 export default function FeesPage() {
   const [student, setStudent] = useState<any>(null);
@@ -18,6 +19,7 @@ export default function FeesPage() {
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const [amount, setAmount] = useState<number>(0);
   const [razorpayOrderId, setRazorpayOrderId] = useState<string | null>(null);
+  const [transaction, setTransaction] = useState<any>(null);
 
   useEffect(() => {
     loadStudentData();
@@ -168,6 +170,7 @@ export default function FeesPage() {
       // Payment successful
       toast.success("Fee payment successful!");
       setPaymentId(paymentResponse.razorpay_payment_id);
+      setTransaction(verifyData.data);
       
       // Refresh student data to show updated fee status
       loadStudentData();
@@ -311,16 +314,27 @@ export default function FeesPage() {
               Transaction ID: {paymentId}
             </p>
           )}
-          <Button 
-            variant="outline"
-            onClick={() => {
-              // Reset for another payment (in real app, you might navigate away)
-              setPaymentId(null);
-              toast.info("Ready for another payment");
-            }}
-          >
-            Make Another Payment
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button 
+              variant="outline"
+              onClick={() => {
+                // Reset for another payment (in real app, you might navigate away)
+                setPaymentId(null);
+                setTransaction(null);
+                toast.info("Ready for another payment");
+              }}
+            >
+              Make Another Payment
+            </Button>
+            {transaction && (
+              <Button 
+                onClick={() => downloadReceipt(transaction, student)}
+                className="bg-brand-purple hover:bg-brand-purple/90"
+              >
+                Download Receipt
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </div>
