@@ -104,11 +104,18 @@ export const deleteAnnouncement = async (req, res, next) => {
 
 export const acknowledgeAnnouncement = async (req, res, next) => {
     try {
-        const id = parseInt(req.params.id);
+        const idStr = req.params.id;
+        const id = parseInt(idStr);
         const userId = req.user?.id;
 
-        if (!id || isNaN(id)) {
-            return res.status(400).json({ success: false, message: "Invalid announcement ID: must be a number" });
+        console.log(`[Acknowledge] Attempting to acknowledge ID: ${idStr} (parsed: ${id}) by user: ${userId}`);
+
+        if (!idStr || isNaN(id)) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Invalid announcement ID: ${idStr}. Must be a valid number.`,
+                receivedId: idStr
+            });
         }
         if (!userId) return res.status(401).json({ success: false, message: "Unauthorized" });
 
@@ -136,7 +143,11 @@ export const acknowledgeAnnouncement = async (req, res, next) => {
 
 export const getAcknowledgedUsers = async (req, res, next) => {
     try {
-        const id = parseInt(req.params.id);
+        const idStr = req.params.id;
+        const id = parseInt(idStr);
+        if (!idStr || isNaN(id)) {
+            return res.status(400).json({ success: false, message: `Invalid announcement ID: ${idStr}` });
+        }
         const acks = await prisma.acknowledged.findMany({
             where: { announcementId: id },
             include: defaultIncludes.acknowledged.include,

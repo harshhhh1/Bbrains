@@ -118,6 +118,12 @@ export function useChatPage() {
   }, [chatRoomId, mentionQuery]);
 
   useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) window.clearTimeout(searchTimeoutRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
     if (!isMobileSearchOpen) return;
     const timer = window.setTimeout(() => {
       mobileSearchInputRef.current?.focus();
@@ -438,12 +444,20 @@ export function useChatPage() {
     }, 0);
   }, []);
 
+  const searchTimeoutRef = useRef<number>(null);
+
   const handleSearchChange = useCallback(
     (query: string) => {
       setSearchQuery(query);
+      if (searchTimeoutRef.current) {
+        window.clearTimeout(searchTimeoutRef.current);
+      }
+
       if (query.trim()) {
         setIsSearchMode(true);
-        void searchMessages(query);
+        searchTimeoutRef.current = window.setTimeout(() => {
+          void searchMessages(query);
+        }, 300);
       } else {
         setIsSearchMode(false);
       }
