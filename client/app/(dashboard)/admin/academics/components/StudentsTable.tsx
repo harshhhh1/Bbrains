@@ -22,7 +22,9 @@ export function StudentsTable({ students, search, onDelete }: StudentsTableProps
   const filteredStudents = students.filter(s => {
     if (!search) return true;
     const searchLower = search.toLowerCase();
-    const fullName = `${s.firstName || ""} ${s.lastName || ""}`.toLowerCase();
+    const firstName = s.userDetails?.firstName || "";
+    const lastName = s.userDetails?.lastName || "";
+    const fullName = `${firstName} ${lastName}`.toLowerCase();
     const username = s.username.toLowerCase();
     const email = s.email.toLowerCase();
     return fullName.includes(searchLower) || username.includes(searchLower) || email.includes(searchLower);
@@ -43,9 +45,9 @@ export function StudentsTable({ students, search, onDelete }: StudentsTableProps
         </TableHeader>
         <TableBody>
           {filteredStudents.map((student) => {
-            const firstName = student.firstName || "";
-            const lastName = student.lastName || "";
-            const avatar = student.avatar;
+            const firstName = student.userDetails?.firstName || "";
+            const lastName = student.userDetails?.lastName || "";
+            const avatar = student.userDetails?.avatar;
             const level = student.xp?.level || 1;
             const xp = student.xp?.xp || 0;
 

@@ -315,7 +315,7 @@ export default function ProductDetailPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-white/40">Total Revenue</span>
-                    <span className="text-lg font-black text-brand-orange">{((product.unitsSold || 0) * product.price).toFixed(0)} B-Coins</span>
+                    <span className="text-lg font-black text-brand-orange">{((product.unitsSold || 0) * Number(product.price)).toFixed(0)} B-Coins</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-white/40">Rating</span>

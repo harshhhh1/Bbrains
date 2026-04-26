@@ -10,7 +10,7 @@ export function SuperadminDashboard() {
             <p className="text-muted-foreground">Welcome to the Bbrains Officials control panel.</p>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Link href="/superadmin/colleges" className="block">
+                <Link href="/colleges" className="block">
                     <Card className="hover:bg-accent/50 transition-colors">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Manage Colleges</CardTitle>

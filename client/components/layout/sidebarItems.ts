@@ -42,7 +42,7 @@ export const sidebarItems = [
     { "title": "Suggestions", "url": "/suggestions", "icon": "MessageSquarePlus", "access": ["student", "teacher", "admin", "staff", "manager"] },
     { "title": "Settings", "url": "/settings", "icon": "Settings", "access": ["student", "teacher", "admin", "staff", "manager"] },
 
-    { "title": "Manage Users", "url": "/admin/users", "icon": "UserCog", "access": ["admin"] },
+    { "title": "Manage Users", "url": "/users", "icon": "UserCog", "access": ["admin"] },
     { "title": "Colleges", "url": "/colleges", "icon": "Building2", "access": ["superadmin"] },
     { "title": "Roles & Access", "url": "/admin/roles", "icon": "Shield", "access": ["admin"] },
     { "title": "Sidebar Config", "url": "/admin/config/sidebar-access", "icon": "Settings2", "access": ["admin"] },

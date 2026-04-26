@@ -115,7 +115,12 @@ export function StudentDashboardNewView({
   const leaderboardRank = dashboardData?.stats?.leaderboardRank;
   const streakDays = Math.max(
     0,
-    Number(dashboardData?.streak?.currentStreak ?? dashboardData?.stats?.streak ?? 0)
+    Number(
+      (dashboardData?.streak as any)?.currentStreak ??
+      (dashboardData?.streak as any)?.current ??
+      dashboardData?.stats?.streak ??
+      0
+    )
   );
   const walletBalance = Number(
     dashboardData?.wallet?.balance ?? dashboardData?.stats?.walletBalance ?? 0
@@ -176,7 +181,7 @@ export function StudentDashboardNewView({
     {
       title: "Next event",
       body: nextEvent
-        ? `${nextEvent.title} on ${formatShortDate(nextEvent.date)}`
+        ? `${(nextEvent as any).title || "Event"} on ${formatShortDate((nextEvent as any).date)}`
         : "No upcoming events on the board right now.",
       icon: CalendarDays,
     },
@@ -352,16 +357,16 @@ export function StudentDashboardNewView({
                 level={resolvedLevel}
                 xp={resolvedXp}
                 nextLevelXp={dashboardData?.stats?.nextLevelRequiredXp}
-                currentLevelXp={dashboardData?.stats?.currentLevelRequiredXp}
+                currentLevelXp={dashboardData?.stats?.nextLevelRequiredXp ? (dashboardData?.stats?.nextLevelRequiredXp as number) - 100 : undefined}
               />
             </SketchPanel>
 
             <SketchPanel tilt="rotate-1" accentClassName="bg-hand-red/10">
-              <DailyRewardCard initialStreak={dashboardData?.streak} />
+              <DailyRewardCard initialStreak={dashboardData?.streak as any} />
             </SketchPanel>
 
             <SketchPanel tilt="-rotate-1" accentClassName="bg-hand-blue/10">
-              <WalletMiniCard initialWallet={dashboardData?.wallet} />
+              <WalletMiniCard initialWallet={dashboardData?.wallet as any} />
             </SketchPanel>
 
             <SketchPanel tilt="rotate-1" accentClassName="bg-hand-yellow/25">
@@ -371,7 +376,7 @@ export function StudentDashboardNewView({
             </SketchPanel>
 
             <SketchPanel tilt="-rotate-1" accentClassName="bg-hand-blue/10">
-              <AttendanceCard initialAttendance={dashboardData?.attendance} />
+              <AttendanceCard initialAttendance={dashboardData?.attendance as any} />
             </SketchPanel>
           </div>
 
@@ -399,7 +404,7 @@ export function StudentDashboardNewView({
             </SketchPanel>
 
             <SketchPanel tilt="rotate-1" accentClassName="bg-hand-yellow/20">
-              <UpcomingEventsCard initialEvents={dashboardData?.events?.slice(0, 5)} />
+              <UpcomingEventsCard initialEvents={dashboardData?.events?.slice(0, 5) as any} />
             </SketchPanel>
           </div>
 

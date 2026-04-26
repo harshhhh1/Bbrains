@@ -1,174 +1,91 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect, useMemo } from "react"
-import { getAuthedClient } from "@/services/api/client"
-import { Loader2, Search, FileText, Clock, ArrowRight } from "lucide-react"
-import { SectionHeader } from "@/features/admin/components/SectionHeader"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import type { ApiAuditLog } from "@/lib/types/api"
-
-
-function getInitials(username: string) {
-    if (!username) return "?"
-    return username.slice(0, 2).toUpperCase()
-}
-
-function fmtDate(value: string) {
-    return new Date(value).toLocaleString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-    })
-}
-
-function formatChange(change?: Record<string, unknown>) {
-    if (!change) return null
-    const before = change.before
-    const after = change.after
-    if (!before && !after) return null
-    return { before, after }
-}
-
-const categoryColors: Record<string, string> = {
-    AUTH: "bg-blue-500/15 text-blue-600",
-    ACADEMIC: "bg-green-500/15 text-green-600",
-    MARKET: "bg-orange-500/15 text-orange-600",
-    FINANCE: "bg-yellow-500/15 text-yellow-600",
-    USER: "bg-purple-500/15 text-purple-600",
-    SYSTEM: "bg-gray-500/15 text-gray-600",
-}
+import React, { useState, useEffect, useMemo } from "react";
+import { getAuthedClient } from "@/services/api/client";
+import { Loader2, Search, FileText } from "lucide-react";
+import { SectionHeader } from "@/features/admin/components/SectionHeader";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import type { ApiAuditLog } from "@/lib/types/api";
+import { AuditLogCard } from "../_components/AuditLogCard";
 
 export default function AuditLogPage() {
-    const [logs, setLogs] = useState<ApiAuditLog[]>([])
-    const [loading, setLoading] = useState(true)
-    const [searchQuery, setSearchQuery] = useState("")
+  const [logs, setLogs] = useState<ApiAuditLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-    useEffect(() => {
-        async function load() {
-            try {
-                setLoading(true)
-                const c = await getAuthedClient()
-                const res = await c.get<{ success: boolean; data: ApiAuditLog[]; pagination: unknown }>("/logs/me?limit=100")
-                setLogs(res.data.data)
-            } catch (e) { console.error(e) } finally { setLoading(false) }
-        }
-        load()
-    }, [])
-
-    const filteredLogs = useMemo(() => {
-        if (!searchQuery.trim()) return logs
-        const query = searchQuery.toLowerCase()
-        return logs.filter(
-            (log) =>
-                log.action.toLowerCase().includes(query) ||
-                log.entity.toLowerCase().includes(query) ||
-                log.entityId?.toLowerCase().includes(query)
-        )
-    }, [logs, searchQuery])
-
-    if (loading) {
-        return (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading activity logs...
-            </div>
-        )
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        const c = await getAuthedClient();
+        const res = await c.get<{ success: boolean; data: ApiAuditLog[]; pagination: unknown }>("/logs/me?limit=100");
+        setLogs(res.data.data || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     }
+    load();
+  }, []);
 
+  const filteredLogs = useMemo(() => {
+    if (!searchQuery.trim()) return logs;
+    const query = searchQuery.toLowerCase();
+    return logs.filter(
+      (log) =>
+        log.action.toLowerCase().includes(query) ||
+        log.entity.toLowerCase().includes(query) ||
+        log.entityId?.toLowerCase().includes(query)
+    );
+  }, [logs, searchQuery]);
+
+  if (loading && logs.length === 0) {
     return (
-        <div className="space-y-4">
-            <SectionHeader title="My Activity Log" subtitle="Your recent actions" />
+      <div className="py-40 flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
+        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Records...</p>
+      </div>
+    );
+  }
 
-            <div className="relative w-full max-w-md">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                    className="rounded-xl pl-9"
-                    placeholder="Search logs..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
-
-            {filteredLogs.length === 0 ? (
-                <Card className="border-dashed border-border/70">
-                    <CardContent className="flex flex-col items-center justify-center py-10 text-center text-sm text-muted-foreground">
-                        <FileText className="size-8 mb-2 opacity-40" />
-                        {searchQuery ? "No logs match your search." : "No activity logs found."}
-                    </CardContent>
-                </Card>
-            ) : (
-                <div className="space-y-3">
-                    {filteredLogs.map((log) => {
-                        const change = formatChange(log.change)
-                        return (
-                            <Card key={log.id} className="border-border/60">
-                                <CardContent className="p-4">
-                                    <div className="flex flex-col gap-3">
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-10 w-10">
-                                                    <AvatarImage src={log.user?.avatar ?? undefined} className="object-cover" />
-                                                    <AvatarFallback className="bg-brand-purple/10 text-brand-purple text-sm font-semibold">
-                                                        {getInitials(log.user?.username ?? log.userId ?? "S")}
-                                                    </AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-medium text-foreground">
-                                                        {log.user?.username ?? log.userId ?? "System"}
-                                                    </p>
-                                                    <Badge className={`text-[10px] font-semibold ${categoryColors[log.category] ?? ""}`}>
-                                                        {log.category}
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                                                <Clock className="size-3.5" />
-                                                {fmtDate(log.createdAt)}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 text-sm">
-                                            <span className="font-semibold text-foreground">{log.action}</span>
-                                            <span className="text-muted-foreground">on</span>
-                                            <span className="font-medium text-foreground">{log.entity}</span>
-                                            {log.entityId && (
-                                                <>
-                                                    <span className="text-muted-foreground">#</span>
-                                                    <span className="text-muted-foreground font-mono text-xs">{log.entityId}</span>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        {change && (
-                                            <div className="flex items-start gap-2 text-xs bg-muted/50 rounded-lg p-2.5">
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-muted-foreground mb-1">Old Value</p>
-                                                    <pre className="text-xs text-foreground truncate font-mono whitespace-pre-wrap break-all">
-                                                        {change.before ? JSON.stringify(change.before, null, 2) : "—"}
-                                                    </pre>
-                                                </div>
-                                                <ArrowRight className="size-4 text-muted-foreground shrink-0 mt-4" />
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-muted-foreground mb-1">New Value</p>
-                                                    <pre className="text-xs text-foreground truncate font-mono whitespace-pre-wrap break-all">
-                                                        {change.after ? JSON.stringify(change.after, null, 2) : "—"}
-                                                    </pre>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )
-                    })}
-                </div>
-            )}
+  return (
+    <div className="mx-auto w-full max-w-5xl p-6 md:p-12 space-y-12">
+      <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <SectionHeader 
+          title="Personal Audit Log" 
+          subtitle="Chronological record of your administrative and academic operations." 
+        />
+        
+        <div className="relative w-full max-w-md group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+          <Input
+            className="h-14 rounded-2xl pl-12 pr-4 bg-muted/20 border-border/40 focus:ring-2 focus:ring-primary/20 transition-all font-bold text-lg placeholder:text-muted-foreground/30"
+            placeholder="Search action or entity..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-    )
-}
+      </header>
 
+      {filteredLogs.length === 0 ? (
+        <Card className="border-2 border-dashed border-border/40 bg-muted/10 rounded-[2.5rem] py-24">
+          <CardContent className="flex flex-col items-center justify-center text-center px-6">
+            <FileText className="size-16 mb-6 text-muted-foreground/20" />
+            <h3 className="text-xl font-bold tracking-tight">No Activity Logged</h3>
+            <p className="text-muted-foreground mt-2 max-w-xs font-medium">
+              {searchQuery ? "No records match your search criteria." : "Your operational history will appear here once interactions are recorded."}
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4 animate-in fade-in duration-700">
+          {filteredLogs.map((log) => (
+            <AuditLogCard key={log.id} log={log} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -4,13 +4,12 @@
 import { useEffect, useState } from "react";
 import Script from "next/script";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { Loader2, History } from "lucide-react";
 import { toast } from "sonner";
 import { dashboardApi, feeApi } from "@/services/api/client";
-import { downloadReceipt } from "../../transactions/utils";
+import { DashboardContent } from "@/components/dashboard-content";
+import { FeeSummaryCard } from "../_components/FeeSummaryCard";
+import { PaymentSuccessState } from "../_components/PaymentSuccessState";
 
 export default function FeesPage() {
   const [student, setStudent] = useState<any>(null);
@@ -18,7 +17,6 @@ export default function FeesPage() {
   const [loading, setLoading] = useState(true);
   const [paymentId, setPaymentId] = useState<string | null>(null);
   const [amount, setAmount] = useState<number>(0);
-  const [razorpayOrderId, setRazorpayOrderId] = useState<string | null>(null);
   const [transaction, setTransaction] = useState<any>(null);
 
   useEffect(() => {
@@ -29,56 +27,40 @@ export default function FeesPage() {
     try {
       setLoading(true);
       const userResponse = await dashboardApi.getUser();
-      
       if (!userResponse.success || !userResponse.data) {
         toast.error(userResponse.message || "Failed to load profile");
         return;
       }
 
-      const userData = userResponse.data;
-      setStudent(userData);
-      
-      // Fetch actual fee details from backend
+      setStudent(userResponse.data);
       const feeResponse = await feeApi.getSummary();
       
-      if (!feeResponse.success || !feeResponse.data) {
-        toast.error(feeResponse.message || "Failed to load fee details");
-        return;
+      if (feeResponse.success && feeResponse.data) {
+        const actualFeeDetails = {
+          studentId: userResponse.data.id,
+          studentName: `${userResponse.data.userDetails?.firstName} ${userResponse.data.userDetails?.lastName}`,
+          amount: feeResponse.data.remainingAmount || 0,
+          description: "College Tuition Fee",
+          dueDate: "2026-06-30",
+        };
+        setFeeDetails(actualFeeDetails);
+        setAmount(actualFeeDetails.amount);
       }
-      
-      const feeData = feeResponse.data;
-      
-      const actualFeeDetails = {
-        studentId: userData.id,
-        studentName: `${userData.userDetails?.firstName} ${userData.userDetails?.lastName}`,
-        amount: feeData.remainingAmount || 0,
-        description: "College Tuition Fee",
-        dueDate: "2026-06-30",
-      };
-      
-      setFeeDetails(actualFeeDetails);
-      setAmount(actualFeeDetails.amount);
     } catch (error) {
-      console.error("Error loading student data:", error);
-      toast.error("Failed to load student data");
+      console.error(error);
+      toast.error("Failed to load records");
     } finally {
       setLoading(false);
     }
   };
 
   const initializeRazorpayPayment = async () => {
-    if (!feeDetails || amount <= 0) {
-      toast.error("Invalid fee details");
-      return;
-    }
+    if (!feeDetails || amount <= 0) return;
 
     try {
-      // Create Razorpay order via our backend API
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/razorpay/create-order`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount,
           currency: "INR",
@@ -87,22 +69,14 @@ export default function FeesPage() {
             studentId: feeDetails.studentId,
             studentName: feeDetails.studentName,
             feeDescription: feeDetails.description,
-            dueDate: feeDetails.dueDate,
           },
         }),
         credentials: "include",
       });
 
       const data = await response.json();
+      if (!data.success) throw new Error(data.message);
 
-      if (!data.success || !data.data) {
-        throw new Error(data.message || "Failed to create payment order");
-      }
-
-      // Store order ID for verification
-      setRazorpayOrderId(data.data.orderId);
-      
-      // Initialize Razorpay checkout
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
         amount: data.data.amount,
@@ -110,42 +84,28 @@ export default function FeesPage() {
         name: "College Fee Payment",
         description: feeDetails.description,
         order_id: data.data.orderId,
-        handler: async function (response: any) {
-          await verifyPayment(response);
-        },
+        handler: (res: any) => verifyPayment(res),
         prefill: {
           name: feeDetails.studentName,
           email: student.email || "",
           contact: student.userDetails?.phone || "",
         },
-        theme: {
-          color: "#0f172a", // Default dark theme color matching UI
-        },
+        theme: { color: "#0f172a" },
       };
 
       const rzp = new (window as any).Razorpay(options);
-      
-      rzp.on("payment.failed", function (response: any) {
-        console.error("Payment failed:", response.error);
-        toast.error(`Payment failed: ${response.error.description}`);
-      });
-
       rzp.open();
-    } catch (error) {
-      console.error("Error initializing Razorpay payment:", error);
-      toast.error("Failed to initialize payment: " + (error as Error).message);
+    } catch (error: any) {
+      toast.error("Payment failed to initialize");
     }
   };
 
   const verifyPayment = async (paymentResponse: any) => {
     try {
       setLoading(true);
-      // Verify payment with our backend
-      const verifyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/razorpay/verify-payment`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/razorpay/verify-payment`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           razorpayOrderId: paymentResponse.razorpay_order_id,
           razorpayPaymentId: paymentResponse.razorpay_payment_id,
@@ -159,184 +119,81 @@ export default function FeesPage() {
         credentials: "include",
       });
 
-      const verifyData = await verifyResponse.json();
-
-      console.log("Verification response:", verifyResponse.status, verifyData);
-
-      if (!verifyData.success) {
-        throw new Error(verifyData.message || "Payment verification failed");
+      const verifyData = await res.json();
+      if (verifyData.success) {
+        toast.success("Payment successful!");
+        setPaymentId(paymentResponse.razorpay_payment_id);
+        setTransaction(verifyData.data);
+        await loadStudentData();
       }
-
-      // Payment successful
-      toast.success("Fee payment successful!");
-      setPaymentId(paymentResponse.razorpay_payment_id);
-      setTransaction(verifyData.data);
-      
-      // Refresh student data to show updated fee status
-      loadStudentData();
     } catch (error) {
-      console.error("Error verifying payment:", error);
-      toast.error("Payment verification failed: " + (error as Error).message);
+      toast.error("Verification failed");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading || !student) {
+  if (loading && !student) {
     return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="size-6 animate-spin text-muted-foreground/50" />
+      <div className="flex flex-col items-center justify-center py-40 gap-3">
+        <Loader2 className="size-10 animate-spin text-primary/40" />
+        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Ledger...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <DashboardContent className="mx-auto w-full max-w-5xl p-6 md:p-12 space-y-10">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">College Fee Payment</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            View and pay your college fees securely online
-          </p>
-        </div>
-      </div>
+      
+      <header>
+        <h1 className="text-4xl font-black tracking-tight">Institutional Finance</h1>
+        <p className="mt-2 text-muted-foreground text-lg font-medium">Manage and settle your academic tuition fees.</p>
+      </header>
 
-      {feeDetails ? (
-        <Card className="border-border/60 shadow-sm">
-          <CardHeader>
-            <CardTitle>Fee Details</CardTitle>
-            <CardDescription>
-              Information about your outstanding college fees
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="student-name">Student Name</Label>
-                <Input
-                  id="student-name"
-                  defaultValue={`${student.userDetails?.firstName} ${student.userDetails?.lastName}`}
-                  readOnly
-                />
-              </div>
-              <div>
-                <Label htmlFor="student-id">Student ID</Label>
-                <Input
-                  id="student-id"
-                  defaultValue={student.id}
-                  readOnly
-                />
-              </div>
-              <div>
-                <Label htmlFor="fee-description">Fee Description</Label>
-                <Input
-                  id="fee-description"
-                  defaultValue={feeDetails.description}
-                  readOnly
-                />
-              </div>
-              <div>
-                <Label htmlFor="due-date">Due Date</Label>
-                <Input
-                  id="due-date"
-                  defaultValue={feeDetails.dueDate}
-                  readOnly
-                />
-              </div>
-              <div className="md:col-span-2">
-                <Label htmlFor="amount">Amount Due</Label>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    INR
-                  </span>
-                  <Input
-                    id="amount"
-                    type="number"
-                    defaultValue={feeDetails.amount.toString()}
-                    readOnly
-                    className="text-3xl font-bold"
-                  />
-                </div>
-                {paymentId && (
-                  <p className="mt-2 text-sm text-success">
-                    Payment ID: {paymentId}
-                  </p>
-                )}
-              </div>
+      {paymentId ? (
+        <PaymentSuccessState
+          paymentId={paymentId}
+          transaction={transaction}
+          student={student}
+          onReset={() => { setPaymentId(null); setTransaction(null); }}
+        />
+      ) : (
+        <div className="space-y-8">
+          {feeDetails ? (
+            <FeeSummaryCard 
+              student={student} 
+              feeDetails={feeDetails} 
+              paymentId={paymentId} 
+            />
+          ) : (
+            <div className="text-center py-20 bg-muted/10 rounded-3xl border-2 border-dashed border-border/40">
+              <p className="text-muted-foreground font-bold">Records unavailable</p>
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <p className="text-center text-muted-foreground py-8">Loading fee details...</p>
-      )}
-
-      {feeDetails && !paymentId ? (
-        <div className="space-y-4">
-          <Button 
-            onClick={initializeRazorpayPayment}
-            className="w-full"
-            disabled={loading || amount <= 0}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing...
-              </>
-            ) : amount <= 0 ? (
-              <>
-                <span>No Dues Remaining</span>
-              </>
-            ) : (
-              <>
-                <span>Pay Now</span>
-              </>
-            )}
-          </Button>
-          
-          <Button 
-            variant="outline"
-            onClick={() => {
-              // In a real app, this might open payment history or download receipt
-              toast.info("Payment history feature coming soon");
-            }}
-          >
-            View Payment History
-          </Button>
-        </div>
-      ) : (
-        <div className="text-center py-8">
-          <p className="text-success font-semibold">
-            Fee payment completed successfully!
-          </p>
-          {paymentId && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Transaction ID: {paymentId}
-            </p>
           )}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button 
+              size="lg"
+              onClick={initializeRazorpayPayment}
+              className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
+              disabled={loading || amount <= 0}
+            >
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Authorize Settlement"}
+            </Button>
+            
             <Button 
               variant="outline"
-              onClick={() => {
-                // Reset for another payment (in real app, you might navigate away)
-                setPaymentId(null);
-                setTransaction(null);
-                toast.info("Ready for another payment");
-              }}
+              size="lg"
+              className="h-14 rounded-2xl font-bold gap-2 px-8"
+              onClick={() => toast.info("History accessible via Transactions module")}
             >
-              Make Another Payment
+              <History className="h-4 w-4" />
+              Audit Log
             </Button>
-            {transaction && (
-              <Button 
-                onClick={() => downloadReceipt(transaction, student)}
-                className="bg-brand-purple hover:bg-brand-purple/90"
-              >
-                Download Receipt
-              </Button>
-            )}
           </div>
         </div>
       )}
-    </div>
+    </DashboardContent>
   );
 }

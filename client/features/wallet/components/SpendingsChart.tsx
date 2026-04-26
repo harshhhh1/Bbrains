@@ -28,7 +28,7 @@ export function SpendingsChart({ transactions }: SpendingsChartProps) {
 
   // Aggregate transactions into months
   transactions.forEach((txn) => {
-    const date = new Date(txn.transactionDate || txn.createdAt);
+    const date = new Date(txn.transactionDate || (txn as any).createdAt || new Date());
     const amount = Number(txn.amount || 0);
     const isCredit = txn.type.toLowerCase() === "credit" || txn.type.toLowerCase() === "received" || txn.type.toLowerCase() === "deposit";
 

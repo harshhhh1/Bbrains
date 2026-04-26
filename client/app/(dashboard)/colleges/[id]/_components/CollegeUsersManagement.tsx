@@ -11,8 +11,8 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CrudDrawer } from "@/features/admin/components/CrudDrawer";
-import { ManagerForm } from "@/app/(dashboard)/admin/users/_components/ManagerForm";
-import { emptyManagerForm, type ManagerForm as ManagerFormType } from "@/app/(dashboard)/admin/users/_types";
+import { ManagerForm } from "@/app/(dashboard)/users/_components/ManagerForm";
+import { emptyManagerForm, type ManagerForm as ManagerFormType } from "@/app/(dashboard)/users/_types";
 import type { ApiUser } from "@/lib/types/api";
 
 interface CollegeUsersManagementProps {
