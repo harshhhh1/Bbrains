@@ -43,7 +43,7 @@ export function useChatUnreadCount(userId?: string | null, isChatActive = false)
     }
 
     try {
-      const response = await chatApi.getMessages(undefined, 100)
+      const response = await chatApi.getMessages()
       if (!response.success || !response.data) return
 
       const lastSeenAt = readStoredChatLastSeen(normalizedUserId)

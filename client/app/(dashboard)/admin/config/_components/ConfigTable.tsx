@@ -44,16 +44,16 @@ export function ConfigTable({ loading, data, onEdit, onDelete }: ConfigTableProp
             label: "Value",
             render: (row: SystemConfig) => (
                 <code className="text-[11px] bg-muted px-1.5 py-0.5 rounded border border-border/50 max-w-[200px] truncate block">
-                    {row.value}
+                    {typeof row.value === 'object' ? JSON.stringify(row.value) : String(row.value)}
                 </code>
             ),
         },
     ]
 
     return (
-        <DataTable
-            columns={columns}
-            data={data}
+        <DataTable<SystemConfig & { id: string }>
+            columns={columns as any}
+            data={data.map(c => ({ ...c, id: c.key }))}
             isLoading={loading}
             searchKeys={["key", "description"]}
             extraActions={(row) => (

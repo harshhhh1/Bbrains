@@ -16,7 +16,7 @@ import {
 } from "lucide-react"
 import { getBaseUrl, setAuthToken, marketApi, type Product } from "@/services/api/client"
 import { NotificationsBell } from "@/components/shell/NotificationsBell"
-import { ThemeSwitcher } from "@/components/shell/theme-switcher"
+import { ThemeSwitcher } from "@/components/theme-switcher"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
@@ -270,13 +270,6 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                </div>
-            </div>
-
-            <div className="border-t border-border/40 bg-linear-to-r from-emerald-500/10 via-transparent to-cyan-500/10 px-4 py-2 md:hidden">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <CalendarDays className="h-3.5 w-3.5" />
-                    <span>{breadcrumbLabels.join(" / ")}</span>
                 </div>
             </div>
         </nav>

@@ -1,5 +1,6 @@
 import type { ApiMessage, ApiMember, Message, Member } from "./data"
 import { AVATAR_COLORS } from "./data"
+import type { ChatMemberProfile } from "@/services/api/client"
 
 // ─── String Helpers ───────────────────────────────────────────────────────────
 
@@ -52,7 +53,7 @@ export function mapApiMessage(m: ApiMessage): Message {
     }
 }
 
-export function mapApiMember(m: ApiMember, activeUserIds: string[] = []): Member {
+export function mapApiMember(m: ApiMember | ChatMemberProfile, activeUserIds: string[] = []): Member {
     const memberId = String(m.id)
     const isOnline = activeUserIds.includes(memberId)
 
@@ -65,10 +66,10 @@ export function mapApiMember(m: ApiMember, activeUserIds: string[] = []): Member
     return {
         id: memberId,
         username: m.username || "unknown",
-        name: m.displayName || m.username || "Unknown",
+        name: (m as ApiMember).displayName || (m as ChatMemberProfile).displayName || m.username || "Unknown",
         avatar: m.avatar || "",
-        pronouns: m.pronouns || "they/them",
-        grade: m.grade || "N/A",
+        pronouns: (m as ApiMember).pronouns || (m as ChatMemberProfile).pronouns || "they/them",
+        grade: (m as ApiMember).grade || (m as ChatMemberProfile).grade || "N/A",
         roles: roles,
         type: type,
         badge: isAdmin ? "ADMIN" : isMod ? "MOD" : undefined,

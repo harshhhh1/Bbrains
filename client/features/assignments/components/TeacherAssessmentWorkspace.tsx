@@ -1,21 +1,11 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Loader2, NotebookPen, PenSquare, Target, Users } from "lucide-react"
+import { Loader2, NotebookPen, Target, Users } from "lucide-react"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Textarea } from "@/components/ui/textarea"
 import { SectionHeader } from "@/features/admin/components/SectionHeader"
 import {
   assessmentApi,
@@ -23,6 +13,9 @@ import {
   type AssessmentCourseOption,
   type AssessmentStudent,
 } from "@/services/api/client"
+import { AssessmentCreationForm } from "./AssessmentCreationForm"
+import { GradingTable } from "./GradingTable"
+import { AssessmentHistory } from "./AssessmentHistory"
 
 type AssessmentForm = {
   courseId: string
@@ -46,30 +39,6 @@ const emptyForm: AssessmentForm = {
   assessmentType: "test",
   assessmentDate: "",
   totalMarks: "",
-}
-
-function fmtDate(value: string) {
-  return new Date(value).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
-}
-
-function personName(student?: AssessmentStudent | null) {
-  const full = `${student?.userDetails?.firstName || ""} ${student?.userDetails?.lastName || ""}`.trim()
-  return full || student?.username || "Student"
-}
-
-function assessmentLabel(type: "test" | "exam") {
-  return type === "exam" ? "Exam" : "Test"
-}
-
-function averagePercentage(assessment: Assessment) {
-  const totalMarks = Number(assessment.totalMarks || 0)
-  if (!totalMarks || assessment.results.length === 0) return 0
-  const totalScored = assessment.results.reduce((sum, result) => sum + Number(result.marksObtained || 0), 0)
-  return Math.round((totalScored / (assessment.results.length * totalMarks)) * 100)
 }
 
 export function TeacherAssessmentWorkspace() {
@@ -281,323 +250,130 @@ export function TeacherAssessmentWorkspace() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       <SectionHeader
-        title="Tests & Exams"
-        subtitle="Select the class, subject, and date first, then assign marks only to students who were present."
+        title="Faculty Assessment Portal"
+        subtitle="Finalize published records for tests and examinations based on daily attendance."
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-border/60">
-          <CardHeader className="pb-3">
-            <CardDescription>Published Assessments</CardDescription>
-            <CardTitle className="text-2xl">{loadingAssessments ? "-" : assessments.length}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
-            <NotebookPen className="h-4 w-4" />
-            Create and update published tests and exams here.
+        <Card className="rounded-[2rem] border-border/60 bg-card/50 shadow-sm group">
+          <CardContent className="p-6">
+             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">Records Published</p>
+             <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-black tabular-nums">{loadingAssessments ? "--" : assessments.length}</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Entries</span>
+             </div>
+             <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl -translate-x-4 -translate-y-4 group-hover:bg-primary/10 transition-colors" />
           </CardContent>
         </Card>
 
-        <Card className="border-border/60">
-          <CardHeader className="pb-3">
-            <CardDescription>Teacher Subjects</CardDescription>
-            <CardTitle className="text-xl">{teacherSubjects.length || "Not set"}</CardTitle>
+        <Card className="rounded-[2rem] border-border/60 bg-card/50 shadow-sm">
+          <CardHeader className="pb-3 px-6 pt-6">
+            <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Teacher Subjects</CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            {teacherSubjects.length ? teacherSubjects.map((subject) => <Badge key={subject}>{subject}</Badge>) : (
-              <p className="text-xs text-muted-foreground">Subject options appear automatically once teacher subjects are configured.</p>
-            )}
+          <CardContent className="px-6 pb-6">
+            <div className="flex flex-wrap gap-2">
+                {teacherSubjects.length ? teacherSubjects.map((s) => <Badge key={s} variant="secondary" className="font-bold text-[10px]">{s}</Badge>) : <span className="text-xs text-muted-foreground font-medium italic">Pending Assignment</span>}
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border/60">
-          <CardHeader className="pb-3">
-            <CardDescription>Present Students Loaded</CardDescription>
-            <CardTitle className="text-2xl">{assessmentSetupLoading ? "-" : eligibleStudents.length}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Users className="h-4 w-4" />
-            This list updates from the selected class and date.
+        <Card className="rounded-[2rem] border-primary/20 bg-primary/5 shadow-sm">
+           <CardContent className="p-6">
+             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Active Candidates</p>
+             <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-black tabular-nums text-primary">{assessmentSetupLoading ? "--" : eligibleStudents.length}</span>
+                <span className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Roster Size</span>
+             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-border/60">
-        <CardHeader>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <CardTitle className="text-xl">{editingAssessment ? "Edit Published Assessment" : "Create Test or Exam"}</CardTitle>
-              <CardDescription>
-                The subject picker appears here. If you teach only one subject, it is selected automatically.
-              </CardDescription>
+      <Card className="rounded-[2.5rem] border-border/60 overflow-hidden bg-card/50 shadow-xl">
+        <CardHeader className="p-8 bg-muted/30 border-b border-border/40">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-2xl font-black tracking-tight">{editingAssessment ? "Modify Published Record" : "Publish Assessment"}</CardTitle>
+              <CardDescription className="font-medium">Define parameters and input marks for present students.</CardDescription>
             </div>
-            {editingAssessment ? (
-              <Button variant="outline" className="rounded-2xl" onClick={resetComposer}>
-                New Assessment
-              </Button>
-            ) : null}
+            {editingAssessment && (
+              <Button variant="outline" className="rounded-xl h-10 px-6 font-bold" onClick={resetComposer}>New Entry</Button>
+            )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Assessment Type</label>
-              <Select
-                value={assessmentForm.assessmentType}
-                onValueChange={(value) =>
-                  setAssessmentForm((current) => ({ ...current, assessmentType: value as "test" | "exam" }))
-                }
-              >
-                <SelectTrigger className="rounded-2xl">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="test">Test</SelectItem>
-                  <SelectItem value="exam">Exam</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <CardContent className="p-8 space-y-10">
+          <AssessmentCreationForm
+            form={assessmentForm}
+            onChange={(updates) => setAssessmentForm(curr => ({ ...curr, ...updates }))}
+            courses={courses}
+            subjectOptions={subjectOptions}
+          />
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Class</label>
-              <Select
-                value={assessmentForm.courseId}
-                onValueChange={(value) =>
-                  setAssessmentForm((current) => ({ ...current, courseId: value, subject: "" }))
-                }
-              >
-                <SelectTrigger className="rounded-2xl">
-                  <SelectValue placeholder="Select class" />
-                </SelectTrigger>
-                <SelectContent>
-                  {courses.map((course) => (
-                    <SelectItem key={course.id} value={String(course.id)}>
-                      {course.name}
-                      {course.standard ? ` (${course.standard})` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Date</label>
-              <Input
-                type="date"
-                className="rounded-2xl"
-                value={assessmentForm.assessmentDate}
-                onChange={(event) =>
-                  setAssessmentForm((current) => ({ ...current, assessmentDate: event.target.value }))
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Subject</label>
-              {subjectOptions.length <= 1 ? (
-                <div className="flex h-10 items-center rounded-2xl border border-border bg-muted/40 px-3 text-sm">
-                  {subjectOptions[0] || "Select a class first"}
-                </div>
-              ) : (
-                <Select
-                  value={assessmentForm.subject}
-                  onValueChange={(value) =>
-                    setAssessmentForm((current) => ({ ...current, subject: value }))
-                  }
-                >
-                  <SelectTrigger className="rounded-2xl">
-                    <SelectValue placeholder="Select subject" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subjectOptions.map((subject) => (
-                      <SelectItem key={subject} value={subject}>
-                        {subject}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Topic</label>
-              <Input
-                className="rounded-2xl"
-                value={assessmentForm.topic}
-                placeholder="Fractions chapter test"
-                onChange={(event) =>
-                  setAssessmentForm((current) => ({ ...current, topic: event.target.value }))
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Total Marks</label>
-              <Input
-                type="number"
-                min="1"
-                step="0.01"
-                className="rounded-2xl"
-                value={assessmentForm.totalMarks}
-                placeholder="100"
-                onChange={(event) =>
-                  setAssessmentForm((current) => ({ ...current, totalMarks: event.target.value }))
-                }
-              />
-            </div>
-          </div>
-
-          <div className="rounded-3xl border border-dashed border-border/70 bg-muted/20 p-4">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-foreground">Present Students for Selected Date</p>
-                <p className="text-xs text-muted-foreground">
-                  Only students marked present for that class and date appear below.
-                </p>
-              </div>
-              {assessmentSetupLoading ? (
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading attendance match
-                </div>
-              ) : (
-                <Badge variant="outline">{eligibleStudents.length} student{eligibleStudents.length === 1 ? "" : "s"}</Badge>
-              )}
+          <div className="space-y-6 pt-6 border-t border-border/40">
+            <div className="flex items-center justify-between px-1">
+               <div>
+                  <h3 className="text-lg font-black tracking-tight">Examination Roster</h3>
+                  <p className="text-xs font-medium text-muted-foreground mt-0.5">Marks can only be assigned to candidates marked present on the selected date.</p>
+               </div>
+               {eligibleStudents.length > 0 && <Badge variant="outline" className="font-black uppercase tracking-widest text-[9px] px-3 py-1">{eligibleStudents.length} Students</Badge>}
             </div>
 
             {eligibleStudents.length === 0 ? (
-              <div className="mt-4 rounded-2xl bg-background p-4 text-sm text-muted-foreground">
-                Select a class and date to load the present-student list.
+              <div className="py-20 text-center rounded-3xl border-2 border-dashed border-border/40 bg-muted/10">
+                 <Users className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
+                 <p className="text-muted-foreground font-bold italic">Roster pending (Select class & date)</p>
               </div>
             ) : (
-              <div className="mt-4 overflow-x-auto rounded-2xl border border-border/60 bg-background">
-                <Table className="table-fixed">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[260px]">Student</TableHead>
-                      <TableHead className="w-[160px]">Marks</TableHead>
-                      <TableHead className="min-w-[320px]">Remark</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {eligibleStudents.map((student) => {
-                      const row = assessmentRows.find((entry) => entry.studentId === student.id) || {
-                        studentId: student.id,
-                        marksObtained: "",
-                        remark: "",
-                      }
-
-                      return (
-                        <TableRow key={student.id}>
-                          <TableCell>
-                            <div>
-                              <p className="font-medium text-foreground">{personName(student)}</p>
-                              <p className="text-xs text-muted-foreground">@{student.username}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              max={assessmentForm.totalMarks || undefined}
-                              value={row.marksObtained}
-                              onChange={(event) =>
-                                handleAssessmentRowChange(student.id, "marksObtained", event.target.value)
-                              }
-                              placeholder="0"
-                              className="rounded-xl"
-                            />
-                          </TableCell>
-                          <TableCell className="align-top whitespace-normal">
-                            <Textarea
-                              value={row.remark}
-                              onChange={(event) =>
-                                handleAssessmentRowChange(student.id, "remark", event.target.value)
-                              }
-                              placeholder="Optional feedback for the student"
-                              className="min-h-[76px] w-full min-w-0 resize-y rounded-xl"
-                            />
-                          </TableCell>
-                        </TableRow>
-                      )
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+              <GradingTable
+                students={eligibleStudents}
+                rows={assessmentRows}
+                maxMarks={Number(assessmentForm.totalMarks) || 0}
+                onRowChange={handleAssessmentRowChange}
+              />
             )}
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-xs text-muted-foreground">
-              Students will see the subject, topic, marks, percentage, and remark in their results section.
-            </div>
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between pt-6 border-t border-border/40">
+            <p className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-[0.2em] max-w-xs leading-relaxed">
+               Verified marks will be immediately accessible in student portfolios.
+            </p>
             <Button
+              size="lg"
               onClick={handleAssessmentSubmit}
               disabled={assessmentSubmitting || assessmentSetupLoading || eligibleStudents.length === 0}
-              className="rounded-2xl"
+              className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
             >
-              {assessmentSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {editingAssessment ? "Update Assessment" : "Publish Assessment"}
+              {assessmentSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Target className="mr-2 h-5 w-5" />}
+              {editingAssessment ? "Update Published Record" : "Finalize & Publish"}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="border-border/60">
-        <CardHeader>
-          <CardTitle className="text-xl">Published Assessment History</CardTitle>
-          <CardDescription>
-            Reopen a saved test or exam to correct marks, remarks, or attendance-aligned student entries.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {loadingAssessments ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading assessment history...
-            </div>
-          ) : assessments.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border/70 p-4 text-sm text-muted-foreground">
-              No tests or exams have been published yet.
-            </div>
-          ) : (
-            assessments.map((assessment) => (
-              <div
-                key={assessment.id}
-                className="flex flex-col gap-3 rounded-3xl border border-border/60 bg-muted/10 p-4 lg:flex-row lg:items-center lg:justify-between"
-              >
-                <div className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline">{assessmentLabel(assessment.assessmentType)}</Badge>
-                    <Badge variant="secondary">{assessment.subject}</Badge>
-                    <Badge variant="secondary">{assessment.course?.name || `Class ${assessment.courseId}`}</Badge>
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">{assessment.topic}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {fmtDate(assessment.assessmentDate)} • {assessment.results.length} student
-                      {assessment.results.length === 1 ? "" : "s"} • Average {averagePercentage(assessment)}%
-                    </p>
-                  </div>
-                </div>
+      <div className="space-y-8 pt-12 border-t border-border/50">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-black tracking-tight">Assessment Archives</h2>
+          <p className="text-muted-foreground font-medium text-lg">Historical record of all published tests and exams.</p>
+        </div>
 
-                <div className="flex flex-wrap gap-2">
-                  <div className="flex items-center rounded-2xl bg-background px-3 py-2 text-sm text-muted-foreground">
-                    <Target className="mr-2 h-4 w-4" />
-                    Total Marks: {assessment.totalMarks}
-                  </div>
-                  <Button variant="outline" className="rounded-2xl" onClick={() => startEditingAssessment(assessment)}>
-                    <PenSquare className="mr-2 h-4 w-4" />
-                    Edit
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+        {loadingAssessments ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-3">
+             <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
+             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Syncing Registry...</p>
+          </div>
+        ) : assessments.length === 0 ? (
+          <Card className="border-2 border-dashed border-border/40 bg-muted/10 rounded-[2.5rem] py-24">
+            <CardContent className="flex flex-col items-center justify-center text-center">
+              <NotebookPen className="size-16 mb-6 text-muted-foreground/20" />
+              <h3 className="text-2xl font-bold tracking-tight">Registry Empty</h3>
+              <p className="text-muted-foreground mt-2 max-w-xs font-medium">Your published assessment history will appear here.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <AssessmentHistory assessments={assessments} onEdit={startEditingAssessment} />
+        )}
+      </div>
     </div>
   )
 }

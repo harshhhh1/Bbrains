@@ -5,7 +5,7 @@ export function readUserField(
   key: "firstName" | "lastName" | "bio" | "phone" | "sex" | "avatar"
 ) {
   if (!user) return "";
-  return String(user.userDetails?.[key] ?? user[key] ?? "");
+  return String(user.userDetails?.[key] ?? (user as any)[key] ?? "");
 }
 
 export function getInitials(user: SettingsUser | null) {

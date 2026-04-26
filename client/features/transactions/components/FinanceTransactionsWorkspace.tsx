@@ -8,36 +8,9 @@ import { SectionHeader } from "@/features/admin/components/SectionHeader"
 import { CrudModal } from "@/features/admin/components/CrudModal"
 import { DataTable } from "@/features/admin/components/DataTable"
 import { RoleBadge } from "@/features/admin/components/RoleBadge"
-import { FormInput } from "@/features/admin/components/form/FormInput"
-import { FormSelect } from "@/features/admin/components/form/FormSelect"
+import { ManualTransactionForm } from "./ManualTransactionForm"
 
 type WorkspaceMode = "admin" | "manager"
-
-const paymentModeOptions = [
-  { value: "cash", label: "Cash" },
-  { value: "cheque", label: "Cheque" },
-  { value: "upi", label: "UPI" },
-  { value: "dd", label: "Demand Draft" },
-  { value: "bank_transfer", label: "Bank Transfer" },
-  { value: "card", label: "Card" },
-  { value: "neft", label: "NEFT" },
-  { value: "rtgs", label: "RTGS" },
-  { value: "imps", label: "IMPS" },
-  { value: "other", label: "Other" },
-]
-
-const referenceLabelByMode: Record<string, string> = {
-  cash: "Reference / proof",
-  cheque: "Cheque number",
-  upi: "UPI transaction ID",
-  dd: "DD number",
-  bank_transfer: "Bank reference ID",
-  card: "Card reference ID",
-  neft: "NEFT reference",
-  rtgs: "RTGS reference",
-  imps: "IMPS reference",
-  other: "Reference / proof",
-}
 
 function dedupeUsers(users: User[]) {
   return Array.from(new Map(users.map((user) => [user.id, user])).values())
@@ -49,14 +22,6 @@ function hasManagerRole(user: Pick<User, "roles"> | null | undefined) {
       entry?.role?.name?.toLowerCase().includes("manager")
     )
   )
-}
-
-function getUserName(user: User | null | undefined) {
-  if (!user) return "Unknown user"
-  const firstName = user.firstName?.trim()
-  const lastName = user.lastName?.trim()
-  const fullName = [firstName, lastName].filter(Boolean).join(" ").trim()
-  return fullName || user.username
 }
 
 function getCompactUser(user: Transaction["user"] | Transaction["relatedUser"] | Transaction["recordedByUser"]) {
@@ -263,26 +228,28 @@ export function FinanceTransactionsWorkspace({ mode }: FinanceTransactionsWorksp
       />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recorded Entries</p>
-          <p className="mt-2 text-3xl font-bold text-foreground">{recordedTransactions.length}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Primary salary or fee events recorded by {mode === "admin" ? "admins and managers" : "the manager panel"}
-          </p>
+        <div className="rounded-[2rem] border border-border/60 bg-card p-6 shadow-sm overflow-hidden group relative">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">Records Evaluated</p>
+          <p className="mt-1 text-4xl font-black text-foreground tabular-nums tracking-tighter">{recordedTransactions.length}</p>
+          <p className="mt-2 text-xs font-medium text-muted-foreground/60 leading-relaxed">Primary financial events logged in this cycle.</p>
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl -translate-x-4 -translate-y-4 group-hover:bg-primary/10 transition-colors" />
         </div>
-        <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Recorded Value</p>
-          <p className="mt-2 text-3xl font-bold text-foreground">{formatCurrency(recordedTotal)}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Combined value of the primary finance records visible in this workspace
-          </p>
+        <div className="rounded-[2rem] border border-primary/20 bg-primary/5 p-6 shadow-sm overflow-hidden group relative">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Aggregate Value</p>
+          <p className="mt-1 text-4xl font-black text-primary tabular-nums tracking-tighter">{formatCurrency(recordedTotal)}</p>
+          <p className="mt-2 text-xs font-bold text-primary/40 leading-relaxed uppercase tracking-widest">Combined institutional volume.</p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-sm">
-        <div className="mb-4 flex items-center gap-2">
-          <WalletCards className="size-4 text-primary" />
-          <h3 className="text-base font-semibold text-foreground">Recorded Finance Events</h3>
+      <div className="rounded-[2.5rem] border border-border/60 bg-card p-8 shadow-xl">
+        <div className="mb-8 flex items-center gap-3">
+          <div className="p-2 bg-primary/10 rounded-xl">
+            <WalletCards className="size-6 text-primary" />
+          </div>
+          <div>
+            <h3 className="text-xl font-black tracking-tight text-foreground">Verified Ledger</h3>
+            <p className="text-sm font-medium text-muted-foreground">Historical records of verified institutional finance events.</p>
+          </div>
         </div>
         <DataTable<Transaction>
           data={recordedTransactions}
@@ -295,17 +262,12 @@ export function FinanceTransactionsWorkspace({ mode }: FinanceTransactionsWorksp
               render: (row) => <RoleBadge value={row.category || "other"} />,
             },
             {
-              key: "type",
-              label: "Direction",
-              render: (row) => <RoleBadge value={row.type} />,
-            },
-            {
               key: "recordedById",
               label: "Recorded By",
               render: (row) => (
                 <div>
-                  <p className="font-medium text-foreground">{getCompactUser(row.recordedByUser)}</p>
-                  <p className="text-xs text-muted-foreground">{row.recordedByUser?.type || "Not linked"}</p>
+                  <p className="font-bold text-foreground text-xs">{getCompactUser(row.recordedByUser)}</p>
+                  <p className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">{row.recordedByUser?.type || "System"}</p>
                 </div>
               ),
             },
@@ -314,38 +276,28 @@ export function FinanceTransactionsWorkspace({ mode }: FinanceTransactionsWorksp
               label: "Counterparty",
               render: (row) => (
                 <div>
-                  <p className="font-medium text-foreground">{getCompactUser(row.relatedUser)}</p>
-                  <p className="text-xs text-muted-foreground">{row.relatedUser?.type || "Not linked"}</p>
+                  <p className="font-bold text-foreground text-xs">{getCompactUser(row.relatedUser)}</p>
+                  <p className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">{row.relatedUser?.type || "External"}</p>
                 </div>
               ),
             },
             {
               key: "paymentMode",
               label: "Mode",
-              render: (row) => row.paymentMode ? formatCategory(row.paymentMode) : "Not set",
-            },
-            {
-              key: "referenceId",
-              label: "Proof",
-              render: (row) => row.referenceId || "—",
+              render: (row) => <span className="text-[10px] font-black uppercase text-foreground/70 tracking-widest">{row.paymentMode ? formatCategory(row.paymentMode) : "N/A"}</span>,
             },
             {
               key: "amount",
               label: "Amount",
-              render: (row) => <span className="font-semibold text-foreground">{formatCurrency(row.amount)}</span>,
+              render: (row) => <span className="font-black text-foreground text-sm tabular-nums">{formatCurrency(row.amount)}</span>,
             },
             {
               key: "transactionDate",
-              label: "Payment Day",
-              render: (row) => formatDate(row.transactionDate),
-            },
-            {
-              key: "note",
-              label: "Note",
-              render: (row) => <span className="text-xs text-muted-foreground line-clamp-2">{row.note || "—"}</span>,
+              label: "Settlement Day",
+              render: (row) => <span className="text-xs font-bold text-muted-foreground">{formatDate(row.transactionDate)}</span>,
             },
           ]}
-          emptyText="No recorded transactions yet"
+          emptyText="No financial records found in registry."
         />
       </div>
 
@@ -355,91 +307,20 @@ export function FinanceTransactionsWorkspace({ mode }: FinanceTransactionsWorksp
         title={form.category === "salary" ? "Record Salary Payment" : "Record Fee Receipt"}
         onSubmit={handleCreateTransaction}
         submitting={submitting}
-        submitLabel="Save Record"
+        submitLabel="Authorize Record"
       >
         {loadingUsers ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="size-6 animate-spin text-muted-foreground/50" />
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="size-10 animate-spin text-primary/40" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Syncing Directory...</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            <FormSelect
-              label="Transaction Category"
-              value={form.category}
-              onChange={(value) => setForm((current) => ({ ...current, category: value as ManualTransactionInput["category"], targetUserId: "" }))}
-              options={[
-                { value: "salary", label: "Salary Payment" },
-                { value: "fee", label: "Fee Received" },
-              ]}
-            />
-            <FormSelect
-              label={form.category === "salary" ? "Recipient" : "Student"}
-              value={form.targetUserId}
-              onChange={(value) => setForm((current) => ({ ...current, targetUserId: value }))}
-              options={[
-                {
-                  value: "",
-                  label: currentTargetOptions.length > 0
-                    ? `Select ${form.category === "salary" ? "recipient" : "student"}`
-                    : "No users available",
-                },
-                ...currentTargetOptions.map((user) => ({
-                  value: user.id,
-                  label: `${getUserName(user)} (@${user.username})`,
-                })),
-              ]}
-            />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormInput
-                label="Amount"
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.amount}
-                onChange={(event) => setForm((current) => ({ ...current, amount: event.target.value }))}
-                placeholder="0.00"
-                required
-              />
-              <FormInput
-                label="Payment Day"
-                type="date"
-                value={form.paymentDate}
-                onChange={(event) => setForm((current) => ({ ...current, paymentDate: event.target.value }))}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormSelect
-                label="Mode of Payment"
-                value={form.paymentMode}
-                onChange={(value) => setForm((current) => ({ ...current, paymentMode: value as ManualTransactionInput["paymentMode"] }))}
-                options={paymentModeOptions}
-              />
-              <FormInput
-                label={referenceLabelByMode[form.paymentMode] || "Reference / proof"}
-                value={form.referenceId}
-                onChange={(event) => setForm((current) => ({ ...current, referenceId: event.target.value }))}
-                placeholder="Optional"
-              />
-            </div>
-            <FormInput
-              label="Internal Note"
-              value={form.note}
-              onChange={(event) => setForm((current) => ({ ...current, note: event.target.value }))}
-              placeholder={
-                form.category === "salary"
-                  ? "Optional note for the salary entry"
-                  : "Optional note for the fee receipt"
-              }
-            />
-            <p className="text-xs text-muted-foreground">
-              {form.category === "salary"
-                ? mode === "admin"
-                  ? "Saving this creates a debit for the admin ledger and a matching income entry for the selected staff member."
-                  : "Saving this creates a debit for the manager ledger and a matching income entry for the selected teacher or staff member."
-                : "Saving this creates institution income for the admin finance ledger and a matching fee-paid entry for the selected student."}
-            </p>
-          </div>
+          <ManualTransactionForm
+            form={form}
+            onChange={(updates) => setForm(curr => ({ ...curr, ...updates }))}
+            currentTargetOptions={currentTargetOptions}
+            mode={mode}
+          />
         )}
       </CrudModal>
     </div>

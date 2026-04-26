@@ -4,17 +4,12 @@ import { useAchievements } from "./hooks/use-achievements"
 import { AchievementCard } from "./components/achievement-card"
 import { AchievementsEmptyState } from "./components/achievements-empty-state"
 import { AchievementsLoadingState } from "./components/achievements-loading-state"
-import { UnauthenticatedState } from "./components/unauthenticated-state"
 
 export default function AchievementsPage() {
   const { achievements, loading, userLoading, user } = useAchievements()
 
   if (loading || userLoading) {
     return <AchievementsLoadingState />
-  }
-
-  if (!user) {
-    return <UnauthenticatedState />
   }
 
   if (achievements.length === 0) {

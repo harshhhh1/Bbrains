@@ -1,16 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { BookOpen, Users, AlertCircle, Plus } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { BookOpen, AlertCircle } from "lucide-react";
 import { courseApi, enrollmentApi, Course } from "@/services/api/client";
 import { DashboardContent } from "@/components/dashboard-content";
-import { getSubjectProgressPercent, normalizeCourseSubjectProgress } from "@/lib/subject-progress";
+import { CourseCard } from "../_components/CourseCard";
+import { CourseSkeleton } from "../_components/CourseSkeleton";
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -66,16 +62,6 @@ export default function CoursesPage() {
     }
   };
 
-  const getInitials = (name?: string) => {
-    if (!name) return "?";
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  };
-
   return (
     <DashboardContent className="space-y-6">
       <div>
@@ -86,21 +72,7 @@ export default function CoursesPage() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <Skeleton className="w-10 h-10 rounded-lg" />
-                  <Skeleton className="h-5 w-12" />
-                </div>
-                <Skeleton className="h-5 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-full mb-3" />
-                <Skeleton className="h-2 w-full mb-3" />
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-12" />
-                </div>
-              </CardContent>
-            </Card>
+            <CourseSkeleton key={i} />
           ))}
         </div>
       ) : error ? (
@@ -118,86 +90,14 @@ export default function CoursesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {courses.map((course) => {
-            const progressEntries = normalizeCourseSubjectProgress(course);
-
-            return (
-              <Card key={course.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-primary" />
-                  </div>
-                  {course.isEnrolled ? (
-                    <Badge variant="secondary">Enrolled</Badge>
-                  ) : (
-                    <Badge variant="outline">Available</Badge>
-                  )}
-                </div>
-                <h3 className="font-semibold text-foreground mb-1">{course.name}</h3>
-                <p className="text-xs text-muted-foreground mb-3">{course.standard || "Standard not set"}</p>
-                {course.description && (
-                  <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{course.description}</p>
-                )}
-                  {course.isEnrolled ? (
-                    <div className="mb-3 space-y-2">
-                      {progressEntries.length > 0 ? (
-                        <>
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                          Subject Progress
-                        </p>
-                          <div className="space-y-2.5">
-                            {progressEntries.map((entry) => (
-                              <div key={`${course.id}-${entry.subject}`} className="space-y-1">
-                              <div className="flex items-center justify-between gap-2 text-xs">
-                                <span className="truncate font-medium text-foreground">{entry.subject}</span>
-                                <span className="shrink-0 text-muted-foreground">
-                                  {entry.completedChapters} / {entry.totalChapters || "-"} chapters
-                                </span>
-                              </div>
-                              <Progress value={getSubjectProgressPercent(entry)} className="h-1.5" />
-                            </div>
-                            ))}
-                        </div>
-                        </>
-                      ) : (
-                        <div className="rounded-xl border border-dashed border-border/70 px-3 py-2 text-xs text-muted-foreground">
-                          Chapter progress will appear here once your teacher sets it up.
-                        </div>
-                      )}
-                    </div>
-                  ) : null}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-6 h-6">
-                      <AvatarFallback name={course.teacher?.username || course.teacher?.firstName} className="bg-primary/10 text-primary text-[10px]">
-                        {getInitials(course.teacher?.firstName || course.teacher?.username)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-xs text-muted-foreground">
-                      {course.teacher?.firstName || course.teacher?.username || "TBA"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Users className="w-3 h-3" /> {course.enrolledStudents || 0}
-                  </div>
-                </div>
-                {!course.isEnrolled && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full mt-3"
-                    onClick={() => handleEnroll(course.id)}
-                    disabled={enrolling === course.id}
-                  >
-                    <Plus className="w-4 h-4 mr-1" />
-                    {enrolling === course.id ? "Enrolling..." : "Enroll"}
-                  </Button>
-                )}
-                </CardContent>
-              </Card>
-            );
-          })}
+          {courses.map((course) => (
+            <CourseCard 
+              key={course.id} 
+              course={course} 
+              enrolling={enrolling === course.id} 
+              onEnroll={handleEnroll} 
+            />
+          ))}
         </div>
       )}
     </DashboardContent>

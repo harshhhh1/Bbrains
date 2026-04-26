@@ -95,9 +95,9 @@ export function AnnouncementsCard({ initialAnnouncements, collegeId }: Announcem
                   <p className="font-medium text-sm">{announcement.title}</p>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{mounted ? formatDate(announcement.createdAt) : ""}</span>
-                    {announcement.category && (
+                    {(announcement as any).category && (
                       <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                        {announcement.category}
+                        {(announcement as any).category}
                       </span>
                     )}
                   </div>

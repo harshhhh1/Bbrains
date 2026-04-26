@@ -3,13 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { 
   Calendar, 
-  MapPin, 
   Plus, 
   Search, 
   Filter, 
   Loader2, 
-  Clock,
-  ExternalLink
 } from "lucide-react";
 import { eventApi, Event } from "@/services/api/client";
 import { Button } from "@/components/ui/button";
@@ -17,24 +14,21 @@ import { Input } from "@/components/ui/input";
 import { 
   Card, 
   CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle,
-  CardFooter
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { CreateEventModal } from "./CreateEventModal";
+import { EventCard } from "./EventCard";
+import { EventDetailsDialog } from "./EventDetailsDialog";
 import { useHasPermission } from "@/components/providers/permissions-provider";
-import { format } from "date-fns";
-import Image from "next/image";
-import { resolveApiFileUrl } from "@/lib/file-url";
 
 export function EventsClient() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  
   const canCreateEvent = useHasPermission("teacher") || useHasPermission("admin");
 
   const fetchEvents = useCallback(async () => {
@@ -57,6 +51,11 @@ export function EventsClient() {
     fetchEvents();
   }, [fetchEvents]);
 
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsDetailsOpen(true);
+  };
+
   const filteredEvents = events.filter(event => 
     event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     event.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -64,103 +63,74 @@ export function EventsClient() {
   );
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-10">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Events</h1>
-          <p className="text-muted-foreground">
-            Manage and view upcoming college events.
+          <h1 className="text-4xl font-black tracking-tight">Institutional Events</h1>
+          <p className="text-muted-foreground mt-2 text-lg font-medium">
+            Campus broadcasts, academic seminars, and cultural meets.
           </p>
         </div>
         {canCreateEvent && (
-          <Button onClick={() => setIsModalOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Event
+          <Button size="lg" className="rounded-2xl font-bold px-6 shadow-lg shadow-primary/20" onClick={() => setIsModalOpen(true)}>
+            <Plus className="mr-2 h-5 w-5" />
+            Host Event
           </Button>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search events..."
-            className="pl-8"
+      <div className="flex flex-col md:flex-row items-center gap-4 bg-muted/30 p-4 rounded-3xl border border-border/50">
+        <div className="relative flex-1 group w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <input
+            placeholder="Search the event registry..."
+            className="w-full bg-card border border-border/60 shadow-inner rounded-2xl pl-12 pr-4 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button variant="outline" size="icon">
-          <Filter className="h-4 w-4" />
+        <Button variant="outline" size="icon" className="h-14 w-14 rounded-2xl shrink-0">
+          <Filter className="h-5 w-5" />
         </Button>
       </div>
 
       {loading ? (
-        <div className="flex h-60 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center justify-center py-20 gap-3">
+          <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
+          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Calendar...</p>
         </div>
       ) : filteredEvents.length > 0 ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           {filteredEvents.map((event) => (
-            <Card key={event.id} className="overflow-hidden flex flex-col">
-              {event.banner && (
-                <div className="relative aspect-video w-full">
-                  <Image 
-                    src={resolveApiFileUrl(event.banner)} 
-                    alt={event.title} 
-                    fill 
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <CardHeader>
-                <div className="flex items-start justify-between gap-2">
-                  <CardTitle className="line-clamp-1">{event.title}</CardTitle>
-                  {event.type && (
-                    <Badge variant="secondary" className="shrink-0">{event.type}</Badge>
-                  )}
-                </div>
-                <CardDescription className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {format(new Date(event.date), "PPP")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1">
-                <p className="line-clamp-3 text-sm text-muted-foreground">
-                  {event.description || "No description provided."}
-                </p>
-              </CardContent>
-              <CardFooter className="flex flex-col items-start gap-2 border-t pt-4">
-                {event.location && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span>{event.location}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>
-                    {format(new Date(event.startDate), "MMM d")} - {format(new Date(event.endDate), "MMM d, yyyy")}
-                  </span>
-                </div>
-              </CardFooter>
-            </Card>
+            <EventCard 
+              key={event.id} 
+              event={event} 
+              onClick={handleEventClick} 
+            />
           ))}
         </div>
       ) : (
-        <div className="flex h-60 flex-col items-center justify-center rounded-lg border border-dashed text-center">
-          <Calendar className="mb-2 h-10 w-10 text-muted-foreground opacity-20" />
-          <h3 className="text-lg font-medium">No events found</h3>
-          <p className="text-sm text-muted-foreground">
-            {searchQuery ? "Try adjusting your search query." : "There are no events scheduled yet."}
-          </p>
-        </div>
+        <Card className="border-dashed border-border/40 bg-muted/10 rounded-3xl">
+          <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+            <Calendar className="mb-6 h-16 w-16 text-muted-foreground/20" />
+            <h3 className="text-2xl font-bold">No Records Found</h3>
+            <p className="text-muted-foreground mt-2 max-w-xs">
+              {searchQuery ? "No events match your current filter parameters." : "There are currently no events listed in the institution calendar."}
+            </p>
+          </CardContent>
+        </Card>
       )}
 
       <CreateEventModal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         onSuccess={fetchEvents}
+      />
+
+      <EventDetailsDialog
+        event={selectedEvent}
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(null as any)}
       />
     </div>
   );

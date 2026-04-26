@@ -1,11 +1,11 @@
 "use client"
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState, useRef } from "react"
-import { notificationApi, Notification, type NotificationUnreadCount } from "@/services/api/client"
-import AchievementUnlocked from "@/components/achivement"
+import { notificationApi, type NotificationUnreadCount, type ApiNotification } from "@/services/api/client"
+import AchievementUnlocked from "@/components/achievement"
 
 interface NotificationContextType {
-    notifications: Notification[]
+    notifications: ApiNotification[]
     unreadCount: number
     chatUnreadTotal: number
     chatUnreadByChannel: Record<string, number>
@@ -35,7 +35,7 @@ function emptyUnreadState(): NotificationUnreadCount {
 }
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-    const [notifications, setNotifications] = useState<Notification[]>([])
+    const [notifications, setNotifications] = useState<ApiNotification[]>([])
     const [unreadCount, setUnreadCount] = useState(0)
     const [chatUnreadState, setChatUnreadState] = useState<NotificationUnreadCount>(emptyUnreadState)
     const [assignmentUnreadCount, setAssignmentUnreadCount] = useState(0)

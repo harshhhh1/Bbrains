@@ -27,7 +27,7 @@ export const AttendanceCard = memo(function AttendanceCard({ initialAttendance }
     const fetchAttendance = async () => {
       try {
         setLoading(true);
-        const response = await attendanceApi.getAttendance();
+        const response = await attendanceApi.getAttendance(new Date().toISOString().split('T')[0]);
         if (response.success && response.data) {
           const records = response.data as AttendanceRecord[];
           const present = records.filter(r => r.status === 'present').length;
