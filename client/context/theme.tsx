@@ -16,11 +16,15 @@ const ThemeContext = React.createContext<ThemeContextProps | null>(null)
 
 export function ThemeProvider({ children, ...props }: React.ComponentProps<typeof NextThemesProvider>) {
   const { setTheme: setNextTheme, resolvedTheme } = useNextTheme()
-  const [currentTheme, setCurrentTheme] = React.useState<string | null>(() => {
-    if (typeof window === "undefined") return null
-    return localStorage.getItem('theme-preference')
-  })
-  const mounted = typeof window !== "undefined"
+  const [currentTheme, setCurrentTheme] = React.useState<string | null>(null)
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+    const saved = localStorage.getItem('theme-preference')
+    if (saved) setCurrentTheme(saved)
+  }, [])
+
   const effectiveTheme = currentTheme || (resolvedTheme === 'dark' ? 'dark' : 'light')
 
   useLayoutEffect(() => {

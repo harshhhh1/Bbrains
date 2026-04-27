@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { dashboardApi, type DashboardData, getAuthToken } from "@/services/api/client";
+import { type DashboardData } from "@/services/api/server-api";
+import { serverApiGet } from "@/services/api/server-api";
 import { cookies } from "next/headers";
 import { LeaderboardLikeEntry, RoleRow } from "./types";
 import { transformLeaderboard } from "./utils";
@@ -15,11 +16,9 @@ export async function getDashboardOverviewData() {
   }
 
   try {
-    // Parallelize core data fetches
-    // getCachedUser is deduplicated with the one in layout.tsx via react cache()
     const [userData, dashboardResponse] = await Promise.all([
       getCachedUser(token),
-      dashboardApi.getDashboard()
+      serverApiGet<DashboardData>("/dashboard")
     ]);
 
     let dbUserType: string | null = null;

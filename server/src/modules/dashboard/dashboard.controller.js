@@ -1,5 +1,6 @@
 import prisma from '../../utils/prisma.js';
 import { sendSuccess, sendError } from '../../utils/response.js';
+import { claimDailyPoints } from '../../modules/streak/streak.service.js';
 
 // GET /dashboard
 export const getDashboard = async (req, res) => {
@@ -1039,3 +1040,23 @@ async function adminDashboard(currentUser, res) {
         throw error;
     }
 }
+
+export const claimDaily = async (req, res) => {
+    try {
+        const streak = await claimDailyPoints(req.user.id);
+        const XP_REWARDS = [50, 50, 75, 75, 100, 100, 200];
+        const dayIndex = ((streak.currentStreak || 1) - 1) % 7;
+        const xp = XP_REWARDS[dayIndex];
+
+        return sendSuccess(res, {
+            xp,
+            streak: {
+                ...streak,
+                canClaim: false
+            }
+        }, 'Successfully claimed daily XP!');
+    } catch (error) {
+        console.error('Claim daily error:', error);
+        return sendError(res, error.message || 'Failed to claim daily reward');
+    }
+};

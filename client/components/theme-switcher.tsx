@@ -18,6 +18,7 @@ export function ThemeSwitcher() {
     return (
       <Button variant="outline" size="icon" disabled>
         <Sun className="h-4 w-4 animate-pulse" />
+        <span className="sr-only">Toggle theme</span>
       </Button>
     )
   }

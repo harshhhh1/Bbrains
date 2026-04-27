@@ -42,11 +42,10 @@ export const claimDailyPoints = async (userId) => {
 
     return await prisma.$transaction(async (tx) => {
         // 1. Award XP
-        await tx.user.update({
-            where: { id: userId },
-            data: {
-                xp: { increment: rewardXP }
-            }
+        await tx.xp.upsert({
+            where: { userId },
+            update: { xp: { increment: rewardXP } },
+            create: { userId, xp: rewardXP, level: 1 }
         });
 
         // 2. Log Action
