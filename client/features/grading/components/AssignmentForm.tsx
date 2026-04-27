@@ -84,7 +84,7 @@ export function AssignmentForm({
     if (!selectedFile) return
 
     try {
-      const url = await uploadFile(selectedFile, { folder: "assignments" })
+      const url = await uploadFile(selectedFile, { folder: "assignment" })
       if (url) {
         setFile(url)
         toast.success("File uploaded successfully")

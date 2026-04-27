@@ -79,7 +79,7 @@ export function AssignmentsAdminView() {
             setSubmitting(true)
             let fileUrl = form.file
             if (selectedFile) {
-                const uploaded = await uploadFile(selectedFile)
+                const uploaded = await uploadFile(selectedFile, { folder: "assignment" })
                 if (uploaded) fileUrl = uploaded
             }
 
