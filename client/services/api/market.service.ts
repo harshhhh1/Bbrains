@@ -1,5 +1,3 @@
-"use client";
-
 import { api } from "./base";
 
 export const marketApi = {

@@ -1,5 +1,3 @@
-"use client";
-
 import { api, makeRequest } from "./base";
 import type { ApiResponse } from "./base";
 

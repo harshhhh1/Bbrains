@@ -1,5 +1,3 @@
-"use client";
-
 import axios, { AxiosInstance } from "axios";
 
 export const getBaseUrl = () => {

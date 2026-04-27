@@ -119,6 +119,7 @@ app.use("/api/notifications", notificationRouter);
 app.use("/config", configRouter);
 app.use("/suggestions", suggestionRouter);
 app.use("/superadmin", superadminRoutes);
+app.use("/academic/assessments", assessmentRouter);
 app.use("/assessments", assessmentRouter);
 app.use("/razorpay", (await import("./modules/razorpay/razorpay.routes.js")).default);
 app.use("/fee", (await import("./modules/fee/fee.routes.js")).default);

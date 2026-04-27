@@ -23,6 +23,7 @@ router.put("/:id", verifyToken, updateChatMessageById);
 router.delete("/messages/:id", verifyToken, deleteChatMessageById);
 router.delete("/:id", verifyToken, deleteChatMessageById);
 router.get("/members", verifyToken, getChatMembers);
+router.get("/profile/me", verifyToken, getMyChatProfile);
 router.get("/me", verifyToken, getMyChatProfile);
 
 export default router;

@@ -1,5 +1,3 @@
-"use client";
-
 import { api } from "./base";
 import type { NotificationUnreadCount, ApiNotification } from "@/lib/types/api";
 
