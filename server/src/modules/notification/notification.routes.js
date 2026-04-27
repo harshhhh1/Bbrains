@@ -16,7 +16,7 @@ router.get('/', verifyToken, getNotifications);
 router.get('/unread-count', verifyToken, getUnreadNotificationCount);
 router.post('/subscribe', verifyToken, subscribeToPushNotifications);
 router.delete('/unsubscribe', verifyToken, unsubscribeFromPushNotifications);
-router.post('/mark-read/:id', verifyToken, markAsRead);
+router.post('/:id/read', verifyToken, markAsRead);
 router.post('/mark-read', verifyToken, markChannelRead);
 router.post('/mark-all-read', verifyToken, markAllRead);
 

@@ -18,10 +18,10 @@ router.put('/assignments/:id', verifyToken, authorize('teacher', 'admin', 'manag
 router.delete('/assignments/:id', verifyToken, authorize('teacher', 'admin', 'manager'), deleteAssignmentHandler);
 
 // Submissions
-router.post('/submissions', verifyToken, submitAssignmentHandler);
-router.get('/submissions/me', verifyToken, getMySubmissionsHandler);
-router.get('/submissions/:assignmentId', verifyToken, authorize('teacher', 'admin', 'manager'), getSubmissionsHandler);
-router.patch('/submissions/:submissionId/review', verifyToken, authorize('teacher', 'admin', 'manager'), reviewSubmissionHandler);
+router.post('/assignments/submit', verifyToken, submitAssignmentHandler);
+router.get('/assignments/submissions/my', verifyToken, getMySubmissionsHandler);
+router.get('/assignments/:assignmentId/submissions', verifyToken, authorize('teacher', 'admin', 'manager'), getSubmissionsHandler);
+router.post('/assignments/submissions/:submissionId/review', verifyToken, authorize('teacher', 'admin', 'manager'), reviewSubmissionHandler);
 
 // Announcements
 router.post('/announcements', verifyToken, authorize('teacher', 'admin'), createAnnouncementHandler);

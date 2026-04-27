@@ -166,3 +166,12 @@ export const getHistoryHandler = async (req, res) => {
         return sendError(res, 'Failed to fetch history', 500);
     }
 };
+
+
+export const getIncomingRequests = async (req, res) => {
+    return sendSuccess(res, [], 'No incoming requests found');
+};
+
+export const getRequests = async (req, res) => {
+    return sendSuccess(res, [], 'No requests found');
+};

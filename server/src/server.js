@@ -87,6 +87,8 @@ app.get('/health', (req, res) => {
 app.use("/", authRouter);
 app.use("/sidebaraccess", sidebarAccessRouter);
 app.use("/api/sidebar-access", sidebarAccessRouter);
+app.use("/user", streakRouter);
+app.use("/streak", streakRouter);
 app.use("/user", userRouter);
 app.use("/users", userRouter);
 app.use("/api/users", userRouter);
@@ -108,7 +110,6 @@ app.use("/transactions", transactionRouter);
 app.use("/orders", orderRouter);
 app.use("/events", eventRouter);
 app.use("/attendance", attendanceRouter);
-app.use("/streak", streakRouter);
 app.use("/announcements", announcementRouter);
 app.use("/chat", chatRouter);
 app.use("/api/chat", chatRouter);
@@ -121,6 +122,7 @@ app.use("/superadmin", superadminRoutes);
 app.use("/assessments", assessmentRouter);
 app.use("/razorpay", (await import("./modules/razorpay/razorpay.routes.js")).default);
 app.use("/fee", (await import("./modules/fee/fee.routes.js")).default);
+app.use("/finance/fees", (await import("./modules/fee/fee.routes.js")).default);
 
 
 app.use((req, res) => {

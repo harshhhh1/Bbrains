@@ -31,7 +31,17 @@ export const getUserStreak = async (req, res) => {
 export const claimPoints = async (req, res) => {
     try {
         const streak = await claimDailyPoints(req.user.id);
-        return sendSuccess(res, mapStreakToResponse(streak), 'Successfully claimed daily points!');
+        const XP_REWARDS = [50, 50, 75, 75, 100, 100, 200];
+        const dayIndex = ((streak.currentStreak || 1) - 1) % 7;
+        const xp = XP_REWARDS[dayIndex];
+
+        return sendSuccess(res, {
+            xp,
+            streak: {
+                ...mapStreakToResponse(streak),
+                canClaim: false
+            }
+        }, 'Successfully claimed daily points!');
     } catch (error) {
         console.error('Claim streak error:', error);
         return sendError(res, error.message);
