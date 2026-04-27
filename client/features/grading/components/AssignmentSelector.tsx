@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/combobox"
 import { BookOpen, Calendar } from "lucide-react"
 import type { ApiAssignment } from "@/lib/types/api"
+import { useState, useEffect } from "react"
 
 function fmtDate(value: string) {
   return new Date(value).toLocaleDateString("en-IN", {
@@ -33,14 +34,35 @@ export function AssignmentSelector({
   loading,
 }: AssignmentSelectorProps) {
   const selected = assignments.find((assignment) => String(assignment.id) === value)
+  const [inputValue, setInputValue] = useState("")
+
+  // Update input value when selection changes from outside
+  useEffect(() => {
+    if (selected) {
+      setInputValue(selected.title)
+    } else {
+      setInputValue("")
+    }
+  }, [selected])
 
   return (
-    <Combobox value={value} onValueChange={(nextValue) => onChange(nextValue ?? "")}>
+    <Combobox 
+      value={value} 
+      onValueChange={(nextValue) => {
+        const newlySelected = assignments.find((a) => String(a.id) === nextValue)
+        if (newlySelected) {
+          setInputValue(newlySelected.title)
+        }
+        onChange(nextValue ?? "")
+      }}
+      inputValue={inputValue}
+      onInputValueChange={setInputValue}
+    >
       <ComboboxInput placeholder={loading ? "Loading assignments..." : "Search assignments..."} disabled={loading} showClear>
         <ComboboxContent>
           <ComboboxList>
             {assignments.map((assignment) => (
-              <ComboboxItem key={assignment.id} value={String(assignment.id)}>
+              <ComboboxItem key={assignment.id} value={String(assignment.id)} label={assignment.title} textValue={assignment.title}>
                 <div className="flex flex-col gap-0.5">
                   <span className="font-medium">{assignment.title}</span>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">

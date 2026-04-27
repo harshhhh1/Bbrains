@@ -65,7 +65,7 @@ export function AssignmentSubmitDrawer({
     )
 
     try {
-      const fileUrl = await uploadFile(selectedFile, { folder: "assignments" })
+      const fileUrl = await uploadFile(selectedFile, { folder: "assignment" })
       if (!fileUrl) {
         throw new Error("Upload failed")
       }

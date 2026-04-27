@@ -6,7 +6,7 @@ export const getUpcomingEvents = async (take = 3, collegeId) => {
             date: {
                 gte: new Date(),
             },
-            ...(collegeId ? { collegeId } : {})
+            collegeId
         },
         orderBy: {
             date: 'asc',
@@ -21,7 +21,9 @@ export const createEventRecord = async (data) => {
 
 export const getAllEvents = async (collegeId) => {
     return await prisma.event.findMany({
-        where: collegeId ? { collegeId } : {},
+        where: {
+            collegeId
+        },
         orderBy: {
             date: 'asc',
         },

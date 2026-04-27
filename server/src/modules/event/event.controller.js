@@ -15,7 +15,7 @@ const createEventSchema = z.object({
 
 export const getUpcoming = async (req, res) => {
     try {
-        const events = await getUpcomingEvents(3);
+        const events = await getUpcomingEvents(3, req.user.collegeId);
         return sendSuccess(res, events);
     } catch (error) {
         console.error(error);
@@ -26,7 +26,8 @@ export const getUpcoming = async (req, res) => {
 export const createEvent = async (req, res) => {
     try {
         const validated = createEventSchema.parse(req.body);
-        const event = await createEventRecord(validated);
+        const collegeId = req.user.collegeId;
+        const event = await createEventRecord({ ...validated, collegeId });
         return sendCreated(res, event, 'Event created successfully');
     } catch (error) {
         if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
@@ -37,7 +38,7 @@ export const createEvent = async (req, res) => {
 
 export const getEvents = async (req, res) => {
     try {
-        const events = await getAllEvents();
+        const events = await getAllEvents(req.user.collegeId);
         return sendSuccess(res, events);
     } catch (error) {
         console.error(error);

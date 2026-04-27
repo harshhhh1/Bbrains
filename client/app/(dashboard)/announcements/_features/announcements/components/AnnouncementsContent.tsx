@@ -180,7 +180,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
         <div className="relative mb-10 max-w-md group">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5 group-focus-within:text-primary transition-colors" />
           <input
-            placeholder="Search news..."
+            placeholder="Search Announcements..."
             className="w-full bg-card/50 backdrop-blur-sm border border-border/50 shadow-inner rounded-2xl pl-12 pr-4 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
