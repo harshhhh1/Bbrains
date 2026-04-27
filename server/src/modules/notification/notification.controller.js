@@ -142,7 +142,7 @@ export const markAllRead = async (req, res) => {
 export const markChannelRead = async (req, res) => {
     try {
         const userId = req.user.id;
-        const channelId = String(req.body?.channelId || "").trim();
+        const channelId = String(req.params.channelId || req.body?.channelId || "").trim();
 
         if (!channelId) {
             return sendError(res, "Channel ID is required", 400);
