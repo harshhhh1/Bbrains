@@ -98,7 +98,7 @@ export const Memberssidebar = React.memo(function MembersSidebar({ members, onCl
                 >
                     <ArrowLeft className="h-5 w-5" />
                 </button>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Members — {onlineMembers.length} online • {members.length} total</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Members list</h3>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -110,7 +110,7 @@ export const Memberssidebar = React.memo(function MembersSidebar({ members, onCl
                     groupedOnline[role].length > 0 ? (
                         <div key={role}>
                             <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-                                {ROLE_LABELS[role]} — Online ({groupedOnline[role].length})
+                                Online ({groupedOnline[role].length})
                             </h4>
                             <div className="space-y-2">
                                 {groupedOnline[role].map((member) => (

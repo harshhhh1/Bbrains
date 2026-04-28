@@ -57,11 +57,13 @@ export function RequestMoneyDrawer({
         const response = await dashboardApi.searchUsers(value);
         if (response.success && response.data) {
           const data = Array.isArray(response.data) ? response.data : [response.data];
-          setSearchResults(data.map((u: any) => ({
-            id: u.id,
-            name: u.displayName || u.username,
-            avatarUrl: u.avatarUrl || "",
-          })));
+          setSearchResults(
+            data.map((u: any) => ({
+              id: u.id,
+              name: u.displayName || u.username,
+              avatarUrl: u.avatar || "",
+            }))
+          );
         }
       } finally {
         setSearching(false);
@@ -88,7 +90,7 @@ export function RequestMoneyDrawer({
         toast.error(res.message || "Failed to dispatch request");
       }
     } finally {
-      setSubmitting(true);
+      setSubmitting(false);
     }
   };
 
@@ -101,9 +103,9 @@ export function RequestMoneyDrawer({
               <div className="space-y-2">
                 <DrawerTitle className="text-2xl font-black tracking-tight flex items-center gap-2">
                    <ArrowDownLeft className="h-6 w-6 text-primary" />
-                   Solicit Assets
+                   Request B-Coins
                 </DrawerTitle>
-                <DrawerDescription className="font-medium">Request B-Coins from another verified system agent.</DrawerDescription>
+                <DrawerDescription className="font-medium">Request B-Coins from another user.</DrawerDescription>
               </div>
               <DrawerClose asChild>
                 <Button variant="ghost" size="icon" className="rounded-full bg-muted/40 hover:bg-muted transition-colors">
@@ -134,7 +136,7 @@ export function RequestMoneyDrawer({
                 <div className="relative group">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                   <Input
-                    placeholder="Search system registry..."
+                    placeholder="Search for users..."
                     className="pl-11 h-12 rounded-xl bg-muted/20 border-border/40 focus:ring-2 focus:ring-primary/20 transition-all font-medium"
                     value={searchQuery}
                     onChange={(e) => handleSearchChange(e.target.value)}
@@ -156,7 +158,7 @@ export function RequestMoneyDrawer({
             </div>
 
             <div className="space-y-3">
-               <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Desired Volume</Label>
+               <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Request Amount</Label>
                <div className="relative">
                   <img src="/bcoin.svg" className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 opacity-30" alt="" />
                   <Input 
@@ -170,7 +172,7 @@ export function RequestMoneyDrawer({
             </div>
 
             <div className="space-y-3">
-               <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Protocol Rationale</Label>
+               <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Reason</Label>
                <textarea 
                 className="w-full h-32 p-4 rounded-xl bg-muted/20 border border-border/40 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none" 
                 placeholder="Briefly state the context for this request..." 
@@ -182,7 +184,7 @@ export function RequestMoneyDrawer({
 
           <DrawerFooter className="border-t border-border/60 p-8 bg-muted/5">
              <Button size="lg" className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20" onClick={handleSendRequest} disabled={!requestTo || !amount || !reason}>
-                Dispatch Request
+                Send Request
              </Button>
           </DrawerFooter>
         </div>

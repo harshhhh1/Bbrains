@@ -2,7 +2,8 @@ import express from 'express';
 import {
     getWalletHandler, getBalance, setupPin, changePin,
     verifyPin, transferHandler, getHistoryHandler,
-    getRequests, getIncomingRequests
+    getRequests, getIncomingRequests,
+    handleCreateRequest, handleRespondToRequest
 } from './wallet.controller.js';
 import { 
     getMyTransactions, getRecordedTransactions, createManualTransaction, getUserTransactionsList 
@@ -29,5 +30,7 @@ router.post('/transfer', verifyToken, transferHandler);
 
 router.get('/requests', verifyToken, getRequests);
 router.get('/requests/incoming', verifyToken, getIncomingRequests);
+router.post('/requests', verifyToken, handleCreateRequest);
+router.post('/requests/:id/respond', verifyToken, handleRespondToRequest);
 
 export default router;

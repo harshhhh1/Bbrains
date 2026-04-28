@@ -69,8 +69,28 @@ model User {
   reviewedSubmissions Submission[]        @relation("SubmissionReviewer")
   reviews            Review[]
   acknowledged      Acknowledged[]
+  incomingRequests  MoneyRequest[]       @relation("RequestTo")
+  sentRequests      MoneyRequest[]       @relation("RequestFrom")
 
   @@map("user")
+}
+
+model MoneyRequest {
+  id          String   @id @default(uuid())
+  fromUserId  String   @map("from_user_id")
+  toUserId    String   @map("to_user_id")
+  amount      Decimal  @db.Decimal(10, 2)
+  reason      String   @db.VarChar(255)
+  status      String   @default("pending") // pending, accepted, rejected
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  fromUser    User     @relation("RequestFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser      User     @relation("RequestTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@map("money_request")
 }
 
 model UserDetails {

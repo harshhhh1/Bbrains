@@ -75,7 +75,7 @@ export function SendMoneyDrawer({
           setSearchResults(data.map((u: any) => ({
             id: u.id,
             name: u.displayName || u.username,
-            avatarUrl: u.avatarUrl || "",
+            avatarUrl: u.avatar || "",
           })));
         }
       } finally {
@@ -174,7 +174,7 @@ export function SendMoneyDrawer({
                     <div className="relative group">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                       <Input
-                        placeholder="Search system registry..."
+                        placeholder="search for users..."
                         className="pl-11 h-12 rounded-xl bg-muted/20 border-border/40 focus:ring-2 focus:ring-primary/20 transition-all font-medium"
                         value={searchQuery}
                         onChange={(e) => handleSearchChange(e.target.value)}

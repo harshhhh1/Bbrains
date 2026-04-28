@@ -566,6 +566,52 @@ export const deleteChatMessageById = async (req, res) => {
     }
 };
 
+export const searchChatUsers = async (req, res) => {
+    try {
+        const query = String(req.query.q || req.query.query || "").trim();
+        const chatId = normalizeChatId(req.query.chatId, req);
+        const limit = Math.min(Math.max(parseInt(String(req.query.limit || "10"), 10), 1), 50);
+
+        if (!query) {
+            return sendSuccess(res, []);
+        }
+
+        const where = {
+            username: { contains: query, mode: "insensitive" },
+            ...(req.user?.collegeId ? { collegeId: req.user.collegeId } : {}),
+        };
+
+        const users = await prisma.user.findMany({
+            where,
+            select: {
+                id: true,
+                username: true,
+                userDetails: {
+                    select: {
+                        avatar: true,
+                        firstName: true,
+                        lastName: true,
+                    }
+                }
+            },
+            orderBy: { username: "asc" },
+            take: limit,
+        });
+
+        const results = users.map((user) => ({
+            id: user.id,
+            username: user.username,
+            avatar: user.userDetails?.avatar || "",
+            displayName: `${user.userDetails?.firstName || ""} ${user.userDetails?.lastName || ""}`.trim() || user.username,
+        }));
+
+        return sendSuccess(res, results);
+    } catch (error) {
+        console.error("Failed to search chat users:", error);
+        return sendError(res, "Failed to search users", 500);
+    }
+};
+
 export const getMyChatProfile = async (req, res) => {
     try {
         const userId = req.user?.id;

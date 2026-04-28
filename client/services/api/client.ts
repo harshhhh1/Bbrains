@@ -39,7 +39,7 @@ export const dashboardApi = {
   ...gamificationApi,
   ...academicApi,
   getUser: userApi.getMe,
-  searchUsers: (query: string) => userApi.getMe(),
+  searchUsers: (query: string) => chatApi.searchUsers(query),
   getStreak: gamificationApi.getStreaks,
   getUpcomingEvents: communicationApi.getEvents,
   getAnnouncements: communicationApi.getAnnouncements,
