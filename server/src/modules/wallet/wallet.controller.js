@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { transferFunds, getTransactionHistory, getWalletDetails } from "./wallet.service.js";
+import { 
+    transferFunds, getTransactionHistory, getWalletDetails,
+    createMoneyRequest, getSentRequests, getIncomingRequestsList,
+    respondToMoneyRequest
+} from "./wallet.service.js";
 import { sendSuccess, sendCreated, sendError } from "../../utils/response.js";
 import { createAuditLog } from "../../utils/auditLog.js";
 import prisma from "../../utils/prisma.js";
@@ -167,11 +171,46 @@ export const getHistoryHandler = async (req, res) => {
     }
 };
 
+export const handleCreateRequest = async (req, res) => {
+    try {
+        const { toUserId, amount, reason } = req.body;
+        if (!toUserId || !amount || !reason) return sendError(res, 'Missing required fields', 400);
+
+        const request = await createMoneyRequest(req.user.id, toUserId, amount, reason);
+        return sendCreated(res, request, 'Request sent successfully');
+    } catch (error) {
+        console.error(error);
+        return sendError(res, error.message || 'Failed to create request', 500);
+    }
+};
+
+export const handleRespondToRequest = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { accept, pin } = req.body;
+
+        const result = await respondToMoneyRequest(req.user.id, id, accept, pin);
+        return sendSuccess(res, result, `Request ${accept ? 'accepted' : 'rejected'}`);
+    } catch (error) {
+        console.error(error);
+        return sendError(res, error.message || 'Failed to respond to request', 400);
+    }
+};
 
 export const getIncomingRequests = async (req, res) => {
-    return sendSuccess(res, [], 'No incoming requests found');
+    try {
+        const requests = await getIncomingRequestsList(req.user.id);
+        return sendSuccess(res, requests);
+    } catch (error) {
+        return sendError(res, 'Failed to fetch incoming requests', 500);
+    }
 };
 
 export const getRequests = async (req, res) => {
-    return sendSuccess(res, [], 'No requests found');
+    try {
+        const requests = await getSentRequests(req.user.id);
+        return sendSuccess(res, requests);
+    } catch (error) {
+        return sendError(res, 'Failed to fetch sent requests', 500);
+    }
 };

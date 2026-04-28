@@ -118,4 +118,115 @@ const getWalletDetails = async (userId) => {
     });
 };
 
-export { transferFunds, getTransactionHistory, getWalletDetails };
+const getSentRequests = async (userId) => {
+    return await prisma.moneyRequest.findMany({
+        where: { fromUserId: userId },
+        include: {
+            toUser: {
+                select: {
+                    username: true,
+                    userDetails: { select: { firstName: true, lastName: true, avatar: true } }
+                }
+            }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+};
+
+const getIncomingRequestsList = async (userId) => {
+    return await prisma.moneyRequest.findMany({
+        where: { toUserId: userId },
+        include: {
+            fromUser: {
+                select: {
+                    username: true,
+                    userDetails: { select: { firstName: true, lastName: true, avatar: true } }
+                }
+            }
+        },
+        orderBy: { createdAt: 'desc' }
+    });
+};
+
+const createMoneyRequest = async (fromUserId, toUserId, amount, reason) => {
+    const fromUser = await prisma.user.findUnique({ where: { id: fromUserId }, select: { username: true } });
+    
+    const request = await prisma.moneyRequest.create({
+        data: {
+            fromUserId,
+            toUserId,
+            amount,
+            reason,
+            status: 'pending'
+        }
+    });
+
+    await createNotification({
+        userId: toUserId,
+        actorId: fromUserId,
+        title: 'Money Requested 💸',
+        message: `@${fromUser.username} requested ₹${amount} for: ${reason}`,
+        type: 'finance',
+        relatedId: request.id
+    });
+
+    return request;
+};
+
+const respondToMoneyRequest = async (userId, requestId, accept, pin) => {
+    const request = await prisma.moneyRequest.findUnique({
+        where: { id: requestId },
+        include: { fromUser: { select: { id: true, username: true } } }
+    });
+
+    if (!request) throw new Error("Request not found");
+    if (request.toUserId !== userId) throw new Error("Unauthorized");
+    if (request.status !== 'pending') throw new Error("Request already processed");
+
+    if (!accept) {
+        await prisma.moneyRequest.update({
+            where: { id: requestId },
+            data: { status: 'rejected' }
+        });
+
+        await createNotification({
+            userId: request.fromUserId,
+            actorId: userId,
+            title: 'Request Rejected ❌',
+            message: `Your request for ₹${request.amount} was rejected.`,
+            type: 'finance',
+            relatedId: request.id
+        });
+
+        return { status: 'rejected' };
+    }
+
+    // Process payment
+    const transfer = await transferFunds(userId, request.fromUserId, Number(request.amount), `Payment for request: ${request.reason}`, pin);
+
+    await prisma.moneyRequest.update({
+        where: { id: requestId },
+        data: { status: 'accepted' }
+    });
+
+    await createNotification({
+        userId: request.fromUserId,
+        actorId: userId,
+        title: 'Request Accepted! ✅',
+        message: `Your request for ₹${request.amount} was accepted and funds transferred.`,
+        type: 'finance',
+        relatedId: request.id
+    });
+
+    return { status: 'accepted', transfer };
+};
+
+export { 
+    transferFunds, 
+    getTransactionHistory, 
+    getWalletDetails, 
+    createMoneyRequest, 
+    getSentRequests, 
+    getIncomingRequestsList, 
+    respondToMoneyRequest 
+};
