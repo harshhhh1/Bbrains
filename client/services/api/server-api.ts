@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { LeaderboardLikeEntry, RoleRow } from "@/features/dashboard/types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -9,6 +10,22 @@ interface ApiResponse<T = unknown> {
   error?: string;
   [key: string]: unknown;
 }
+
+export type DashboardData = {
+  roles?: RoleRow[];
+  leaderboard?: LeaderboardLikeEntry[];
+  stats?: {
+    level?: number;
+    xp?: number;
+    [key: string]: unknown;
+  };
+  user?: {
+    xp?: {
+      level?: number;
+      xp?: number;
+    };
+  };
+};
 
 export async function getServerAuthToken(): Promise<string | null> {
   const cookieStore = await cookies();
