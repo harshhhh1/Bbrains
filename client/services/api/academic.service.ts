@@ -31,8 +31,8 @@ export const academicApi = {
   markAttendanceBulk: (data: any) => api.post<any>("/attendance/bulk", data),
   getStudentAttendanceHistory: (studentId: string) => api.get<any[]>(`/attendance/student/${studentId}`),
   getStudentHistory: (studentId: string) => api.get<any[]>(`/attendance/student/${studentId}`),
-  getMyAchievements: () => api.get<any[]>("/achievements/my"),
+  getMyAchievements: () => api.get<any[]>("/achievements/me"),
   
-  enroll: (courseId: number | string) => api.post<any>(`/courses/${courseId}/enroll`),
-  getMyEnrollments: () => api.get<any[]>("/user/enrollments"),
+  enroll: (courseId: number | string) => api.post<any>("/enrollments", { courseId }),
+  getMyEnrollments: () => api.get<any[]>("/enrollments/me"),
 };
