@@ -15,7 +15,7 @@ export const marketApi = {
   
   getLibrary: (category?: string, page = 1, limit = 10) => 
     api.get<any[]>(`/market/library?page=${page}&limit=${limit}${category ? `&category=${category}` : ""}`),
-  getDownloadUrl: (productId: number) => api.get<{ url: string }>(`/market/download/${productId}`),
+  getDownloadUrl: (productId: number) => api.get<{ url: string }>(`/market/library/${productId}/download`),
   
   checkout: (pin: string) => api.post<any>("/market/checkout", { pin }),
   buyNow: (productId: number, quantity: number, pin: string) => api.post<any>("/market/buy-now", { productId, quantity, pin }),

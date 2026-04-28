@@ -5,7 +5,7 @@ export const gamificationApi = {
     api.get<any[]>(`/leaderboard?category=${category}&sortBy=${sortBy}&limit=${limit}&offset=${offset}`),
   getMyPosition: (category: string, sortBy: string) => 
     api.get<any>(`/leaderboard/me?category=${category}&sortBy=${sortBy}`),
-  getMyAchievements: () => api.get<any[]>("/achievements/my"),
+  getMyAchievements: () => api.get<any[]>("/achievements/me"),
   getStreak: () => api.get<any>("/user/streaks"),
   getStreaks: () => api.get<any>("/user/streaks"),
   getLevels: () => api.get<any[]>("/xp/config"),
