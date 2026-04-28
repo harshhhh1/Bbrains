@@ -20,8 +20,8 @@ export const marketApi = {
   checkout: (pin: string) => api.post<any>("/market/checkout", { pin }),
   buyNow: (productId: number, quantity: number, pin: string) => api.post<any>("/market/buy-now", { productId, quantity, pin }),
   
-  getOrders: (page = 1, limit = 10) => api.get<any[]>(`/market/orders?page=${page}&limit=${limit}`),
-  getOrderDetails: (id: string) => api.get<any>(`/market/orders/${id}`),
+  getOrders: (page = 1, limit = 10) => api.get<any[]>(`/orders/me?page=${page}&limit=${limit}`),
+  getOrderDetails: (id: string) => api.get<any>(`/orders/${id}`),
   
   getReviews: (productId: number) => api.get<any>(`/market/reviews/${productId}`),
   createReview: (productId: number, data: any) => api.post<any>(`/market/reviews/${productId}`, data),

@@ -11,8 +11,10 @@ function Tabs({
   orientation = "horizontal",
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Root>) {
+  const id = React.useId()
   return (
     <TabsPrimitive.Root
+      id={props.id || id}
       data-slot="tabs"
       data-orientation={orientation}
       className={cn(

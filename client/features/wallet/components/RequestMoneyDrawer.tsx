@@ -81,13 +81,13 @@ export function RequestMoneyDrawer({
       setSubmitting(true);
       const res = await walletApi.createRequest(requestTo, amt, reason);
       if (res.success) {
-        toast.success("Solicitation Dispatched");
+        toast.success("Request Sent Successfully");
         onOpenChange(false);
         onSuccess();
         // Reset form
         setRequestTo(""); setAmount(""); setReason(""); setSelectedUser(null); setSearchQuery("");
       } else {
-        toast.error(res.message || "Failed to dispatch request");
+        toast.error(res.message || "Failed to send request");
       }
     } finally {
       setSubmitting(false);
@@ -126,7 +126,7 @@ export function RequestMoneyDrawer({
                   </Avatar>
                   <div className="flex-1 min-w-0">
                      <p className="font-bold text-foreground truncate">{selectedUser.name}</p>
-                     <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">Target Agent</p>
+                     <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">Target User</p>
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => setSelectedUser(null)} className="rounded-full hover:bg-rose-500/10 hover:text-rose-600">
                      <X className="h-4 w-4" />

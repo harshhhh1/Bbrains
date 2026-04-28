@@ -42,7 +42,7 @@ import {
   Building2,
   X,
 } from "lucide-react";
-import { transactionApi, type Transaction } from "@/services/api/client";
+import { transactionApi, marketApi, type Transaction } from "@/services/api/client";
 
 interface PaymentItem {
   name: string;
@@ -77,90 +77,7 @@ function mapTransactionStatus(status: Transaction["status"]): Payment["status"] 
   return "failed";
 }
 
-const mockMarketOrders: PaymentDetails[] = [
-  {
-    id: "ORD-001",
-    date: "2026-03-07",
-    status: "completed",
-    total: 330,
-    paymentMethod: "B-Coins Wallet",
-    transactionId: "TXN-W-001",
-    items: [
-      { name: "Wireless Earbuds", quantity: 1, price: 250, image: "🎧" },
-      { name: "Notebook Set (5 Pack)", quantity: 1, price: 80, image: "📓" },
-    ],
-  },
-  {
-    id: "ORD-002",
-    date: "2026-03-05",
-    status: "completed",
-    total: 45,
-    paymentMethod: "B-Coins Wallet",
-    transactionId: "TXN-W-002",
-    items: [{ name: "Water Bottle (1L)", quantity: 1, price: 45, image: "🍶" }],
-  },
-  {
-    id: "ORD-003",
-    date: "2026-03-04",
-    status: "pending",
-    total: 350,
-    paymentMethod: "B-Coins Wallet",
-    transactionId: "TXN-W-003",
-    items: [{ name: "Campus Hoodie", quantity: 1, price: 350, image: "🧥" }],
-  },
-  {
-    id: "ORD-004",
-    date: "2026-02-28",
-    status: "cancelled",
-    total: 200,
-    paymentMethod: "B-Coins Wallet",
-    transactionId: "TXN-W-004",
-    items: [{ name: "Graphing Calculator", quantity: 1, price: 200, image: "🔢" }],
-  },
-];
 
-const mockWalletPayments: Payment[] = [
-  {
-    id: "TXN-001",
-    type: "wallet",
-    amount: 500,
-    status: "completed",
-    description: "Wallet Top-up via Bank Transfer",
-    createdAt: "2026-03-10T10:30:00Z",
-  },
-  {
-    id: "TXN-002",
-    type: "wallet",
-    amount: -150,
-    status: "completed",
-    description: "Sent to @john_doe",
-    createdAt: "2026-03-09T14:22:00Z",
-  },
-  {
-    id: "TXN-003",
-    type: "wallet",
-    amount: 200,
-    status: "completed",
-    description: "Received from @jane_smith",
-    createdAt: "2026-03-08T09:15:00Z",
-  },
-  {
-    id: "TXN-004",
-    type: "wallet",
-    amount: -75,
-    status: "completed",
-    description: "Service Fee",
-    createdAt: "2026-03-07T16:45:00Z",
-  },
-  {
-    id: "TXN-005",
-    type: "wallet",
-    amount: 1000,
-    status: "completed",
-    description: "Wallet Top-up via Credit Card",
-    createdAt: "2026-03-06T11:00:00Z",
-  },
-];
 
 export default function PaymentHistoryPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -174,12 +91,16 @@ export default function PaymentHistoryPage() {
   const fetchPayments = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      const txnRes = await transactionApi.getMyTransactions();
+      const [txnRes, orderRes] = await Promise.all([
+        transactionApi.getMyTransactions({ limit: 100 }),
+        marketApi.getOrders(1, 100)
+      ]);
       
       let walletPayments: Payment[] = [];
       if (txnRes.success && txnRes.data) {
-        const txns = Array.isArray(txnRes.data) ? txnRes.data : [];
+        const txns = (txnRes.data as any)?.data || (Array.isArray(txnRes.data) ? txnRes.data : []);
         walletPayments = txns.map((t: Transaction) => ({
           id: String(t.id),
           type: "wallet" as const,
@@ -190,28 +111,43 @@ export default function PaymentHistoryPage() {
         }));
       }
 
-      const marketPayments: Payment[] = mockMarketOrders.map((order) => ({
-        id: order.id,
-        type: "market",
-        amount: -order.total,
-        status: order.status,
-        description: order.items?.map(i => i.name).join(", ") || "Market Order",
-        createdAt: order.date,
-        details: order,
-      }));
+      let marketPayments: Payment[] = [];
+      if (orderRes.success && orderRes.data) {
+        const orders = (orderRes.data as any)?.data || (Array.isArray(orderRes.data) ? orderRes.data : []);
+        marketPayments = orders.map((order: any) => ({
+          id: String(order.id),
+          type: "market" as const,
+          amount: -Number(order.totalAmount || 0),
+          status: order.status === "completed" || order.status === "delivered" 
+            ? "completed" 
+            : order.status === "cancelled" 
+              ? "cancelled" 
+              : "pending",
+          description: order.items?.map((i: any) => i.product?.name).filter(Boolean).join(", ") || "Market Order",
+          createdAt: order.orderDate,
+          details: {
+            id: String(order.id),
+            date: order.orderDate,
+            status: order.status === "completed" || order.status === "delivered" ? "completed" : order.status === "cancelled" ? "cancelled" : "pending",
+            total: Number(order.totalAmount || 0),
+            paymentMethod: "B-Coins Wallet",
+            transactionId: order.transactionId || `ORD-${order.id}`,
+            items: order.items?.map((i: any) => ({
+              name: i.product?.name || "Unknown Item",
+              quantity: i.quantity || 1,
+              price: Number(i.priceAtPurchase || i.product?.price || 0),
+              image: i.product?.image || "📦"
+            }))
+          },
+        }));
+      }
 
-      setPayments([...walletPayments, ...marketPayments]);
+      setPayments([...walletPayments, ...marketPayments].sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ));
     } catch (err) {
+      console.error("Payment history error:", err);
       setError("Failed to load payment history");
-      setPayments([...mockWalletPayments, ...mockMarketOrders.map((order) => ({
-        id: order.id,
-        type: "market" as const,
-        amount: -order.total,
-        status: order.status,
-        description: order.items?.map(i => i.name).join(", ") || "Market Order",
-        createdAt: order.date,
-        details: order,
-      }))]);
     } finally {
       setLoading(false);
     }
