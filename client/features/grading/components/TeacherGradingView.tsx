@@ -80,7 +80,7 @@ export function TeacherGradingView() {
     setGradeDialogOpen(true)
   }
 
-  async function handleReviewSubmit(payload: { reviewStatus: "completed" | "incomplete"; reviewRemark?: string }) {
+  async function handleReviewSubmit(payload: { reviewStatus: "completed" | "incomplete" | "rework"; reviewRemark?: string }) {
     if (!reviewTarget) return false
     return grading.reviewSubmission(
       reviewTarget.submission.id,

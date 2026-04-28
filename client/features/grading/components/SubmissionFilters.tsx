@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle, ClipboardCheck, RotateCcw, XCircle } from "lucide-react"
 
-type FilterType = "all" | "submitted" | "completed" | "incomplete" | "notSubmitted"
+type FilterType = "all" | "submitted" | "completed" | "incomplete" | "rework" | "notSubmitted"
 
 interface SubmissionFiltersProps {
   counts: {
@@ -14,6 +14,7 @@ interface SubmissionFiltersProps {
     submitted: number
     completed: number
     incomplete: number
+    rework: number
     notSubmitted: number
   }
   active: FilterType
@@ -45,7 +46,7 @@ const filterConfig: {
     color: "text-green-600",
   },
   {
-    key: "incomplete",
+    key: "rework",
     label: "Needs Rework",
     icon: <RotateCcw className="size-3.5" />,
     color: "text-orange-600",

@@ -69,5 +69,5 @@ export function getStatusBadgeVariant(status: StudentAssignmentStatus): "default
 }
 
 export function canSubmitAssignment(assignment: Assignment) {
-  return !assignment.submission || assignment.submission.reviewStatus === "incomplete";
+  return !assignment.submission || assignment.submission.reviewStatus === "rework";
 }

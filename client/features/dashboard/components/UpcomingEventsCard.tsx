@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MapPin, Clock, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { eventApi, Event } from "@/services/api/client";
+import { eventApi, type Event } from "@/services/api/client";
+import { EventDetailsDialog } from "@/app/(dashboard)/events/_components/EventDetailsDialog";
 
 interface UpcomingEventsCardProps {
   initialEvents?: Event[];
@@ -15,6 +16,8 @@ export function UpcomingEventsCard({ initialEvents }: UpcomingEventsCardProps) {
   const [loading, setLoading] = useState(!initialEvents);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -65,6 +68,11 @@ export function UpcomingEventsCard({ initialEvents }: UpcomingEventsCardProps) {
     return date.getDate();
   };
 
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setDialogOpen(true);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -100,7 +108,8 @@ export function UpcomingEventsCard({ initialEvents }: UpcomingEventsCardProps) {
             {events.map((event) => (
               <div
                 key={event.id}
-                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
+                onClick={() => handleEventClick(event)}
+                className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 cursor-pointer hover:bg-muted/80 transition-all"
               >
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
                   <span className="text-xs font-medium text-primary">
@@ -132,6 +141,15 @@ export function UpcomingEventsCard({ initialEvents }: UpcomingEventsCardProps) {
           </div>
         )}
       </CardContent>
+
+      <EventDetailsDialog 
+        event={selectedEvent}
+        isOpen={dialogOpen}
+        onClose={() => {
+          setDialogOpen(false);
+          setSelectedEvent(null);
+        }}
+      />
     </Card>
   );
 }

@@ -136,8 +136,10 @@ function ComboboxList({ className, ...props }: ComboboxPrimitive.List.Props) {
 function ComboboxItem({
   className,
   children,
+  label: _label,
+  textValue: _textValue,
   ...props
-}: ComboboxPrimitive.Item.Props) {
+}: ComboboxPrimitive.Item.Props & { label?: string; textValue?: string }) {
   return (
     <ComboboxPrimitive.Item
       data-slot="combobox-item"

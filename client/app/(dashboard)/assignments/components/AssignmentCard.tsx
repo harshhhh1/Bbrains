@@ -70,12 +70,12 @@ export function AssignmentCard({ assignment, onView, onSubmit }: AssignmentCardP
           </Button>
           {canSubmit ? (
             <Button className="rounded-2xl" onClick={() => onSubmit(assignment)}>
-              {assignment.submission?.reviewStatus === "incomplete" ? (
+              {assignment.submission?.reviewStatus === "rework" ? (
                 <RotateCcw className="mr-2 h-4 w-4" />
               ) : (
                 <Upload className="mr-2 h-4 w-4" />
               )}
-              {assignment.submission?.reviewStatus === "incomplete" ? "Resubmit" : "Submit Work"}
+              {assignment.submission?.reviewStatus === "rework" ? "Resubmit" : "Submit Work"}
             </Button>
           ) : null}
         </div>
