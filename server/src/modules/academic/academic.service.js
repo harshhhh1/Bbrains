@@ -19,7 +19,7 @@ const normalizeDueDate = (value) => {
 
 const normalizeReviewStatus = (value) => {
     const status = String(value ?? "").trim().toLowerCase();
-    return status === "completed" || status === "incomplete" ? status : "submitted";
+    return status === "completed" || status === "incomplete" || status === "rework" ? status : "submitted";
 };
 
 const assignmentListInclude = {
@@ -244,6 +244,10 @@ const submitAssignment = async (currentUser, data) => {
         throw new Error("This assignment has already been marked completed");
     }
 
+    if (existing?.reviewStatus === "incomplete") {
+        throw new Error("This assignment was marked as incomplete and cannot be resubmitted");
+    }
+
     // Cleanup old submission file if being replaced
     if (existing && existing.filePath && existing.filePath !== filePath) {
         deleteFromCloudinary(existing.filePath).catch(err => 
@@ -421,7 +425,7 @@ const reviewSubmission = async (submissionId, currentUser, payload) => {
 
     const reviewStatus = normalizeReviewStatus(payload.reviewStatus);
     if (reviewStatus === "submitted") {
-        throw new Error("Review status must be completed or incomplete");
+        throw new Error("Review status must be completed, incomplete, or rework");
     }
 
     const reviewRemark = payload.reviewRemark?.trim() || null;
@@ -474,11 +478,19 @@ const reviewSubmission = async (submissionId, currentUser, payload) => {
 
     const message = reviewStatus === "completed"
         ? `Your submission for "${submission.assignment.title}" was marked completed.${submission.assignment.rewardPoints > 0 ? ` You earned ${submission.assignment.rewardPoints} points.` : ""}${reviewRemark ? ` Remark: ${reviewRemark}` : ""}`
-        : `Your submission for "${submission.assignment.title}" was marked incomplete.${reviewRemark ? ` Remark: ${reviewRemark}` : " Please review the task and resubmit it."}`;
+        : reviewStatus === "rework"
+          ? `Your submission for "${submission.assignment.title}" needs rework.${reviewRemark ? ` Remark: ${reviewRemark}` : " Please review the teacher's feedback and resubmit."}`
+          : `Your submission for "${submission.assignment.title}" was marked incomplete and cannot be resubmitted.`;
+
+    const notificationTitle = reviewStatus === "completed"
+        ? "Assignment Completed"
+        : reviewStatus === "rework"
+          ? "Assignment Needs Rework"
+          : "Assignment Marked Incomplete";
 
     await createNotification(
         submission.userId,
-        reviewStatus === "completed" ? "Assignment Completed" : "Assignment Needs Rework",
+        notificationTitle,
         message,
         mapSubmissionNotificationType,
         String(submission.assignmentId)

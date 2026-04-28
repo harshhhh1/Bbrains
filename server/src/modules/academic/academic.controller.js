@@ -29,7 +29,7 @@ const submissionSchema = z.object({
 });
 
 const submissionReviewSchema = z.object({
-    reviewStatus: z.enum(["completed", "incomplete"]),
+    reviewStatus: z.enum(["completed", "incomplete", "rework"]),
     reviewRemark: z.string().max(255).optional().nullable(),
 });
 

@@ -67,11 +67,18 @@ export function SubmissionCard({
         Completed
       </Badge>
     )
-  } else if (reviewStatus === "incomplete") {
+  } else if (reviewStatus === "rework") {
     statusBadge = (
       <Badge variant="outline" className="border-orange-200 bg-orange-50 text-orange-600 dark:bg-orange-950/30">
         <RotateCcw className="mr-1 size-3" />
         Needs Rework
+      </Badge>
+    )
+  } else if (reviewStatus === "incomplete") {
+    statusBadge = (
+      <Badge variant="outline" className="border-red-200 bg-red-50 text-red-600 dark:bg-red-950/30">
+        <XCircle className="mr-1 size-3" />
+        Incomplete
       </Badge>
     )
   } else {

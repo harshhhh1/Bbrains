@@ -36,7 +36,7 @@ export function AssignmentSubmitDrawer({
     if (assignment) {
       setSelectedFile(null)
       setFilePreviewUrl(null)
-      setSubmissionComment(assignment.submission?.reviewStatus === "incomplete" ? assignment.submission.reviewRemark ?? "" : "")
+      setSubmissionComment(assignment.submission?.reviewStatus === "rework" ? assignment.submission.reviewRemark ?? "" : "")
     }
   }, [assignment])
 
@@ -59,7 +59,7 @@ export function AssignmentSubmitDrawer({
 
     setSubmitting(true)
     const loadingToast = toast.loading(
-      assignment.submission?.reviewStatus === "incomplete"
+      assignment.submission?.reviewStatus === "rework"
         ? "Uploading your updated submission..."
         : "Uploading your assignment..."
     )
@@ -82,7 +82,7 @@ export function AssignmentSubmitDrawer({
       }
 
       toast.success(
-        assignment.submission?.reviewStatus === "incomplete"
+        assignment.submission?.reviewStatus === "rework"
           ? "Assignment resubmitted successfully"
           : "Assignment submitted successfully",
         { id: loadingToast }
@@ -114,7 +114,7 @@ export function AssignmentSubmitDrawer({
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
                 <DrawerTitle className="text-xl font-bold">
-                  {assignment?.submission?.reviewStatus === "incomplete" ? "Resubmit Assignment" : "Submit Assignment"}
+                  {assignment?.submission?.reviewStatus === "rework" ? "Resubmit Assignment" : "Submit Assignment"}
                 </DrawerTitle>
                 <DrawerDescription>
                   Upload your work for{" "}
@@ -188,14 +188,14 @@ export function AssignmentSubmitDrawer({
               </Button>
             </DrawerClose>
             <Button className="rounded-2xl" onClick={handleFileSubmit} disabled={!selectedFile || submitting}>
-              {assignment?.submission?.reviewStatus === "incomplete" ? (
+              {assignment?.submission?.reviewStatus === "rework" ? (
                 <RotateCcw className="mr-2 h-4 w-4" />
               ) : (
                 <Upload className="mr-2 h-4 w-4" />
               )}
               {submitting
                 ? "Submitting..."
-                : assignment?.submission?.reviewStatus === "incomplete"
+                : assignment?.submission?.reviewStatus === "rework"
                   ? "Resubmit Assignment"
                   : "Submit Assignment"}
             </Button>

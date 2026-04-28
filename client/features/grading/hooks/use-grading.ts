@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import { assignmentApi, courseApi, getAuthedClient, type AssessmentCourseOption } from "@/services/api/client"
 import type { ApiAssignment, ApiSubmission, ApiUser } from "@/lib/types/api"
 
-type FilterType = "all" | "submitted" | "completed" | "incomplete" | "notSubmitted"
+type FilterType = "all" | "submitted" | "completed" | "incomplete" | "rework" | "notSubmitted"
 
 interface AssignmentFormData {
   title: string
@@ -16,7 +16,7 @@ interface AssignmentFormData {
   rewardPoints: string
 }
 
-type ReviewSubmissionCallback = (submissionId: number, assignmentId: number, reviewStatus: "completed" | "incomplete") => void;
+type ReviewSubmissionCallback = (submissionId: number, assignmentId: number, reviewStatus: "completed" | "incomplete" | "rework") => void;
 
 type CourseStudentEnrollment = {
   user?: ApiUser | null
@@ -169,6 +169,7 @@ export function useGrading() {
       submitted: submissions.filter((submission) => submission.reviewStatus === "submitted" || !submission.reviewStatus).length,
       completed: submissions.filter((submission) => submission.reviewStatus === "completed").length,
       incomplete: submissions.filter((submission) => submission.reviewStatus === "incomplete").length,
+      rework: submissions.filter((submission) => submission.reviewStatus === "rework").length,
       notSubmitted: notSubmittedStudents.length,
     }),
     [submissions, notSubmittedStudents]
@@ -182,6 +183,8 @@ export function useGrading() {
         return submissions.filter((submission) => submission.reviewStatus === "submitted" || !submission.reviewStatus)
       case "completed":
         return submissions.filter((submission) => submission.reviewStatus === "completed")
+      case "rework":
+        return submissions.filter((submission) => submission.reviewStatus === "rework")
       case "incomplete":
         return submissions.filter((submission) => submission.reviewStatus === "incomplete")
       case "notSubmitted":
@@ -247,7 +250,7 @@ export function useGrading() {
   }, [])
 
   const reviewSubmission = useCallback(
-    async (submissionId: number, data: { reviewStatus: "completed" | "incomplete"; reviewRemark?: string }, onNotification?: ReviewSubmissionCallback) => {
+    async (submissionId: number, data: { reviewStatus: "completed" | "incomplete" | "rework"; reviewRemark?: string }, onNotification?: ReviewSubmissionCallback) => {
       try {
         setSubmitting(true)
         const response = await assignmentApi.reviewSubmission(submissionId, data)
@@ -263,7 +266,12 @@ export function useGrading() {
           onNotification(submissionId, selectedAssignment.id, data.reviewStatus)
         }
 
-        toast.success(data.reviewStatus === "completed" ? "Submission marked completed" : "Submission marked incomplete")
+        const toastMessage = data.reviewStatus === "completed" 
+          ? "Submission marked completed" 
+          : data.reviewStatus === "rework"
+            ? "Submission sent back for rework"
+            : "Submission marked incomplete"
+        toast.success(toastMessage)
         return true
       } catch (error) {
         console.error(error)
@@ -283,6 +291,7 @@ export function useGrading() {
       reviewQueueCount: submissions.filter((submission) => submission.reviewStatus === "submitted" || !submission.reviewStatus).length,
       completedCount: submissions.filter((submission) => submission.reviewStatus === "completed").length,
       incompleteCount: submissions.filter((submission) => submission.reviewStatus === "incomplete").length,
+      reworkCount: submissions.filter((submission) => submission.reviewStatus === "rework").length,
       lateCount: submissions.filter((submission) => isLate(submission.submittedAt, selectedAssignment.dueDate)).length,
     }
   }, [selectedAssignment, submissions])

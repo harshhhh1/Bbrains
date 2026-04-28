@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Loader2 } from "lucide-react"
+import { Check, Loader2, RotateCcw, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -14,13 +14,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 
+type ReviewStatus = "completed" | "incomplete" | "rework"
+
 interface GradeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   studentName: string
-  existingStatus?: "completed" | "incomplete" | "submitted"
+  existingStatus?: "completed" | "incomplete" | "rework" | "submitted"
   existingRemark?: string | null
-  onSubmit: (payload: { reviewStatus: "completed" | "incomplete"; reviewRemark?: string }) => Promise<boolean>
+  onSubmit: (payload: { reviewStatus: ReviewStatus; reviewRemark?: string }) => Promise<boolean>
   submitting: boolean
 }
 
@@ -33,8 +35,8 @@ export function GradeDialog({
   onSubmit,
   submitting,
 }: GradeDialogProps) {
-  const [reviewStatus, setReviewStatus] = useState<"completed" | "incomplete">(
-    () => (existingStatus === "incomplete" ? "incomplete" : "completed")
+  const [reviewStatus, setReviewStatus] = useState<ReviewStatus>(
+    () => (existingStatus === "rework" ? "rework" : existingStatus === "incomplete" ? "incomplete" : "completed")
   )
   const [reviewRemark, setReviewRemark] = useState(() => existingRemark ?? "")
 
@@ -55,22 +57,45 @@ export function GradeDialog({
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">Review Submission</DialogTitle>
           <DialogDescription>
-            Mark {studentName}&apos;s submission as completed or incomplete and leave an optional remark.
+            Mark {studentName}&apos;s submission as completed, rework, or incomplete.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="review-status">Review Status</Label>
-            <select
-              id="review-status"
-              value={reviewStatus}
-              onChange={(event) => setReviewStatus(event.target.value as "completed" | "incomplete")}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-              <option value="completed">Completed</option>
-              <option value="incomplete">Incomplete</option>
-            </select>
+            <Label>Review Status</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant={reviewStatus === "completed" ? "default" : "outline"}
+                className={`flex-1 gap-2 ${reviewStatus === "completed" ? "bg-green-600 hover:bg-green-700" : ""}`}
+                onClick={() => setReviewStatus("completed")}
+                disabled={submitting}
+              >
+                <Check className="h-4 w-4" />
+                Complete
+              </Button>
+              <Button
+                type="button"
+                variant={reviewStatus === "rework" ? "default" : "outline"}
+                className={`flex-1 gap-2 ${reviewStatus === "rework" ? "bg-brand-orange hover:bg-brand-orange/90" : ""}`}
+                onClick={() => setReviewStatus("rework")}
+                disabled={submitting}
+              >
+                <RotateCcw className="h-4 w-4" />
+                Rework
+              </Button>
+              <Button
+                type="button"
+                variant={reviewStatus === "incomplete" ? "default" : "outline"}
+                className={`flex-1 gap-2 ${reviewStatus === "incomplete" ? "bg-red-600 hover:bg-red-700" : ""}`}
+                onClick={() => setReviewStatus("incomplete")}
+                disabled={submitting}
+              >
+                <X className="h-4 w-4" />
+                Incomplete
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -82,7 +107,9 @@ export function GradeDialog({
               placeholder={
                 reviewStatus === "completed"
                   ? "Nice work. Add any note the student should see."
-                  : "Explain what needs to be fixed before resubmitting."
+                  : reviewStatus === "rework"
+                    ? "Explain what needs to be fixed before resubmitting."
+                    : "Optional note (this assignment cannot be resubmitted)."
               }
               rows={4}
               maxLength={255}

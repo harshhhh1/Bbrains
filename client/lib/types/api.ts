@@ -525,7 +525,7 @@ export interface ApiSubmission {
     userId: string
     filePath: string
     content?: string | null
-    reviewStatus?: "submitted" | "completed" | "incomplete"
+    reviewStatus?: "submitted" | "completed" | "incomplete" | "rework"
     reviewRemark?: string | null
     reviewedAt?: string | null
     reviewedBy?: string | null
