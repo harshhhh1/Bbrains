@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
@@ -12,38 +12,61 @@ interface SpendingsChartProps {
 }
 
 export function SpendingsChart({ transactions }: SpendingsChartProps) {
+  const [mounted, setMounted] = useState(false);
   const [chartFilter, setChartFilter] = useState("this-month");
 
-  // Generate last 6 months list
-  const months = Array.from({ length: 6 }).map((_, i) => {
-    const d = subMonths(new Date(), 5 - i);
-    return {
-      month: format(d, "MMM"),
-      start: startOfMonth(d),
-      end: endOfMonth(d),
-      sent: 0,
-      received: 0,
-    };
-  });
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  // Aggregate transactions into months
-  transactions.forEach((txn) => {
-    const date = new Date(txn.transactionDate || (txn as any).createdAt || new Date());
-    const amount = Number(txn.amount || 0);
-    const isCredit = txn.type.toLowerCase() === "credit" || txn.type.toLowerCase() === "received" || txn.type.toLowerCase() === "deposit";
+  const chartData = useMemo(() => {
+    if (!mounted) return [];
 
-    months.forEach((m) => {
-      if (isWithinInterval(date, { start: m.start, end: m.end })) {
-        if (isCredit) {
-          m.received += amount;
-        } else {
-          m.sent += amount;
-        }
-      }
+    // Generate last 6 months list
+    const months = Array.from({ length: 6 }).map((_, i) => {
+      const d = subMonths(new Date(), 5 - i);
+      return {
+        month: format(d, "MMM"),
+        start: startOfMonth(d),
+        end: endOfMonth(d),
+        sent: 0,
+        received: 0,
+      };
     });
-  });
 
-  const chartData = months;
+    // Aggregate transactions into months
+    transactions.forEach((txn) => {
+      const date = new Date(txn.transactionDate || (txn as any).createdAt || new Date());
+      const amount = Number(txn.amount || 0);
+      const isCredit = txn.type.toLowerCase() === "credit" || txn.type.toLowerCase() === "received" || txn.type.toLowerCase() === "deposit";
+
+      months.forEach((m) => {
+        if (isWithinInterval(date, { start: m.start, end: m.end })) {
+          if (isCredit) {
+            m.received += amount;
+          } else {
+            m.sent += amount;
+          }
+        }
+      });
+    });
+
+    return months;
+  }, [transactions, mounted]);
+
+  if (!mounted) {
+    return (
+      <Card className="h-[450px] w-full animate-pulse bg-muted/10">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div className="h-6 w-32 bg-muted rounded" />
+          <div className="h-8 w-48 bg-muted rounded" />
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px] w-full mt-4 bg-muted/20 rounded" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
