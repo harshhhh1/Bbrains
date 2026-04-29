@@ -34,7 +34,7 @@ export default function CollegesPage() {
   return (
     <div className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-10">
       <SectionHeader
-        title="Institutional Network"
+        title="School Network"
         subtitle="Manage affiliated colleges and campus configurations."
         actionLabel="Onboard Institution"
         action={() => setIsModalOpen(true)}

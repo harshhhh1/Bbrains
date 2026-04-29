@@ -141,16 +141,16 @@ export default function MarketPage() {
 
       if (response.success) {
         toast.success("Transaction Complete", {
-          description: buyProduct ? `Acquired ${buyProduct.name}` : `Acquired ${cartCount} items`,
+          description: buyProduct ? `Bought ${buyProduct.name}` : `Bought ${cartCount} items`,
         });
         if (!buyProduct) setCart({});
         fetchCart();
         fetchProducts();
       } else {
-        toast.error(response.message || "Settlement failed");
+        toast.error(response.message || "Payment failed");
       }
     } catch (error) {
-      toast.error("An error occurred during settlement");
+      toast.error("An error occurred during payment");
     } finally {
       setIsProcessing(false);
       setShowPinDialog(false);
@@ -166,7 +166,7 @@ export default function MarketPage() {
             <Store className="w-12 h-12 text-primary" />
             Marketplace
           </h1>
-          <p className="text-muted-foreground font-medium text-lg">Acquire verified educational assets and digital tools.</p>
+          <p className="text-muted-foreground font-medium text-lg">Buy verified educational items and tools.</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/products">
@@ -190,7 +190,7 @@ export default function MarketPage() {
       <div className="relative group max-w-2xl bg-muted/30 p-4 rounded-3xl border border-border/50">
         <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
         <input
-          placeholder="Search for assets, tools, or resources..."
+          placeholder="Search for items, tools, or resources..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full h-14 pl-12 pr-4 rounded-2xl bg-card border border-border/60 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold text-lg placeholder:text-muted-foreground/30"
@@ -205,8 +205,8 @@ export default function MarketPage() {
       ) : filteredProducts.length === 0 ? (
         <div className="py-32 text-center bg-muted/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
           <Package className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
-          <h3 className="text-2xl font-bold tracking-tight">Registry Empty</h3>
-          <p className="text-muted-foreground font-medium mt-2">No assets match your search parameters.</p>
+          <h3 className="text-2xl font-bold tracking-tight">List Empty</h3>
+          <p className="text-muted-foreground font-medium mt-2">No items match your search parameters.</p>
         </div>
       ) : (
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -242,11 +242,11 @@ export default function MarketPage() {
             <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center border border-primary/20">
               <ShoppingCart className="w-10 h-10 text-primary" />
             </div>
-            <AlertDialogTitle className="text-3xl font-black tracking-tight">Confirm Authorization</AlertDialogTitle>
+            <AlertDialogTitle className="text-3xl font-black tracking-tight">Confirm Payment</AlertDialogTitle>
             <AlertDialogDescription className="text-lg font-medium text-muted-foreground leading-relaxed">
               {buyProduct
-                ? `Authorizing acquisition of ${buyProduct.name} for ${Number(buyProduct.price) * quantity} B-Coins.`
-                : `Authorizing settlement of ${cartCount} items for a total of ${cartTotal} B-Coins.`}
+                ? `Processing payment for ${buyProduct.name} for ${Number(buyProduct.price) * quantity} B-Coins.`
+                : `Processing payment for ${cartCount} items for a total of ${cartTotal} B-Coins.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-10 gap-3 justify-center">
@@ -266,7 +266,7 @@ export default function MarketPage() {
         onOpenChange={setShowPinDialog}
         onConfirm={handlePinSubmit}
         isProcessing={isProcessing}
-        description="Enter your secure credentials to authorize this asset transfer."
+        description="Enter your secure credentials to pay for these items."
       />
     </DashboardContent>
   );

@@ -75,8 +75,8 @@ export function CartDrawer({
                    <ShoppingCart className="w-10 h-10 text-muted-foreground/10" />
                 </div>
                 <div className="space-y-1">
-                   <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40">Registry Clean</p>
-                   <p className="text-[10px] font-bold text-muted-foreground/30">No assets staged for acquisition</p>
+                   <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40">No Records</p>
+                   <p className="text-[10px] font-bold text-muted-foreground/30">No items in cart</p>
                 </div>
               </div>
             ) : (
@@ -142,7 +142,7 @@ export function CartDrawer({
                 onClick={onCheckout}
                 disabled={isProcessing}
               >
-                {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Authorize Settlement"}
+                {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Pay Now"}
               </Button>
             </div>
           )}

@@ -171,7 +171,7 @@ export default function MarketProductPageClient() {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6">
         <AlertTriangle className="w-16 h-16 text-primary" />
-        <h2 className="text-2xl font-black text-foreground tracking-tight">Asset Not Found</h2>
+        <h2 className="text-2xl font-black text-foreground tracking-tight">Item Not Found</h2>
         <Button variant="outline" asChild className="rounded-xl border-border hover:bg-muted">
           <Link href="/market">Return to Market</Link>
         </Button>
@@ -194,7 +194,7 @@ export default function MarketProductPageClient() {
           </Button>
         </Link>
         <div className="h-1 w-1 rounded-full bg-border" />
-        <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Asset Dossier</span>
+        <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Item Details</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-16 items-start">
@@ -289,7 +289,7 @@ export default function MarketProductPageClient() {
 
             <div className="flex items-center gap-3">
               {isOutOfStock ? (
-                <Badge variant="destructive" className="bg-red-500/10 text-red-500 border-red-500/20 text-[10px] font-black uppercase tracking-widest px-3 py-1 h-8 rounded-xl">Registry Depleted</Badge>
+                <Badge variant="destructive" className="bg-red-500/10 text-red-500 border-red-500/20 text-[10px] font-black uppercase tracking-widest px-3 py-1 h-8 rounded-xl">Out of Stock</Badge>
               ) : (
                 <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 px-4 py-1.5 rounded-xl border border-emerald-500/20">
                   <CheckCircle2 className="w-4 h-4" />
@@ -301,7 +301,7 @@ export default function MarketProductPageClient() {
 
             <div className="p-10 rounded-[2.5rem] bg-card border border-border shadow-inner flex flex-col gap-1 relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full translate-x-16 -translate-y-16 group-hover:bg-primary/10 transition-colors" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 ml-1">Asset Value</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 ml-1">Item Value</span>
               <div className="flex items-baseline gap-3">
                 <span className="text-7xl font-black text-foreground tracking-tighter tabular-nums leading-none">{product.price}</span>
                 <span className="text-xl font-black text-primary uppercase tracking-widest">B-Coins</span>
@@ -339,7 +339,7 @@ export default function MarketProductPageClient() {
                   </Button>
                 </div>
                 <div>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Settlement Estimate</p>
+                   <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Estimated Cost</p>
                    <p className="text-2xl font-black text-foreground tracking-tight">{Number(product.price) * quantity} B-Coins</p>
                 </div>
               </div>
@@ -357,7 +357,7 @@ export default function MarketProductPageClient() {
                   disabled={isOutOfStock || (alreadyOwned && product.productType === 'digital')}
                   className="h-16 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
                 >
-                  Authorize Now
+                  Pay Now
                 </Button>
               </div>
             </div>
@@ -367,14 +367,14 @@ export default function MarketProductPageClient() {
                   <Truck className="w-6 h-6 text-primary" />
                   <div>
                     <p className="text-[10px] font-black text-foreground uppercase tracking-widest mb-1">Instant Fulfillment</p>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">Asset provisioning completes immediately after authorization.</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">Item delivery completes immediately after payment.</p>
                   </div>
                </div>
                <div className="p-5 rounded-[2rem] bg-muted/20 border border-border/50 flex flex-col gap-3">
                   <RefreshCcw className="w-6 h-6 text-emerald-500" />
                   <div>
-                    <p className="text-[10px] font-black text-foreground uppercase tracking-widest mb-1">Verified Protocol</p>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">Secured via end-to-end cryptographic verification.</p>
+                    <p className="text-[10px] font-black text-foreground uppercase tracking-widest mb-1">Secure Payment</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">Secured via end-to-end secure verification.</p>
                   </div>
                </div>
             </div>
@@ -447,7 +447,7 @@ export default function MarketProductPageClient() {
                   </div>
                   <textarea
                       className="w-full h-40 p-8 rounded-[2rem] bg-muted/40 border border-border text-foreground placeholder:text-muted-foreground/40 text-lg font-medium outline-none focus:border-primary/50 transition-colors resize-none shadow-inner"
-                      placeholder="Post your detailed assessment of this asset..."
+                      placeholder="Post your detailed assessment of this item..."
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                   />
@@ -464,7 +464,7 @@ export default function MarketProductPageClient() {
               {reviews.length === 0 ? (
                   <div className="py-24 text-center bg-muted/10 rounded-[3rem] border-2 border-dashed border-border/40">
                         <Star className="w-16 h-16 text-muted-foreground/10 mx-auto mb-4" />
-                        <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-xs">Registry Clean: No Verdicts Recorded</p>
+                        <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-xs">List Empty: No Verdicts Recorded</p>
                   </div>
               ) : (
                   reviews.map((rev) => (
@@ -500,7 +500,7 @@ export default function MarketProductPageClient() {
         onOpenChange={setShowPin} 
         onConfirm={handlePinSubmit} 
         isProcessing={isProcessing} 
-        description={`Authorizing acquisition of ${product.name} for ${Number(product.price) * quantity} B-Coins.`}
+        description={`Paying for order of ${product.name} for ${Number(product.price) * quantity} B-Coins.`}
       />
     </DashboardContent>
   );

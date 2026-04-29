@@ -42,7 +42,7 @@ export default function OrdersPage() {
     order_placed: { label: "Pending", color: "bg-amber-500/10 text-amber-600 border-amber-500/20", icon: Clock },
     completed: { label: "Fulfilled", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle2 },
     delivered: { label: "Delivered", color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: CheckCircle2 },
-    cancelled: { label: "Voided", color: "bg-red-500/10 text-red-600 border-red-500/20", icon: Package },
+    cancelled: { label: "Cancelled", color: "bg-red-500/10 text-red-600 border-red-500/20", icon: Package },
   };
 
   if (loading) {
@@ -50,7 +50,7 @@ export default function OrdersPage() {
       <DashboardContent>
         <div className="py-40 flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Ledger...</p>
+          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing History...</p>
         </div>
       </DashboardContent>
     );
@@ -61,17 +61,17 @@ export default function OrdersPage() {
       <header>
         <h1 className="text-4xl font-black tracking-tight flex items-center gap-3">
           <ShoppingCart className="w-10 h-10 text-primary" />
-          Acquisition History
+          Order History
         </h1>
-        <p className="text-muted-foreground text-lg font-medium mt-2">Monitor order status and delivery verification tokens.</p>
+        <p className="text-muted-foreground text-lg font-medium mt-2">Monitor order status and pickup codes.</p>
       </header>
 
       {orders.length === 0 ? (
         <Card className="border-2 border-dashed border-border/40 bg-muted/10 rounded-[2.5rem] py-32">
           <div className="flex flex-col items-center justify-center text-center px-6">
             <Package className="w-16 h-16 text-muted-foreground/20 mb-6" />
-            <h3 className="text-2xl font-bold tracking-tight">No Transactions Recorded</h3>
-            <p className="text-muted-foreground mt-2 max-w-xs font-medium mb-8">Initiate your first asset acquisition at the campus marketplace.</p>
+            <h3 className="text-2xl font-bold tracking-tight">No Orders Found</h3>
+            <p className="text-muted-foreground mt-2 max-w-xs font-medium mb-8">Initiate your first purchase at the campus marketplace.</p>
             <Link href="/market">
               <Button size="lg" className="rounded-2xl font-black uppercase tracking-widest text-xs px-10 shadow-lg shadow-primary/20">Access Market</Button>
             </Link>

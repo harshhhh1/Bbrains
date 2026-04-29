@@ -294,7 +294,7 @@ export default function MyProductsPage() {
                       <Plus className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <DrawerTitle className="text-xl font-black tracking-tight">List New Asset</DrawerTitle>
+                      <DrawerTitle className="text-xl font-black tracking-tight">List New Item</DrawerTitle>
                       <DrawerDescription className="font-medium text-muted-foreground">Provide specifications for your marketplace entry</DrawerDescription>
                     </div>
                   </div>
@@ -343,7 +343,7 @@ export default function MyProductsPage() {
 
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Asset Name</label>
+                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Item Name</label>
                     <Input
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -356,7 +356,7 @@ export default function MyProductsPage() {
                     <Textarea
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      placeholder="Detail the capabilities and quality of your asset..."
+                      placeholder="Detail the capabilities and quality of your item..."
                       className="min-h-[100px] resize-none rounded-xl border-border bg-muted font-medium transition-all placeholder:text-muted-foreground/30 focus:border-primary/50"
                     />
                   </div>
@@ -419,7 +419,7 @@ export default function MyProductsPage() {
                     </div>
                     <div>
                       <DrawerTitle className="text-xl font-black tracking-tight">
-                        {selectedProduct?.approval === "approved" ? "Request Edit Review" : "Update Asset"}
+                        {selectedProduct?.approval === "approved" ? "Request Edit Review" : "Update Item"}
                       </DrawerTitle>
                       <DrawerDescription className="font-medium text-muted-foreground">
                         {selectedProduct?.approval === "approved"
@@ -473,7 +473,7 @@ export default function MyProductsPage() {
 
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Asset Name</label>
+                    <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Item Name</label>
                     <Input
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -486,7 +486,7 @@ export default function MyProductsPage() {
                     <Textarea
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      placeholder="Detail the capabilities and quality of your asset..."
+                      placeholder="Detail the capabilities and quality of your item..."
                       className="min-h-[100px] resize-none rounded-xl border-border bg-muted font-medium transition-all placeholder:text-muted-foreground/30 focus:border-primary/50"
                     />
                   </div>

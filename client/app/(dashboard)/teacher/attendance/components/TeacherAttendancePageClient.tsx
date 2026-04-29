@@ -76,7 +76,7 @@ export default function AttendancePage() {
       setStudents(allStudents);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load attendance registry");
+      toast.error("Failed to load attendance list");
     } finally {
       setLoading(false);
     }
@@ -100,7 +100,7 @@ export default function AttendancePage() {
       });
 
       if (!res.success) throw new Error(res.message);
-      toast.success("Log updated");
+      toast.success("Attendance updated");
     } catch (error) {
       toast.error("Failed to save record");
       void fetchStudentsAndAttendance();
@@ -125,8 +125,8 @@ export default function AttendancePage() {
     });
 
     toast.promise(request, {
-      loading: 'Updating registry...',
-      success: 'Full attendance recorded',
+      loading: 'Updating list...',
+      success: 'All marked present',
       error: 'Batch operation failed',
     });
   };
@@ -164,7 +164,7 @@ export default function AttendancePage() {
     return (
       <div className="py-40 flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Registry...</p>
+        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing List...</p>
       </div>
     );
   }
@@ -174,7 +174,7 @@ export default function AttendancePage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <SectionHeader 
           title="Attendance Portal" 
-          subtitle={hasAssignedClass ? `Daily ledger for ${assignedCourse?.name}.` : "Attendance registry (Awaiting assignment)."}
+          subtitle={hasAssignedClass ? `Daily records for ${assignedCourse?.name}.` : "Attendance list (Awaiting assignment)."}
         />
         
         <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -207,13 +207,13 @@ export default function AttendancePage() {
         <CardHeader className="p-8 border-b border-border/40">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
-              <CardTitle className="text-2xl font-black tracking-tight">Active Enrollment</CardTitle>
-              <CardDescription className="font-medium">Verified roster for current academic cycle.</CardDescription>
+              <CardTitle className="text-2xl font-black tracking-tight">Enrolled Students</CardTitle>
+              <CardDescription className="font-medium">Student list for current academic cycle.</CardDescription>
             </div>
             <div className="relative w-full md:max-w-xs group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
               <Input
-                placeholder="Search roster..."
+                placeholder="Search students..."
                 className="pl-10 h-11 rounded-xl bg-muted/20 border-border/40 focus:ring-2 focus:ring-primary/20"
                 value={searchQuery}
                 disabled={!hasAssignedClass}
@@ -227,9 +227,9 @@ export default function AttendancePage() {
             <table className="w-full text-sm">
               <thead className="bg-muted/30">
                 <tr className="text-left">
-                  <th className="py-4 px-8 font-black uppercase tracking-widest text-[10px] text-muted-foreground">Candidate</th>
-                  <th className="py-4 px-4 font-black uppercase tracking-widest text-[10px] text-muted-foreground text-center">Protocol Status</th>
-                  <th className="py-4 px-4 font-black uppercase tracking-widest text-[10px] text-muted-foreground">Ledger Notes</th>
+                  <th className="py-4 px-8 font-black uppercase tracking-widest text-[10px] text-muted-foreground">Student</th>
+                  <th className="py-4 px-4 font-black uppercase tracking-widest text-[10px] text-muted-foreground text-center">Attendance Status</th>
+                  <th className="py-4 px-4 font-black uppercase tracking-widest text-[10px] text-muted-foreground">Notes</th>
                   <th className="py-4 px-8 font-black uppercase tracking-widest text-[10px] text-muted-foreground text-right">Actions</th>
                 </tr>
               </thead>
@@ -237,7 +237,7 @@ export default function AttendancePage() {
                 {filteredStudents.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-20 text-center text-muted-foreground font-bold italic opacity-40">
-                      No matching records in registry.
+                      No matching records in list.
                     </td>
                   </tr>
                 ) : (

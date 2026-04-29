@@ -66,9 +66,9 @@ export function EventsClient() {
     <div className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-10">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-4xl font-black tracking-tight">Institutional Events</h1>
+          <h1 className="text-4xl font-black tracking-tight">School Events</h1>
           <p className="text-muted-foreground mt-2 text-lg font-medium">
-            Campus broadcasts, academic seminars, and cultural meets.
+            Announcements, seminars, and cultural meets.
           </p>
         </div>
         {canCreateEvent && (
@@ -83,7 +83,7 @@ export function EventsClient() {
         <div className="relative flex-1 group w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <input
-            placeholder="Search the event registry..."
+            placeholder="Search events..."
             className="w-full bg-card border border-border/60 shadow-inner rounded-2xl pl-12 pr-4 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -115,7 +115,7 @@ export function EventsClient() {
             <Calendar className="mb-6 h-16 w-16 text-muted-foreground/20" />
             <h3 className="text-2xl font-bold">No Records Found</h3>
             <p className="text-muted-foreground mt-2 max-w-xs">
-              {searchQuery ? "No events match your current filter parameters." : "There are currently no events listed in the institution calendar."}
+              {searchQuery ? "No events match your current filters." : "There are currently no events listed in the school calendar."}
             </p>
           </CardContent>
         </Card>

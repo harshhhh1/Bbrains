@@ -24,7 +24,7 @@ export function FeeSummaryCard({ student, feeDetails, paymentId }: FeeSummaryCar
           <div className="p-2 bg-primary/10 rounded-xl text-primary">
             <Landmark className="h-5 w-5" />
           </div>
-          <CardTitle className="text-xl font-black tracking-tight">Institutional Dues</CardTitle>
+          <CardTitle className="text-xl font-black tracking-tight">School Fees</CardTitle>
         </div>
         <CardDescription className="font-medium">
           Detailed breakdown of your current academic financial obligations.

@@ -207,7 +207,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
           ) : (
             <div className="py-20 text-center rounded-3xl border-2 border-dashed border-border/40 bg-muted/10">
               <Bell className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-              <h3 className="text-xl font-bold">Registry Empty</h3>
+              <h3 className="text-xl font-bold">List Empty</h3>
               <p className="text-muted-foreground mt-2">No broadcasts matching your criteria.</p>
             </div>
           )}
@@ -255,7 +255,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
             <DrawerHeader className="p-6 text-left">
               <DrawerTitle className="text-2xl font-black text-destructive">Wipe Record</DrawerTitle>
               <DrawerDescription className="text-muted-foreground font-medium">
-                This action will permanently purge this announcement from the registry.
+                This action will permanently purge this announcement from the list.
               </DrawerDescription>
             </DrawerHeader>
             <DrawerFooter className="flex flex-col gap-2 p-6">

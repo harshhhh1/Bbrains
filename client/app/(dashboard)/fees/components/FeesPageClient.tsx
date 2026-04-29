@@ -137,7 +137,7 @@ export default function FeesPage() {
     return (
       <div className="flex flex-col items-center justify-center py-40 gap-3">
         <Loader2 className="size-10 animate-spin text-primary/40" />
-        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Ledger...</p>
+        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Records...</p>
       </div>
     );
   }
@@ -147,7 +147,7 @@ export default function FeesPage() {
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       
       <header>
-        <h1 className="text-4xl font-black tracking-tight">Institutional Finance</h1>
+        <h1 className="text-4xl font-black tracking-tight">School Finance</h1>
         <p className="mt-2 text-muted-foreground text-lg font-medium">Manage and settle your academic tuition fees.</p>
       </header>
 
@@ -179,7 +179,7 @@ export default function FeesPage() {
               className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
               disabled={loading || amount <= 0}
             >
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Authorize Settlement"}
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Pay Now"}
             </Button>
             
             <Button 

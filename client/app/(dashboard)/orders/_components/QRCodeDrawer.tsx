@@ -38,8 +38,8 @@ export function QRCodeDrawer({
                 <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
                   <QrCode className="h-5 w-5 text-primary" />
                 </div>
-                <DrawerTitle className="text-xl font-black">Handover Authorization</DrawerTitle>
-                <DrawerDescription className="text-sm font-medium text-muted-foreground">Present this code to the registrar to verify asset delivery.</DrawerDescription>
+                <DrawerTitle className="text-xl font-black">Pickup Code</DrawerTitle>
+                <DrawerDescription className="text-sm font-medium text-muted-foreground">Present this code to the staff to confirm delivery.</DrawerDescription>
               </div>
               <DrawerClose asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
@@ -52,18 +52,18 @@ export function QRCodeDrawer({
           <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-8">
             {order.qrCode && (
               <div className="p-6 bg-white rounded-[2.5rem] shadow-2xl shadow-primary/5 border border-border/20 scale-110">
-                <QRCodeDisplay value={order.qrCode} size={200} label="Delivery Token" />
+                <QRCodeDisplay value={order.qrCode} size={200} label="Pickup Code" />
               </div>
             )}
             <div className="text-center space-y-2">
-              <p className="text-xs font-black uppercase tracking-widest text-primary">Order Protocol {order.id.toString().slice(-6).toUpperCase()}</p>
-              <p className="text-[10px] text-muted-foreground font-bold max-w-[220px] leading-relaxed">System scan required for cryptographic receipt generation.</p>
+              <p className="text-xs font-black uppercase tracking-widest text-primary">Order Number {order.id.toString().slice(-6).toUpperCase()}</p>
+              <p className="text-[10px] text-muted-foreground font-bold max-w-[220px] leading-relaxed">System scan required for digital receipt generation.</p>
             </div>
           </div>
 
           <DrawerFooter className="border-t border-border/60 p-6">
             <DrawerClose asChild>
-              <Button variant="outline" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs">Dismiss Token</Button>
+              <Button variant="outline" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-xs">Close</Button>
             </DrawerClose>
           </DrawerFooter>
         </div>

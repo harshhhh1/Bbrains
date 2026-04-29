@@ -40,10 +40,10 @@ export function AttendanceHistoryDrawer({
               <div className="space-y-2">
                 <DrawerTitle className="text-xl font-black flex items-center gap-2">
                   <History className="w-5 h-5 text-primary" />
-                  Attendance Registry
+                  Attendance History
                 </DrawerTitle>
                 <DrawerDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
-                  Recent performance logs for {studentName}.
+                  Recent attendance records for {studentName}.
                 </DrawerDescription>
               </div>
               <DrawerClose asChild>
@@ -58,7 +58,7 @@ export function AttendanceHistoryDrawer({
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
                 <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
-                <p className="text-sm font-black uppercase tracking-widest animate-pulse">Syncing Archives...</p>
+                <p className="text-sm font-black uppercase tracking-widest animate-pulse">Syncing Records...</p>
               </div>
             ) : records.length === 0 ? (
               <div className="text-center py-20 text-muted-foreground border-2 border-dashed border-border/50 rounded-[2rem] bg-muted/10">
@@ -100,7 +100,7 @@ export function AttendanceHistoryDrawer({
 
           <DrawerFooter className="border-t border-border/60 p-6 bg-muted/5">
             <DrawerClose asChild>
-              <Button variant="outline" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-[10px]">Dismiss Registry</Button>
+              <Button variant="outline" className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-[10px]">Close</Button>
             </DrawerClose>
           </DrawerFooter>
         </div>
