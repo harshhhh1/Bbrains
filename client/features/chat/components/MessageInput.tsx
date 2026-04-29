@@ -183,30 +183,34 @@ export function MessageInput({
                     <div className="flex-1 relative flex items-center bg-background border border-input rounded-full transition-all duration-300 focus-within:ring-1 focus-within:ring-ring">
                         {mentionQuery !== null && mentionSuggestions.length > 0 && (
                             <div className="absolute bottom-full left-0 mb-2 w-72 max-w-[calc(100vw-2rem)] bg-popover border border-border rounded-xl shadow-lg overflow-hidden z-50">
-                                {mentionSuggestions.map((user, index) => (
-                                    <button
-                                        key={user.id}
-                                        className={`flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors ${
-                                            index === mentionIndex ? "bg-accent text-accent-foreground" : "hover:bg-muted/50 text-foreground"
-                                        }`}
-                                        onMouseDown={(event) => {
-                                            event.preventDefault()
-                                            onMentionSelect(user)
-                                        }}
-                                        onMouseEnter={() => setMentionIndex(index)}
-                                    >
-                                        <Avatar className="w-8 h-8 shrink-0">
-                                            <AvatarImage src={user.avatarUrl || undefined} />
-                                            <AvatarFallback className="bg-brand-purple/10 text-brand-purple text-[10px] font-bold">
-                                                {user.displayName.charAt(0)}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex flex-col items-start overflow-hidden">
-                                            <span className="font-medium truncate w-full text-left">{user.displayName}</span>
-                                            <span className="text-[10px] text-muted-foreground truncate w-full text-left">@{user.username}</span>
-                                        </div>
-                                    </button>
-                                ))}
+                                <div className="max-h-64 overflow-y-auto overflow-x-hidden py-1">
+                                    <div className="flex flex-col">
+                                        {mentionSuggestions.map((user, index) => (
+                                            <button
+                                                key={user.id}
+                                                className={`flex items-center gap-2 w-full px-3 py-2 text-sm transition-colors ${
+                                                    index === mentionIndex ? "bg-accent text-accent-foreground" : "hover:bg-muted/50 text-foreground"
+                                                }`}
+                                                onMouseDown={(event) => {
+                                                    event.preventDefault()
+                                                    onMentionSelect(user)
+                                                }}
+                                                onMouseEnter={() => setMentionIndex(index)}
+                                            >
+                                                <Avatar className="w-8 h-8 shrink-0">
+                                                    <AvatarImage src={user.avatarUrl || undefined} />
+                                                    <AvatarFallback className="bg-brand-purple/10 text-brand-purple text-[10px] font-bold">
+                                                        {user.displayName.charAt(0)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex flex-col items-start overflow-hidden">
+                                                    <span className="font-medium truncate w-full text-left">{user.displayName}</span>
+                                                    <span className="text-[10px] text-muted-foreground truncate w-full text-left">@{user.username}</span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         )}
 
