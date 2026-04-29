@@ -94,7 +94,7 @@ export default function ResultsPage() {
       <DashboardContent>
         <div className="py-40 flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground font-mono">Syncing Registry...</p>
+          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground font-mono">Syncing Results...</p>
         </div>
       </DashboardContent>
     );
@@ -106,9 +106,9 @@ export default function ResultsPage() {
         <div className="space-y-2">
           <h1 className="text-4xl font-black tracking-tight text-foreground flex items-center gap-3">
              <Trophy className="h-10 w-10 text-primary" />
-             Academic Performance
+             Exam Results
           </h1>
-          <p className="text-muted-foreground text-lg font-medium">Verified transcript of test and examination publishings.</p>
+          <p className="text-muted-foreground text-lg font-medium">Report card of test and examination results.</p>
         </div>
 
         <div className="relative w-full max-w-md group">
@@ -134,8 +134,8 @@ export default function ResultsPage() {
       <div className="space-y-8 pt-6 border-t border-border/50">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
            <div className="space-y-1">
-              <h2 className="text-xl font-black tracking-tight">Examination Ledger</h2>
-              <p className="text-sm font-medium text-muted-foreground">Detailed breakdown of individual performance records.</p>
+              <h2 className="text-xl font-black tracking-tight">Exam List</h2>
+              <p className="text-sm font-medium text-muted-foreground">Detailed breakdown of your exam scores.</p>
            </div>
            
            <div className="flex flex-col sm:flex-row gap-3">
@@ -146,7 +146,7 @@ export default function ResultsPage() {
                       <SelectValue placeholder="All types" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-border/60">
-                      <SelectItem value="all">Aggregate</SelectItem>
+                      <SelectItem value="all">All Types</SelectItem>
                       <SelectItem value="test">Class Test</SelectItem>
                       <SelectItem value="exam">Main Exam</SelectItem>
                     </SelectContent>
@@ -160,7 +160,7 @@ export default function ResultsPage() {
                       <SelectValue placeholder="All subjects" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-border/60">
-                      <SelectItem value="all">Universal</SelectItem>
+                      <SelectItem value="all">All Subjects</SelectItem>
                       {resultSubjects.map((subject) => (
                         <SelectItem key={subject} value={subject}>{subject}</SelectItem>
                       ))}
@@ -175,7 +175,7 @@ export default function ResultsPage() {
             <div className="flex flex-col items-center justify-center text-center px-6">
               <Trophy className="w-16 h-16 text-muted-foreground/20 mb-6" />
               <h3 className="text-xl font-bold">No Records Matched</h3>
-              <p className="text-muted-foreground mt-2 max-w-xs font-medium">Adjust your criteria or check back after the next publishing.</p>
+              <p className="text-muted-foreground mt-2 max-w-xs font-medium">Adjust your criteria or check back after the next results.</p>
             </div>
           </Card>
         ) : (

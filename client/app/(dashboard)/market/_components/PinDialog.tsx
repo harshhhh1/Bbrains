@@ -28,8 +28,8 @@ export function PinDialog({
   onOpenChange,
   onConfirm,
   isProcessing,
-  description = "Enter your 6-digit PIN to authorize this transaction.",
-  title = "Confirm Authorization"
+  description = "Enter your 6-digit PIN to pay for this item.",
+  title = "Confirm Payment"
 }: PinDialogProps) {
   const [pin, setPin] = useState("");
 
@@ -83,7 +83,7 @@ export function PinDialog({
               disabled={pin.length < 6 || isProcessing}
               className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
             >
-              {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Authorize & Pay"}
+              {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirm & Pay"}
             </Button>
           </DrawerFooter>
         </div>

@@ -55,7 +55,7 @@ export function AcknowledgeDrawer({
                    Acknowledge Log
                 </DrawerTitle>
                 <DrawerDescription>
-                  Registry of users who have confirmed receipt of this announcement.
+                  List of users who have confirmed receipt of this announcement.
                 </DrawerDescription>
               </div>
               <DrawerClose asChild>
@@ -70,7 +70,7 @@ export function AcknowledgeDrawer({
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
                 <Loader2 className="h-8 w-8 animate-spin text-primary/40" />
-                <p className="text-sm font-bold tracking-widest uppercase">Syncing Registry...</p>
+                <p className="text-sm font-bold tracking-widest uppercase">Syncing List...</p>
               </div>
             ) : users.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border-2 border-dashed border-border/50 bg-muted/20">
@@ -107,7 +107,7 @@ export function AcknowledgeDrawer({
 
           <DrawerFooter className="border-t border-border/60 p-6">
             <DrawerClose asChild>
-              <Button variant="outline" className="w-full font-bold">Dismiss Registry</Button>
+              <Button variant="outline" className="w-full font-bold">Close List</Button>
             </DrawerClose>
           </DrawerFooter>
         </div>

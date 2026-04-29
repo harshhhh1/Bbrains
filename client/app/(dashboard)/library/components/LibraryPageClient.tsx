@@ -58,7 +58,7 @@ export default function LibraryPage() {
       <DashboardContent>
         <div className="py-40 flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Repository...</p>
+          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Library...</p>
         </div>
       </DashboardContent>
     );
@@ -69,17 +69,17 @@ export default function LibraryPage() {
       <header>
         <h1 className="text-4xl font-black tracking-tight flex items-center gap-3">
           <BookOpen className="w-10 h-10 text-primary" />
-          Resource Library
+          Your Library
         </h1>
-        <p className="text-muted-foreground text-lg font-medium mt-2">Access your digital assets and provisioned hardware.</p>
+        <p className="text-muted-foreground text-lg font-medium mt-2">Access your digital items and assigned items.</p>
       </header>
 
       {items.length === 0 ? (
         <Card className="border-2 border-dashed border-border/40 bg-muted/10 rounded-[2.5rem] py-32">
           <div className="flex flex-col items-center justify-center text-center px-6">
             <Package className="w-16 h-16 text-muted-foreground/20 mb-6" />
-            <h3 className="text-2xl font-bold">Registry Empty</h3>
-            <p className="text-muted-foreground mt-2 max-w-xs font-medium">Acquired educational resources will be indexed here.</p>
+            <h3 className="text-2xl font-bold">List Empty</h3>
+            <p className="text-muted-foreground mt-2 max-w-xs font-medium">Bought study items will be shown here.</p>
           </div>
         </Card>
       ) : (
@@ -89,7 +89,7 @@ export default function LibraryPage() {
               Digital Downloads ({digitalItems.length})
             </TabsTrigger>
             <TabsTrigger value="physical" className="rounded-xl px-6 py-2.5 font-bold data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm">
-              Physical Inventory ({physicalItems.length})
+              Physical Items ({physicalItems.length})
             </TabsTrigger>
           </TabsList>
 
@@ -112,7 +112,7 @@ export default function LibraryPage() {
 
           <TabsContent value="physical" className="space-y-4 animate-in fade-in duration-500">
             {physicalItems.length === 0 ? (
-              <p className="text-center text-muted-foreground/40 py-20 font-bold uppercase tracking-widest text-sm">No physical assets assigned</p>
+              <p className="text-center text-muted-foreground/40 py-20 font-bold uppercase tracking-widest text-sm">No physical items assigned</p>
             ) : (
               <div className="grid gap-4">
                 {physicalItems.map((item) => (

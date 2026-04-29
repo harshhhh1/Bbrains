@@ -78,14 +78,14 @@ export function MarketProductCard({
              </Link>
           </div>
           <p className="text-sm text-muted-foreground line-clamp-2 font-medium leading-relaxed opacity-80">
-            {product.description || "Verified institution asset provisioned for academic excellence."}
+            {product.description || "Verified school item provided for academic excellence."}
           </p>
         </div>
 
         {/* Stat Grid */}
         <div className="grid grid-cols-2 gap-3">
            <div className="p-3 rounded-2xl bg-muted/30 border border-border/40 flex flex-col justify-center">
-              <span className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest mb-1">Asset Value</span>
+              <span className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest mb-1">Item Value</span>
               <div className="flex items-center gap-1.5">
                  <img src="/bcoin.svg" className="h-4 w-4" alt="" />
                  <span className="text-lg font-black text-primary tracking-tighter">{product.price}</span>
@@ -149,7 +149,7 @@ export function MarketProductCard({
                 className="flex-1 h-12 rounded-2xl bg-secondary hover:bg-muted text-foreground border border-border/60 font-black uppercase tracking-widest text-[10px] transition-all active:scale-95"
               >
                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShoppingCart className="w-4 h-4 mr-2 text-primary" />}
-                Stage Asset
+                Add to Cart
               </Button>
             )}
             
@@ -157,7 +157,7 @@ export function MarketProductCard({
               onClick={() => onBuyNow(product)}
               className="flex-1 h-12 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-all active:scale-95 group/buy"
             >
-              Acquire Now
+              Buy Now
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>

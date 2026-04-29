@@ -46,7 +46,7 @@ export function OrderDetailsDrawer({
                 <DrawerDescription className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <span className="bg-muted px-2 py-0.5 rounded text-[10px] font-bold">{new Date(order.orderDate).toLocaleDateString()}</span>
                   <span className="w-1 h-1 rounded-full bg-border" />
-                  <span>Settlement Complete</span>
+                  <span>Payment Complete</span>
                 </DrawerDescription>
               </div>
               <DrawerClose asChild>
@@ -59,7 +59,7 @@ export function OrderDetailsDrawer({
 
           <div className="flex-1 overflow-y-auto p-6 space-y-8">
             <div className="space-y-4">
-               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary ml-1">Asset Registry</h4>
+               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary ml-1">Item List</h4>
                 <div className="space-y-3">
                   {order.items.map((item) => (
                     <div key={item.id} className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/60 shadow-sm group">
@@ -87,7 +87,7 @@ export function OrderDetailsDrawer({
 
             <div className="p-6 rounded-3xl bg-muted/30 border border-border/50 space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Aggregate Value</span>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Price</span>
                 <div className="flex items-baseline gap-1.5">
                     <span className="text-3xl font-black text-foreground tabular-nums tracking-tighter">{Number(order.totalAmount).toLocaleString()}</span>
                     <span className="text-[10px] font-black text-primary uppercase tracking-widest">B-Coins</span>
@@ -109,7 +109,7 @@ export function OrderDetailsDrawer({
             {order.orderType !== 'digital' && order.status === 'order_placed' && order.qrCode && (
               <Button onClick={onShowQR} className="h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest shadow-lg shadow-primary/20">
                 <QrCode className="w-5 h-5 mr-3" />
-                Initialize Handover
+                Show QR Code
               </Button>
             )}
 
@@ -123,7 +123,7 @@ export function OrderDetailsDrawer({
             )}
             
             <DrawerClose asChild>
-              <Button variant="outline" className="w-full h-14 rounded-2xl font-bold border-border/60">Dismiss Dossier</Button>
+              <Button variant="outline" className="w-full h-14 rounded-2xl font-bold border-border/60">Close Details</Button>
             </DrawerClose>
           </DrawerFooter>
         </div>
