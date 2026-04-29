@@ -63,6 +63,8 @@ type ChatMessagePaneProps = {
   onFileSelect: (files: File[]) => void;
   onRemoveAttachment: (index: number) => void;
   onMentionSelect: (user: ChatMentionUser) => void;
+  mentionedUsers: SelectedMention[];
+  onRemoveMention: (userId: string) => void;
   setMentionIndex: Dispatch<SetStateAction<number>>;
   onScrollToBottom: () => void;
 };
@@ -88,6 +90,8 @@ export function ChatMessagePane({
   isUploading,
   uploadError,
   mentionQuery,
+  mentionedUsers,
+  onRemoveMention,
   mentionIndex,
   scrollViewportRef,
   messagesEndRef,
@@ -239,6 +243,8 @@ export function ChatMessagePane({
         onFileSelect={onFileSelect}
         onRemoveAttachment={onRemoveAttachment}
         onMentionSelect={onMentionSelect}
+        mentionedUsers={mentionedUsers}
+        onRemoveMention={onRemoveMention}
         mentionQuery={mentionQuery}
         mentionIndex={mentionIndex}
         setMentionIndex={setMentionIndex}

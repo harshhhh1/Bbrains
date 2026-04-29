@@ -78,6 +78,8 @@ export default function ChatPage() {
           onFileSelect={actions.handleFileSelect}
           onRemoveAttachment={actions.handleRemoveAttachment}
           onMentionSelect={actions.handleMentionSelect}
+          mentionedUsers={state.mentionedUsers}
+          onRemoveMention={actions.handleRemoveMention}
           setMentionIndex={actions.setMentionIndex}
           onScrollToBottom={() => actions.scrollToBottom("smooth")}
         />
