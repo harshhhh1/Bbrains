@@ -1,6 +1,8 @@
 import type { ChatMentionUser } from "@/services/api/client";
 import type { Member, Message, SelectedMention, ReplyingMessage, PendingAttachment, GroupedMessages } from "@/features/chat/data";
 
+export type { Member, Message, SelectedMention, ReplyingMessage, PendingAttachment, GroupedMessages };
+
 export type ChatPageState = {
   messages: Message[];
   loading: boolean;

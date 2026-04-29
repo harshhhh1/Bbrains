@@ -15,6 +15,6 @@ export const communicationApi = {
   getSuggestions: () => api.get<any[]>("/suggestions"),
   createSuggestion: (data: any) => api.post<any>("/suggestions", data),
   voteSuggestion: (id: string | number, type: "up" | "down") => api.post<any>(`/suggestions/${id}/vote`, { type }),
-  updateStatus: (id: number | string, status: string) => api.patch<any>(`/suggestions/${id}/status`, { status }),
+  updateStatus: (id: number | string, status: string) => api.put<any>(`/suggestions/${id}/status`, { status }),
   deleteSuggestion: (id: number | string) => api.delete<any>(`/suggestions/${id}`),
 };

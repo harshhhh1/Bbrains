@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Download, RefreshCcw } from "lucide-react";
-import { downloadReceipt } from "../../transactions/utils";
+import { downloadReceipt } from "../utils";
 
 interface PaymentSuccessStateProps {
   paymentId: string | null;
@@ -38,7 +38,7 @@ export function PaymentSuccessState({ paymentId, transaction, student, onReset }
         <Button 
           variant="outline" 
           onClick={onReset}
-          className="flex-1 h-14 rounded-2xl font-bold gap-2 border-emerald-500/20 hover:bg-emerald-500/10"
+          className="flex-1 min-h-[4rem] h-16 rounded-2xl font-bold text-base gap-2 border-emerald-500/20 hover:bg-emerald-500/10"
         >
           <RefreshCcw className="h-4 w-4" />
           Another Payment
@@ -46,7 +46,7 @@ export function PaymentSuccessState({ paymentId, transaction, student, onReset }
         {transaction && (
           <Button 
             onClick={() => downloadReceipt(transaction, student)}
-            className="flex-1 h-14 rounded-2xl font-bold gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20"
+            className="flex-1 min-h-[4rem] h-16 rounded-2xl font-bold text-base gap-2 bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-500/20"
           >
             <Download className="h-4 w-4" />
             Save Receipt

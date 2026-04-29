@@ -57,7 +57,7 @@ export const recordFeePayment = async (user, paymentData, feeDetails) => {
       amount: feeDetails.amount,
       paymentMode: 'card', // Razorpay payments are typically card/online payments
       referenceId: paymentData.razorpay_payment_id,
-      note: `Razorpay payment for ${feeDetails.description || 'college fees'} - Order ID: ${paymentData.razorpay_order_id}`,
+      note: `Razorpay payment for ${feeDetails.description || 'college fees'} - Order ID: ${paymentData.razorpayOrderId}`,
       paymentDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
     };
 

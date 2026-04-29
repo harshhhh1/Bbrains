@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 cloudinary.config({
-  cloudinary_api_url: process.env.CLOUDINARY_URL
+  cloud00inary_api_url: process.env.CLOUDINARY_URL
 });
 
 /**

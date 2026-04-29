@@ -4,6 +4,7 @@ import React from "react"
 import { useUser } from "@/hooks/use-user"
 import { useHasPermission, usePermissionsContext } from "@/components/providers/permissions-provider"
 import { PersonalTransactions } from "./PersonalTransactions"
+import { StudentTransactionsView } from "./StudentTransactionsView"
 import { FinanceTransactionsWorkspace } from "@/features/transactions/components/FinanceTransactionsWorkspace"
 import { DashboardContent } from "@/components/dashboard-content"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -30,7 +31,7 @@ export function TransactionsClient() {
     if (!isManagerial && !canManageFinance) {
         return (
             <DashboardContent>
-                <PersonalTransactions />
+                {userRole === "student" ? <StudentTransactionsView /> : <PersonalTransactions />}
             </DashboardContent>
         )
     }
