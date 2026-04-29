@@ -278,7 +278,7 @@ export function useChatPage() {
 
       const content = message.trim();
       const mentionIds = mentionedUsers.map((user) => user.id);
-      const mentions = extractMentions(content);
+      const mentions = mentionedUsers.map((user) => user.username);
 
       if (editingMsgId) {
         await editMessage(editingMsgId, content, mentions, mentionIds);
@@ -415,10 +415,26 @@ export function useChatPage() {
   }, []);
 
   const handleEdit = useCallback(
-    (id: string, content: string) => {
-      setEditingMsgId(id);
-      setMessage(content);
-      detectMention(content);
+    (chatMessage: Message) => {
+      setEditingMsgId(chatMessage.id);
+      setMessage(chatMessage.content);
+
+      // Restore mentions for the editing state
+      const initialMentions: SelectedMention[] = [];
+      const mentionNames = chatMessage.mentions || [];
+      const mentionIds = chatMessage.mentionedUserIds || [];
+
+      for (let i = 0; i < mentionIds.length; i++) {
+        if (mentionIds[i] && mentionNames[i]) {
+          initialMentions.push({
+            id: mentionIds[i],
+            username: mentionNames[i],
+          });
+        }
+      }
+      setMentionedUsers(initialMentions);
+
+      detectMention(chatMessage.content);
       setReplyingMsg(null);
     },
     [detectMention]

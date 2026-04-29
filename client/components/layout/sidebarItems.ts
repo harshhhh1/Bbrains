@@ -58,6 +58,6 @@ export const sidebarItems = [
     { "title": "Classes", "url": "/manager/classes", "icon": "BookOpen", "access": ["manager"] },
     { "title": "Teachers", "url": "/manager/teachers", "icon": "UserCheck", "access": ["manager"] },
 
-    { "title": "Achievements", "url": "/admin/achievements", "icon": "Trophy", "access": ["bbrains_official"] },
+    { "title": "Achievements", "url": "/achievements", "icon": "Trophy", "access": ["students","bbrains_official"] },
     { "title": "XP & Levels", "url": "/admin/xpconfig", "icon": "Trophy", "access": ["bbrains_official"] }
 ]

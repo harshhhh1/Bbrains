@@ -20,7 +20,7 @@ interface MessageItemProps {
     currentUsername?: string | null
     onReply: (message: Message) => void
     onCopy: (content: string) => void
-    onEdit: (messageId: string, content: string) => void
+    onEdit: (message: Message) => void
     onDelete: (messageId: string) => void
     onOpenProfile: (userId: string) => void
     onMention?: (username: string) => void
@@ -50,20 +50,24 @@ export const MessageItem = React.memo(function MessageItem({
     const content = useMemo(() => {
         if (!msg.mentions?.length) return <>{msg.content}</>
 
+        const mentionSet = new Set(msg.mentions.map(m => m.toLowerCase()))
+
         return (
             <>
-                {msg.content.split(/(@[a-zA-Z0-9_]+)/g).map((part, index) =>
-                    /^@[a-zA-Z0-9_]+$/.test(part) ? (
-                        <span
-                            key={index}
-                            className="bg-primary/20 text-primary rounded px-1 font-medium"
-                        >
-                            {part}
-                        </span>
-                    ) : (
-                        <React.Fragment key={index}>{part}</React.Fragment>
-                    )
-                )}
+                {msg.content.split(/(@[a-zA-Z0-9_]+)/g).map((part, index) => {
+                    const username = part.slice(1).toLowerCase();
+                    if (part.startsWith('@') && mentionSet.has(username)) {
+                        return (
+                            <span
+                                key={index}
+                                className="bg-primary/20 text-primary rounded px-1 font-medium"
+                            >
+                                {part}
+                            </span>
+                        )
+                    }
+                    return <React.Fragment key={index}>{part}</React.Fragment>
+                })}
             </>
         )
     }, [msg.content, msg.mentions])
@@ -200,7 +204,7 @@ export const MessageItem = React.memo(function MessageItem({
                                     <button
                                         className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                                         title="Edit"
-                                        onClick={() => onEdit(msg.id, msg.content)}
+                                        onClick={() => onEdit(msg)}
                                     >
                                         <Pencil className="h-3.5 w-3.5" />
                                     </button>
@@ -241,7 +245,7 @@ export const MessageItem = React.memo(function MessageItem({
                 {isOwnMessage && (
                     <>
                         <ContextMenuSeparator />
-                        <ContextMenuItem onClick={() => onEdit(msg.id, msg.content)}>
+                        <ContextMenuItem onClick={() => onEdit(msg)}>
                             <Pencil className="w-4 h-4 mr-2" />
                             Edit Message
                         </ContextMenuItem>

@@ -14,11 +14,42 @@ const pronounBySex = {
 const extractMentions = (content = "") => {
     const mentions = new Set();
     let match;
+    mentionPattern.lastIndex = 0;
     while ((match = mentionPattern.exec(content)) !== null) {
         mentions.add(match[1].toLowerCase());
     }
     return Array.from(mentions);
 };
+
+async function resolveMentionTargets({ collegeId, mentions = [], mentionedUserIds = [], actorUserId }) {
+    const normalizedNames = Array.from(new Set(mentions.map(m => m.toLowerCase().replace(/^@/, ""))));
+    const normalizedIds = Array.from(new Set(mentionedUserIds.filter(Boolean)));
+
+    if (normalizedNames.length === 0 && normalizedIds.length === 0) {
+        return [];
+    }
+
+    const users = await prisma.user.findMany({
+        where: {
+            ...(collegeId ? { collegeId } : {}),
+            OR: [
+                ...(normalizedIds.length > 0 ? [{ id: { in: normalizedIds } }] : []),
+                ...(normalizedNames.length > 0 ? [{ username: { in: normalizedNames } }] : []),
+            ],
+        },
+        select: {
+            id: true,
+            username: true,
+        },
+    });
+
+    return users
+        .filter((user) => user.id !== actorUserId)
+        .map((user) => ({
+            id: user.id,
+            username: user.username,
+        }));
+}
 
 const normalizeChatRoom = (value, identity = null) => {
     const defaultRoom = identity?.collegeId ? `global_${identity.collegeId}` : DEFAULT_CHAT_ROOM;
@@ -238,6 +269,13 @@ export const initChatSocket = (server) => {
                 }
                 if (!content) return;
 
+                const mentionTargets = await resolveMentionTargets({
+                    collegeId: identity.collegeId,
+                    mentions: payload.mentions || extractMentions(content),
+                    mentionedUserIds: payload.mentionedUserIds || [],
+                    actorUserId: identity.userId,
+                });
+
                 const payloadToStore = {
                     chatId: roomName,
                     userId: identity.userId,
@@ -246,7 +284,8 @@ export const initChatSocket = (server) => {
                     avatar: identity.avatar,
                     role: identity.type,
                     content,
-                    mentions: extractMentions(content),
+                    mentions: mentionTargets.map(t => t.username.toLowerCase()),
+                    mentionedUserIds: mentionTargets.map(t => t.id),
                     attachments: payload.attachments || [],
                     replyTo: null,
                 }
@@ -310,11 +349,19 @@ export const initChatSocket = (server) => {
                     return;
                 }
 
+                const mentionTargets = await resolveMentionTargets({
+                    collegeId: identity.collegeId,
+                    mentions: payload.mentions || extractMentions(content),
+                    mentionedUserIds: payload.mentionedUserIds || [],
+                    actorUserId: identity.userId,
+                });
+
                 const updated = await prisma.chatMessage.update({
                     where: { id: messageId },
                     data: {
                         content,
-                        mentions: extractMentions(content),
+                        mentions: mentionTargets.map(t => t.username.toLowerCase()),
+                        mentionedUserIds: mentionTargets.map(t => t.id),
                         updatedAt: new Date(),
                     },
                 });

@@ -434,13 +434,8 @@ export const createChatMessage = async (req, res) => {
             actorUserId: userId,
         });
 
-        const mentions = mentionTargets.length > 0
-            ? mentionTargets.map((target) => target.username.toLowerCase())
-            : normalizeMentions(validated.mentions);
-
-        const mentionedUserIds = mentionTargets.length > 0
-            ? mentionTargets.map((target) => target.id)
-            : normalizeMentionedUserIds(validated.mentionedUserIds);
+        const mentions = mentionTargets.map((target) => target.username.toLowerCase());
+        const mentionedUserIds = mentionTargets.map((target) => target.id);
 
         const message = await prisma.chatMessage.create({
             data: {
@@ -513,12 +508,8 @@ export const updateChatMessageById = async (req, res) => {
             where: { id: messageId },
             data: {
                 content: validated.content,
-                mentions: mentionTargets.length > 0
-                    ? mentionTargets.map((target) => target.username.toLowerCase())
-                    : normalizeMentions(validated.mentions),
-                mentionedUserIds: mentionTargets.length > 0
-                    ? mentionTargets.map((target) => target.id)
-                    : normalizeMentionedUserIds(validated.mentionedUserIds),
+                mentions: mentionTargets.map((target) => target.username.toLowerCase()),
+                mentionedUserIds: mentionTargets.map((target) => target.id),
                 updatedAt: new Date(),
             },
         });
