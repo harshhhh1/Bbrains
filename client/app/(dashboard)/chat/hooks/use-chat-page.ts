@@ -610,7 +610,6 @@ export function useChatPage() {
       groupedMessages,
       onlineUserIds,
       mentionedUsers,
-      mentionQuery,
       membersList: membersWithStatus,
     },
     refs: {

@@ -10,8 +10,9 @@ export const sidebarItems = [
     { "title": "Announcements", "url": "/announcements", "icon": "Megaphone", "access": ["student", "teacher", "admin", "staff", "manager",] },
     { "title": "Events", "url": "/events", "icon": "Calendar", "access": ["student", "teacher", "admin", "staff", "manager",] },
     { "title": "Assignments", "url": "/assignments", "icon": "Book", "access": ["student", "teacher", "admin", "manager"] },
-    { "title": "Results", "url": "/results", "icon": "Trophy", "access": ["student"] },
+    // { "title": "Results", "url": "/results", "icon": "Trophy", "access": ["student"] },
     { "title": "Leaderboard", "url": "/leaderboard", "icon": "Trophy", "access": ["student", "teacher", "admin", "staff", "manager",] },
+    { "title": "Achievements", "url": "/achievements", "icon": "Trophy", "access": ["student", "teacher", "admin", "staff", "manager",] },
     { "title": "Chat", "url": "/chat", "icon": "MessageSquare", "access": ["student", "teacher", "admin", "staff", "manager",] },
     {
         "title": "Transactions",

@@ -39,7 +39,7 @@ export function PersonalTransactions() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full overflow-x-hidden">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" />
 
       <SectionHeader title={copy.title} subtitle={copy.subtitle} />
@@ -79,7 +79,7 @@ export function PersonalTransactions() {
       </div>
 
       {personalTransactions.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="space-y-4">
           {personalTransactions.map((transaction) => (
             <TransactionCard
               key={String(transaction.id)}

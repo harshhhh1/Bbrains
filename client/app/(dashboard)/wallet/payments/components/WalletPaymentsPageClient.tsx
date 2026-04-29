@@ -42,33 +42,15 @@ import {
   Building2,
   X,
 } from "lucide-react";
-import { transactionApi, marketApi, type Transaction } from "@/services/api/client";
-
-interface PaymentItem {
-  name: string;
-  quantity: number;
-  price: number;
-  image: string;
-}
-
-interface PaymentDetails {
-  id: string;
-  date: string;
-  status: "completed" | "pending" | "cancelled" | "failed";
-  total: number;
-  items?: PaymentItem[];
-  paymentMethod?: string;
-  transactionId?: string;
-}
+import { transactionApi, type Transaction } from "@/services/api/client";
 
 interface Payment {
   id: string;
-  type: "wallet" | "market";
+  type: "wallet";
   amount: number;
   status: "completed" | "pending" | "cancelled" | "failed";
   description: string;
   createdAt: string;
-  details?: PaymentDetails;
 }
 
 function mapTransactionStatus(status: Transaction["status"]): Payment["status"] {
@@ -77,14 +59,11 @@ function mapTransactionStatus(status: Transaction["status"]): Payment["status"] 
   return "failed";
 }
 
-
-
 export default function PaymentHistoryPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
 
@@ -93,10 +72,7 @@ export default function PaymentHistoryPage() {
       setLoading(true);
       setError(null);
       
-      const [txnRes, orderRes] = await Promise.all([
-        transactionApi.getMyTransactions({ limit: 100 }),
-        marketApi.getOrders(1, 100)
-      ]);
+      const txnRes = await transactionApi.getMyTransactions({ limit: 100 });
       
       let walletPayments: Payment[] = [];
       if (txnRes.success && txnRes.data) {
@@ -111,38 +87,7 @@ export default function PaymentHistoryPage() {
         }));
       }
 
-      let marketPayments: Payment[] = [];
-      if (orderRes.success && orderRes.data) {
-        const orders = (orderRes.data as any)?.data || (Array.isArray(orderRes.data) ? orderRes.data : []);
-        marketPayments = orders.map((order: any) => ({
-          id: String(order.id),
-          type: "market" as const,
-          amount: -Number(order.totalAmount || 0),
-          status: order.status === "completed" || order.status === "delivered" 
-            ? "completed" 
-            : order.status === "cancelled" 
-              ? "cancelled" 
-              : "pending",
-          description: order.items?.map((i: any) => i.product?.name).filter(Boolean).join(", ") || "Market Order",
-          createdAt: order.orderDate,
-          details: {
-            id: String(order.id),
-            date: order.orderDate,
-            status: order.status === "completed" || order.status === "delivered" ? "completed" : order.status === "cancelled" ? "cancelled" : "pending",
-            total: Number(order.totalAmount || 0),
-            paymentMethod: "B-Coins Wallet",
-            transactionId: order.transactionId || `ORD-${order.id}`,
-            items: order.items?.map((i: any) => ({
-              name: i.product?.name || "Unknown Item",
-              quantity: i.quantity || 1,
-              price: Number(i.priceAtPurchase || i.product?.price || 0),
-              image: i.product?.image || "📦"
-            }))
-          },
-        }));
-      }
-
-      setPayments([...walletPayments, ...marketPayments].sort((a, b) => 
+      setPayments(walletPayments.sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       ));
     } catch (err) {
@@ -160,9 +105,6 @@ export default function PaymentHistoryPage() {
   const filteredPayments = payments.filter((payment) => {
     if (searchQuery && !payment.description.toLowerCase().includes(searchQuery.toLowerCase()) && 
         !payment.id.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    if (typeFilter !== "all" && payment.type !== typeFilter) {
       return false;
     }
     if (statusFilter !== "all" && payment.status !== statusFilter) {
@@ -228,7 +170,7 @@ export default function PaymentHistoryPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">Payment History</h1>
-              <p className="text-sm text-muted-foreground">View all your payment transactions</p>
+              <p className="text-sm text-muted-foreground">View all your wallet transactions</p>
             </div>
           </div>
         </div>
@@ -289,17 +231,6 @@ export default function PaymentHistoryPage() {
                     className="pl-9 h-9 w-full sm:w-50"
                   />
                 </div>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-32.5 h-9">
-                    <Filter className="w-4 h-4 mr-2" />
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="wallet">Wallet</SelectItem>
-                    <SelectItem value="market">Market</SelectItem>
-                  </SelectContent>
-                </Select>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-32.5 h-9">
                     <SelectValue placeholder="Status" />
@@ -344,15 +275,11 @@ export default function PaymentHistoryPage() {
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10 shrink-0">
                         <AvatarFallback className={
-                          payment.type === "market" 
-                            ? "bg-blue-500/10 text-blue-600"
-                            : payment.amount > 0 
+                          payment.amount > 0 
                               ? "bg-green-500/10 text-green-600"
                               : "bg-destructive/10 text-destructive"
                         }>
-                          {payment.type === "market" ? (
-                            <ShoppingBag className="w-4 h-4" />
-                          ) : payment.amount > 0 ? (
+                          {payment.amount > 0 ? (
                             <ArrowUpRight className="w-4 h-4" />
                           ) : (
                             <ArrowDownLeft className="w-4 h-4" />
@@ -367,17 +294,10 @@ export default function PaymentHistoryPage() {
                           <Calendar className="w-3 h-3" />
                           {formatShortDate(payment.createdAt)}
                           <span className="mx-1">•</span>
-                          {payment.type === "market" ? (
-                            <span className="flex items-center gap-1">
-                              <ShoppingBag className="w-3 h-3" />
-                              Market Order
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1">
-                              <Wallet className="w-3 h-3" />
-                              Wallet
-                            </span>
-                          )}
+                          <span className="flex items-center gap-1">
+                            <Wallet className="w-3 h-3" />
+                            Wallet
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -410,17 +330,8 @@ export default function PaymentHistoryPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-2">
                     <DrawerTitle className="flex items-center gap-2">
-                      {selectedPayment && selectedPayment.type === "market" ? (
-                        <>
-                          <ShoppingBag className="w-5 h-5 text-blue-600" />
-                          Market Order Details
-                        </>
-                      ) : (
-                        <>
-                          <Wallet className="w-5 h-5 text-primary" />
-                          Transaction Details
-                        </>
-                      )}
+                      <Wallet className="w-5 h-5 text-primary" />
+                      Transaction Details
                     </DrawerTitle>
                     <DrawerDescription>
                       {selectedPayment && formatDate(selectedPayment.createdAt)}
@@ -480,45 +391,13 @@ export default function PaymentHistoryPage() {
 
                   <div className="flex justify-between items-center pt-2 border-t border-border/40">
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Building2 className="w-3.5 h-3.5" />
-                      Category
+                      <Wallet className="w-3.5 h-3.5" />
+                      Payment Method
                     </span>
-                    <span className="font-bold text-sm text-foreground capitalize">
-                      {selectedPayment?.type}
+                    <span className="font-bold text-sm text-foreground">
+                      B-Coins Wallet
                     </span>
                   </div>
-
-                  {selectedPayment?.details && (
-                    <>
-                      <div className="flex justify-between items-center pt-2 border-t border-border/40">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                          <CreditCard className="w-3.5 h-3.5" />
-                          Authorization
-                        </span>
-                        <span className="font-bold text-sm text-foreground">
-                          {selectedPayment.details.paymentMethod || "B-Coins Wallet"}
-                        </span>
-                      </div>
-
-                      {selectedPayment.details.items && (
-                        <div className="border-t border-border/40 pt-4 mt-4">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-3">Line Items</p>
-                          <div className="space-y-3">
-                            {selectedPayment.details.items.map((item: PaymentItem, i: number) => (
-                              <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-background/50 border border-border/40">
-                                <span className="text-2xl">{item.image}</span>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-bold text-foreground text-sm truncate">{item.name}</p>
-                                  <p className="text-[10px] font-black text-muted-foreground">Quantity: {item.quantity}</p>
-                                </div>
-                                <span className="font-black text-foreground text-sm">{item.price} <span className="text-[10px] text-brand-orange">B</span></span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
                 </div>
               </div>
 
@@ -539,3 +418,4 @@ export default function PaymentHistoryPage() {
     </DashboardContent>
   );
 }
+

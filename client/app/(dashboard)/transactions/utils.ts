@@ -104,7 +104,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;padding:48px}
 </style></head><body>
 <div class="receipt">
   <div class="header">
-    <h1>Bbrains — Payment Receipt</h1>
+    <h1>${user?.college?.name || "Bbrains"} — Payment Receipt</h1>
     <p>Official record of transaction</p>
     <div class="badge ${isFailed ? "fail" : "ok"}">${isFailed ? "✕ Payment Failed" : "✓ Payment Successful"}</div>
   </div>
@@ -125,7 +125,7 @@ body{font-family:'Inter',sans-serif;background:#fff;color:#1a1a2e;padding:48px}
       ${transaction.description ? `<div class="field" style="grid-column:span 2"><span class="lbl">Description</span><span class="val">${transaction.description}</span></div>` : ""}
     </div>
   </div>
-  <div class="footer">Generated on ${new Date().toLocaleString("en-IN")} · Bbrains Education Platform</div>
+  <div class="footer">Generated on ${new Date().toLocaleString("en-IN")} · ${user?.college?.name || "Bbrains"} Education Platform</div>
 </div></body></html>`
 
   const iframe = document.createElement("iframe")

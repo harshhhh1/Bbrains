@@ -97,7 +97,7 @@ export function TransactionHistory({ transactions, loading, error }: Transaction
               <p className="font-medium italic">No transactions found for this search</p>
             </div>
           ) : (
-            <div className="divide-y divide-border/40">
+            <div className="space-y-4 pt-2">
               {filteredTxns.map((txn) => {
                 const credit = isCredit(txn.type);
                 const user = txn.relatedUser || txn.user;
@@ -106,61 +106,61 @@ export function TransactionHistory({ transactions, loading, error }: Transaction
                 const note = txn.note || txn.description;
 
                 return (
-                  <div
+                  <Card
                     key={txn.id}
                     onClick={() => setShowTxnReceipt(txn)}
-                    className="group relative flex items-center justify-between p-4 px-2 transition-all cursor-pointer hover:bg-muted/30 first:rounded-t-xl last:rounded-b-xl"
+                    className="group cursor-pointer hover:border-primary/30 transition-all shadow-sm border-border/60 overflow-hidden"
                   >
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="relative">
-                        <Avatar className="w-11 h-11 border-2 border-background shadow-sm ring-1 ring-border group-hover:ring-primary/30 transition-all">
-                          {avatarUrl && <AvatarImage src={avatarUrl} alt={username} />}
-                          <AvatarFallback name={username} className="bg-gradient-to-br from-primary/5 to-primary/10 text-primary text-[10px] font-black tracking-tighter">
-                            {username.substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-background flex items-center justify-center shadow-sm ${credit ? 'bg-green-500' : 'bg-destructive'}`}>
-                          {credit ? (
-                            <TrendingUp className="w-2.5 h-2.5 text-white" />
-                          ) : (
-                            <TrendingDown className="w-2.5 h-2.5 text-white" />
-                          )}
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="relative">
+                          <Avatar className="w-12 h-12 border-2 border-background shadow-sm ring-1 ring-border group-hover:ring-primary/30 transition-all">
+                            {avatarUrl && <AvatarImage src={avatarUrl} alt={username} />}
+                            <AvatarFallback name={username} className="bg-gradient-to-br from-primary/5 to-primary/10 text-primary text-[10px] font-black tracking-tighter">
+                              {username.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-background flex items-center justify-center shadow-sm ${credit ? 'bg-green-500' : 'bg-destructive'}`}>
+                            {credit ? (
+                              <TrendingUp className="w-2.5 h-2.5 text-white" />
+                            ) : (
+                              <TrendingDown className="w-2.5 h-2.5 text-white" />
+                            )}
+                          </div>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-base text-foreground truncate group-hover:text-primary transition-colors">{username}</p>
+                            <Badge 
+                              variant="secondary" 
+                              className="text-[9px] uppercase tracking-wider h-4 px-1.5 font-bold leading-none bg-muted/50 text-muted-foreground border-none"
+                            >
+                              {txn.type || "unknown"}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5 text-[11px] font-medium text-muted-foreground/70 tracking-tight">
+                             <span>{txn.transactionDate ? formatTxnDate(txn.transactionDate) : "Unknown date"}</span>
+                             {note && (
+                               <>
+                                 <span className="w-0.5 h-0.5 rounded-full bg-muted-foreground/30" />
+                                 <span className="truncate italic max-w-[150px]">&quot;{note}&quot;</span>
+                               </>
+                             )}
+                          </div>
                         </div>
                       </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-bold text-sm text-foreground truncate group-hover:text-primary transition-colors">{username}</p>
-                          <Badge 
-                            variant="secondary" 
-                            className="text-[9px] uppercase tracking-wider h-4 px-1.5 font-bold leading-none bg-muted/50 text-muted-foreground border-none"
-                          >
-                            {txn.type || "unknown"}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5 text-[11px] font-medium text-muted-foreground/70 tracking-tight">
-                           <span>{txn.transactionDate ? formatTxnDate(txn.transactionDate) : "Unknown date"}</span>
-                           {note && (
-                             <>
-                               <span className="w-0.5 h-0.5 rounded-full bg-muted-foreground/30" />
-                               <span className="truncate italic max-w-[120px]">&quot;{note}&quot;</span>
-                             </>
-                           )}
-                        </div>
+                      
+                      <div className="text-right shrink-0">
+                         <p className={`font-black text-xl tracking-tighter ${credit ? "text-green-600 dark:text-green-400" : "text-destructive"}`}>
+                          {credit ? "+" : "-"}{txn.amount ?? 0}
+                        </p>
+                        <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mt-1 flex items-center justify-end gap-1">
+                          <img src="/bcoin.svg" className="h-3 w-3 opacity-50 grayscale" alt="" />
+                          BCoins
+                        </p>
                       </div>
-                    </div>
-                    
-                    <div className="text-right shrink-0">
-                       <p className={`font-black text-base tracking-tighter ${credit ? "text-green-600 dark:text-green-400" : "text-destructive"}`}>
-                        {credit ? "+" : "-"}{txn.amount ?? 0}
-                      </p>
-                      <p className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest mt-0.5 flex items-center justify-end gap-1">
-                        <img src="/bcoin.svg" className="h-3 w-3 opacity-50 grayscale" alt="" />
-                        BCoins
-                      </p>
-                    </div>
-
-                    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-                  </div>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>

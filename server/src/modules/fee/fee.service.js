@@ -47,12 +47,26 @@ export const getStudentFeeSummary = async (studentId) => {
             name: true,
           },
         },
+        enrollments: {
+          select: {
+            course: {
+              select: {
+                name: true,
+                feePerStudent: true,
+                createdAt: true,
+                durationValue: true,
+                durationUnit: true,
+              },
+            },
+          },
+        },
       },
     });
 
-    // For demo purposes, we'll set a fixed total fee amount
-    // In a real application, this would come from course configurations or fee settings
-    const totalFee = 10000; // Example total fee amount
+    let totalFee = 0;
+    if (student?.enrollments && student.enrollments.length > 0) {
+      totalFee = student.enrollments.reduce((sum, e) => sum + Number(e.course.feePerStudent || 0), 0);
+    }
     const remainingAmount = Math.max(0, totalFee - totalPaid);
 
     return {
