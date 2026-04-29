@@ -1,28 +1,5 @@
 import type { ChatMentionUser } from "@/services/api/client";
-import type { Member, Message } from "@/features/chat/data";
-
-export type SelectedMention = {
-  id: string;
-  username: string;
-};
-
-export type ReplyingMessage = {
-  id: string;
-  username: string;
-  name: string;
-  avatar: string;
-  content: string;
-} | null;
-
-export type PendingAttachment = {
-  file: File;
-  previewUrl: string;
-};
-
-export type GroupedMessages = {
-  label: string;
-  messages: Message[];
-}[];
+import type { Member, Message, SelectedMention, ReplyingMessage, PendingAttachment, GroupedMessages } from "@/features/chat/data";
 
 export type ChatPageState = {
   messages: Message[];

@@ -96,3 +96,26 @@ export const ROLE_LABELS: Record<Member["role"], string> = {
     moderator: "Moderators",
     member: "Members",
 }
+
+export type SelectedMention = {
+  id: string;
+  username: string;
+};
+
+export type ReplyingMessage = {
+  id: string;
+  username: string;
+  name: string;
+  avatar: string;
+  content: string;
+} | null;
+
+export type PendingAttachment = {
+  file: File;
+  previewUrl: string;
+};
+
+export type GroupedMessages = {
+  label: string;
+  messages: Message[];
+}[];

@@ -72,7 +72,6 @@ export default function ChatPage() {
           onMessageChange={actions.handleMessageChange}
           onSend={actions.handleSend}
           onKeyDown={actions.handleKeyDown}
-          onEmojiSelect={actions.onEmojiSelect}
           onCancelEdit={actions.onCancelEdit}
           onCancelReply={actions.onCancelReply}
           onFileSelect={actions.handleFileSelect}

@@ -554,7 +554,6 @@ export function useChatPage() {
     };
   }, [handleScroll, updateStickiness]);
 
-  const onEmojiSelect = useCallback((emoji: { emoji: string }) => setMessage((prev) => prev + emoji.emoji), []);
   const onCancelEdit = useCallback(() => {
     setEditingMsgId(null);
     setMessage("");
@@ -636,7 +635,6 @@ export function useChatPage() {
       handleMessageChange,
       handleSend,
       handleKeyDown,
-      onEmojiSelect,
       onCancelEdit,
       onCancelReply,
       handleFileSelect,
