@@ -277,8 +277,16 @@ export function useChatPage() {
       }
 
       const content = message.trim();
+      const autoMentions = extractMentions(content);
+      const verifiedAutoMentions = autoMentions.filter(uname => 
+        membersList.some(m => m.username.toLowerCase() === uname.toLowerCase())
+      );
+      
       const mentionIds = mentionedUsers.map((user) => user.id);
-      const mentions = mentionedUsers.map((user) => user.username);
+      const mentions = Array.from(new Set([
+        ...mentionedUsers.map((user) => user.username),
+        ...verifiedAutoMentions
+      ]));
 
       if (editingMsgId) {
         await editMessage(editingMsgId, content, mentions, mentionIds);
@@ -391,6 +399,10 @@ export function useChatPage() {
     },
     [message]
   );
+
+  const handleRemoveMention = useCallback((userId: string) => {
+    setMentionedUsers((prev) => prev.filter((u) => u.id !== userId));
+  }, []);
 
   const handleOpenProfile = useCallback(
     (userId: string) => {
@@ -598,6 +610,8 @@ export function useChatPage() {
       currentUsername,
       groupedMessages,
       onlineUserIds,
+      mentionedUsers,
+      mentionQuery,
       membersList: membersWithStatus,
     },
     refs: {
@@ -628,6 +642,7 @@ export function useChatPage() {
       handleFileSelect,
       handleRemoveAttachment,
       handleMentionSelect,
+      handleRemoveMention,
       onToggleMembers,
       onMembersSidebarClose,
       onMembersSidebarOpenProfile,

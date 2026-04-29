@@ -29,10 +29,11 @@ interface MessageInputProps {
     onCancelReply: () => void
     onFileSelect: (files: File[]) => void
     onRemoveAttachment: (index: number) => void
-    onMentionSelect: (user: ChatMentionUser) => void
     mentionQuery: string | null
     mentionIndex: number
     setMentionIndex: React.Dispatch<React.SetStateAction<number>>
+    mentionedUsers: SelectedMention[]
+    onRemoveMention: (userId: string) => void
     isMounted?: boolean
 }
 
@@ -57,6 +58,8 @@ export function MessageInput({
     mentionQuery,
     mentionIndex,
     setMentionIndex,
+    mentionedUsers,
+    onRemoveMention,
     isMounted = false
 }: MessageInputProps) {
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -172,6 +175,26 @@ export function MessageInput({
                                     <button
                                         onClick={() => onRemoveAttachment(index)}
                                         className="absolute -top-1.5 -right-1.5 bg-background border border-border rounded-full p-0.5 shadow-sm hover:bg-muted transition-colors"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {mentionedUsers?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                            {mentionedUsers.map((user) => (
+                                <div
+                                    key={user.id}
+                                    className="flex items-center gap-1 px-2 py-0.5 bg-[#5865f2]/10 text-[#5865f2] rounded-md text-[11px] font-medium border border-[#5865f2]/20 group"
+                                >
+                                    <span>@{user.username}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => onRemoveMention(user.id)}
+                                        className="hover:text-red-500 transition-colors"
                                     >
                                         <X className="w-3 h-3" />
                                     </button>

@@ -31,7 +31,6 @@ async function resolveMentionTargets({ collegeId, mentions = [], mentionedUserId
 
     const users = await prisma.user.findMany({
         where: {
-            ...(collegeId ? { collegeId } : {}),
             OR: [
                 ...(normalizedIds.length > 0 ? [{ id: { in: normalizedIds } }] : []),
                 ...(normalizedNames.length > 0 ? [{ username: { in: normalizedNames } }] : []),

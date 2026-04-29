@@ -60,7 +60,7 @@ export const MessageItem = React.memo(function MessageItem({
                         return (
                             <span
                                 key={index}
-                                className="bg-primary/20 text-primary rounded px-1 font-medium"
+                                className="bg-[#5865f2]/20 text-[#5865f2] rounded px-1 font-medium"
                             >
                                 {part}
                             </span>
