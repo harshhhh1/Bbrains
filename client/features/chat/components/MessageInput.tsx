@@ -5,12 +5,10 @@ import { Button } from "@/components/ui/button"
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-    EmojiPicker, EmojiPickerContent, EmojiPickerFooter, EmojiPickerSearch,
-} from "@/components/ui/emoji-picker"
-import { Send, Smile, X, ImagePlus, Loader2, Hash } from "lucide-react"
+import { Send, X, ImagePlus, Loader2, Hash } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { ChatMentionUser } from "@/services/api/client"
+import type { SelectedMention } from "@/features/chat/data"
 
 interface MessageInputProps {
     message: string
@@ -24,11 +22,11 @@ interface MessageInputProps {
     onChange: (val: string) => void
     onSend: () => void
     onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void
-    onEmojiSelect: (emoji: { emoji: string }) => void
     onCancelEdit: () => void
     onCancelReply: () => void
     onFileSelect: (files: File[]) => void
     onRemoveAttachment: (index: number) => void
+    onMentionSelect: (user: ChatMentionUser) => void
     mentionQuery: string | null
     mentionIndex: number
     setMentionIndex: React.Dispatch<React.SetStateAction<number>>
@@ -49,7 +47,6 @@ export function MessageInput({
     onChange,
     onSend,
     onKeyDown,
-    onEmojiSelect,
     onCancelEdit,
     onCancelReply,
     onFileSelect,
@@ -240,40 +237,13 @@ export function MessageInput({
                         <input
                             ref={inputRef}
                             value={message}
-                            onChange={(event) => onChange(event.target.value)}
-                            onKeyDown={handleInputKeyDown}
+                            onChange={(e) => onChange(e.target.value)}
+                            onKeyDown={onKeyDown}
                             autoFocus
                             aria-label="Message input"
                             placeholder={`Message #${channelName}`}
                             className="flex-1 bg-transparent px-4 py-2 text-sm outline-none placeholder:text-muted-foreground"
                         />
-
-                        {isMounted && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <button
-                                        className="px-2 text-muted-foreground hover:text-foreground transition-colors mr-1"
-                                        aria-label="Open emoji picker"
-                                    >
-                                        <Smile className="w-4 h-4" />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    align="end"
-                                    side="top"
-                                    className="h-100 w-fit border-none bg-transparent p-0 shadow-none z-50 mb-2"
-                                >
-                                    <EmojiPicker
-                                        className="h-full border shadow-xl bg-ui-light-surface dark:bg-ui-dark-surface rounded-lg overflow-hidden"
-                                        onEmojiSelect={onEmojiSelect}
-                                    >
-                                        <EmojiPickerSearch placeholder="Search emoji..." />
-                                        <EmojiPickerContent />
-                                        <EmojiPickerFooter />
-                                    </EmojiPicker>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
                     </div>
                 </div>
 

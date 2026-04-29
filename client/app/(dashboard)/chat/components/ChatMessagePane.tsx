@@ -9,7 +9,7 @@ import { MessageInput } from "@/features/chat/components/MessageInput";
 import { MessageItem } from "@/features/chat/components/MessageItem";
 import type { Message } from "@/features/chat/data";
 import type { ChatMentionUser } from "@/services/api/client";
-import type { PendingAttachment, ReplyingMessage } from "../types/chat-page";
+import type { PendingAttachment, ReplyingMessage, SelectedMention } from "../types/chat-page";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -57,7 +57,6 @@ type ChatMessagePaneProps = {
   onMessageChange: (value: string) => void;
   onSend: () => Promise<void>;
   onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
-  onEmojiSelect: (emoji: { emoji: string }) => void;
   onCancelEdit: () => void;
   onCancelReply: () => void;
   onFileSelect: (files: File[]) => void;
@@ -106,7 +105,6 @@ export function ChatMessagePane({
   onMessageChange,
   onSend,
   onKeyDown,
-  onEmojiSelect,
   onCancelEdit,
   onCancelReply,
   onFileSelect,
@@ -237,7 +235,6 @@ export function ChatMessagePane({
         onChange={onMessageChange}
         onSend={() => void onSend()}
         onKeyDown={onKeyDown}
-        onEmojiSelect={onEmojiSelect}
         onCancelEdit={onCancelEdit}
         onCancelReply={onCancelReply}
         onFileSelect={onFileSelect}
