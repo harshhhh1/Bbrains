@@ -19,6 +19,7 @@ router.get('/setup', verifyToken, authorize('teacher', 'admin'), getExamSetupHan
 router.get('/results/me', verifyToken, getMyExamResultsHandler);
 router.get('/my', verifyToken, getMyExamResultsHandler);
 router.get('/results/all', verifyToken, authorize('teacher', 'admin', 'manager'), getAllExamResultsHandler);
+router.get('/teacher', verifyToken, authorize('teacher', 'admin', 'manager'), listTeacherExamsHandler);
 router.get('/', verifyToken, authorize('teacher', 'admin', 'manager'), listTeacherExamsHandler);
 router.get('/:id', verifyToken, authorize('teacher', 'admin', 'manager'), getExamHandler);
 router.post('/', verifyToken, authorize('teacher', 'admin'), createExamHandler);

@@ -40,7 +40,8 @@ export const getAssessmentSetupHandler = async (req, res) => {
     try {
         const courseId = req.query.courseId ? Number(req.query.courseId) : null;
         const date = typeof req.query.date === 'string' ? req.query.date : null;
-        const setup = await getAssessmentSetup(req.user.id, courseId, date);
+        const assessmentType = typeof req.query.assessmentType === 'string' ? req.query.assessmentType : 'test';
+        const setup = await getAssessmentSetup(req.user, courseId, date, assessmentType);
         return sendSuccess(res, setup);
     } catch (error) {
         console.error(error);

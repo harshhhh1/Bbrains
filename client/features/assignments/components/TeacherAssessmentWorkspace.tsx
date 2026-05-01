@@ -119,6 +119,7 @@ export function TeacherAssessmentWorkspace() {
         const response = await assessmentApi.getSetup({
           courseId: Number(assessmentForm.courseId),
           date: assessmentForm.assessmentDate,
+          assessmentType: assessmentForm.assessmentType,
         })
 
         if (!response.success || !response.data) {

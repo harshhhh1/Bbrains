@@ -43,7 +43,7 @@ const getErrorMessage = (error, fallback) => {
 export const getExamSetupHandler = async (req, res) => {
     try {
         const courseId = req.query.courseId ? Number(req.query.courseId) : null;
-        const setup = await getExamSetup(req.user.id, courseId);
+        const setup = await getExamSetup(req.user, courseId);
         return sendSuccess(res, setup);
     } catch (error) {
         console.error(error);
