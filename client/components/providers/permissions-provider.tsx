@@ -117,7 +117,7 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
   // Utility to check permission
   const hasPermission = (key: string) => {
     // If the user has a superadmin role, they inherently have all permissions
-    const isSuperAdmin = roles.some((r) => r?.name?.toLowerCase() === "superadmin");
+    const isSuperAdmin = roles.some((r) => r?.name?.toLowerCase() === "superadmin") || user?.type === "superadmin" || user?.originalType === "superadmin";
     if (isSuperAdmin) return true;
     
     // If the user has administrator permission, they bypass all other permission checks

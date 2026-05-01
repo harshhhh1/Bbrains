@@ -88,23 +88,51 @@ export function SettingsProfileTab({
           </FieldBlock>
 
           <FieldBlock label="First name">
-            <Input value={form.firstName} disabled className="h-12 bg-muted/60" />
+            <Input 
+              value={form.firstName} 
+              disabled={user?.type !== "superadmin"} 
+              onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))}
+              className={cn("h-12", user?.type !== "superadmin" ? "bg-muted/60" : "")} 
+            />
           </FieldBlock>
 
           <FieldBlock label="Last name">
-            <Input value={form.lastName} disabled className="h-12 bg-muted/60" />
+            <Input 
+              value={form.lastName} 
+              disabled={user?.type !== "superadmin"} 
+              onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))}
+              className={cn("h-12", user?.type !== "superadmin" ? "bg-muted/60" : "")} 
+            />
           </FieldBlock>
 
           <FieldBlock label="Phone number">
-            <Input value={form.phone} disabled className="h-12 bg-muted/60" placeholder="+91 98765 43210" />
+            <Input 
+              value={form.phone} 
+              disabled={user?.type !== "superadmin"} 
+              onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+              className={cn("h-12", user?.type !== "superadmin" ? "bg-muted/60" : "")} 
+              placeholder="+91 98765 43210" 
+            />
           </FieldBlock>
 
           <FieldBlock label="Gender">
-            <Input
-              value={form.sex?.charAt(0).toUpperCase() + form.sex?.slice(1)}
-              disabled
-              className="h-12 bg-muted/60"
-            />
+            {user?.type === "superadmin" ? (
+              <select
+                value={form.sex}
+                onChange={(event) => setForm((current) => ({ ...current, sex: event.target.value }))}
+                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            ) : (
+              <Input
+                value={form.sex?.charAt(0).toUpperCase() + form.sex?.slice(1)}
+                disabled
+                className="h-12 bg-muted/60"
+              />
+            )}
           </FieldBlock>
 
           <div className="md:col-span-2">
