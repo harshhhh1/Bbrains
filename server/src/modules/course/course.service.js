@@ -194,9 +194,10 @@ const assertCourseCollegeAccess = (course, currentUser, action = 'access this cl
         throw new ForbiddenError();
     }
 
-    if (currentUser.collegeId && Number(course.collegeId ?? 0) !== Number(currentUser.collegeId)) {
+    if (currentUser.type !== 'superadmin' && currentUser.collegeId && Number(course.collegeId ?? 0) !== Number(currentUser.collegeId)) {
         throw new ForbiddenError(`You can only ${action} for classes in your college`);
     }
+
 };
 
 const buildCourseBaseWhere = (currentUser, search = '') => {
@@ -211,13 +212,20 @@ const buildCourseBaseWhere = (currentUser, search = '') => {
 
     if (!currentUser) return Object.keys(searchWhere).length ? searchWhere : undefined;
 
+    if (currentUser.type === 'superadmin' && !currentUser.collegeId) {
+        return searchWhere;
+    }
+
+
     const collegeId = currentUser.collegeId || -1;
-    const collegeScoped = { collegeId };
+    const collegeScoped = (currentUser.type === 'superadmin' && !currentUser.collegeId) ? {} : { collegeId };
+
 
     return {
         ...searchWhere,
         ...collegeScoped,
     };
+
 };
 
 const getTeacherSubjects = async (currentUser) => {

@@ -14,13 +14,19 @@ interface StudentFormProps {
 }
 
 export function StudentForm({ form, onChange, disabled, courses, isEditing }: StudentFormProps) {
+    const filteredCourses = form.collegeId
+        ? courses.filter((course) => String(course.collegeId) === String(form.collegeId))
+        : [];
+
     const classOptions = [
-        { value: "", label: "Select class" },
-        ...courses.map((course) => ({
+        { value: "", label: form.collegeId ? "Select class" : "Enter College ID first" },
+        ...filteredCourses.map((course) => ({
+
             value: String(course.id),
             label: `${course.name}${course.standard ? ` (${course.standard})` : ""}`,
         })),
     ]
+
 
     return (
         <div className="grid grid-cols-2 gap-3">

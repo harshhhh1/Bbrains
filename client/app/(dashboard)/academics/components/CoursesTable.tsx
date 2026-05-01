@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, UserPlus } from "lucide-react";
+
 import { Course } from "../types";
 
 interface CoursesTableProps {
@@ -16,9 +17,12 @@ interface CoursesTableProps {
   search: string;
   onDelete: (id: string | number) => void;
   onEdit?: (course: Course) => void;
+  onEnroll?: (course: Course) => void;
 }
 
-export function CoursesTable({ courses, search, onDelete, onEdit }: CoursesTableProps) {
+
+export function CoursesTable({ courses, search, onDelete, onEdit, onEnroll }: CoursesTableProps) {
+
   const filteredCourses = courses.filter(c => 
     !search ||
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -56,6 +60,12 @@ export function CoursesTable({ courses, search, onDelete, onEdit }: CoursesTable
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
                   )}
+                  {onEnroll && (
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => onEnroll(course)}>
+                      <UserPlus className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
+
                   <Button 
                     variant="ghost" 
                     size="icon" 

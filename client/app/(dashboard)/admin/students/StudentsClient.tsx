@@ -13,6 +13,8 @@ import { UserDetailsDrawer } from "@/app/(dashboard)/users/_components/UserDetai
 import { fetchStudents } from "./data"
 import { emptyStudentForm, initStudentForm, type ApiUser, type StudentForm as StudentFormType } from "./_types"
 import { useHasPermission } from "@/components/providers/permissions-provider"
+import { useUser } from "@/hooks/use-user"
+
 
 interface StudentsClientProps {
     initialStudents: ApiUser[]
@@ -21,6 +23,8 @@ interface StudentsClientProps {
 export function StudentsClient({ initialStudents }: StudentsClientProps) {
     const canCreateStudent = useHasPermission("create_student")
     const canManageStudent = useHasPermission("manage_student")
+    const { user: currentUser } = useUser()
+
     const [students, setStudents] = useState<ApiUser[]>(initialStudents)
     const [courses, setCourses] = useState<Course[]>([])
     const [loading, setLoading] = useState(false)
@@ -38,7 +42,8 @@ export function StudentsClient({ initialStudents }: StudentsClientProps) {
             setLoading(true)
             const [studentData, coursesResponse] = await Promise.all([
                 fetchStudents(),
-                courseApi.getCourses(),
+                courseApi.getCourses({ params: { limit: 1000 } }),
+
             ])
             setStudents(studentData)
             if (coursesResponse.success) {
@@ -62,8 +67,12 @@ export function StudentsClient({ initialStudents }: StudentsClientProps) {
             return
         }
         setEditing(null)
-        setForm(emptyStudentForm)
+        setForm({
+            ...emptyStudentForm,
+            collegeId: currentUser?.collegeId ? String(currentUser.collegeId) : "",
+        })
         setModalOpen(true)
+
     }
 
     function openEdit(student: ApiUser) {

@@ -6,16 +6,14 @@ import { AcademicsControls } from "./AcademicsControls";
 import { AcademicsHeader } from "./AcademicsHeader";
 import { AcademicsLoadingState } from "./AcademicsLoadingState";
 import { CoursesTable } from "./CoursesTable";
-import { StudentsTable } from "./StudentsTable";
-import { TeachersTab } from "./TeachersTab";
-import { AssignmentsTable } from "./AssignmentsTable";
+import { TeacherAssessmentWorkspace } from "@/features/assignments/components/TeacherAssessmentWorkspace";
 import { DeleteDialog } from "./DeleteDialog";
 import { CourseFormModal } from "../_features/course-form";
 import { useAcademics } from "../hooks/use-academics";
-import { useState } from "react";
+import { BulkEnrollmentModal } from "./BulkEnrollmentModal";
+
 
 export default function AcademicsPage() {
-    const [teacherModalOpen, setTeacherModalOpen] = useState(false);
   const {
     tab,
     setTab,
@@ -25,9 +23,6 @@ export default function AcademicsPage() {
     setDeleteId,
     deleting,
     courses,
-    students,
-    teachers,
-    assignments,
     loading,
     canCreateCourse,
     canManageCourse,
@@ -37,16 +32,13 @@ export default function AcademicsPage() {
     courseModalOpen,
     setCourseModalOpen,
     onCourseCreated,
-    router,
+    handleEnrollClick,
+    enrollmentModalOpen,
+    setEnrollmentModalOpen,
+    selectedCourse,
+    fetchData: refreshData,
   } = useAcademics();
 
-  const handleAddOverride = () => {
-    if (tab === "teachers") {
-      setTeacherModalOpen(true);
-      return;
-    }
-    handleAddClick();
-  };
 
   if (loading && courses.length === 0) {
     return <AcademicsLoadingState />;
@@ -54,12 +46,8 @@ export default function AcademicsPage() {
 
   return (
     <div className="space-y-6">
-      <AcademicsHeader
-        coursesCount={courses.length}
-        studentsCount={students.length}
-        teachersCount={teachers.length}
-        assignmentsCount={assignments.length}
-      />
+      <AcademicsHeader />
+
 
       <Tabs value={tab} onValueChange={setTab} className="flex-col gap-4">
         <div className="rounded-2xl border border-border/70 bg-card/70 p-3 md:p-4">
@@ -67,7 +55,7 @@ export default function AcademicsPage() {
             tab={tab}
             search={search}
             onSearchChange={setSearch}
-            onAddClick={handleAddOverride}
+            onAddClick={handleAddClick}
             canAdd={canCreateCourse || canManageCourse}
           />
         </div>
@@ -80,38 +68,15 @@ export default function AcademicsPage() {
                 search={search}
                 onDelete={setDeleteId}
                 onEdit={canManageCourse ? handleEditClick : undefined}
+                onEnroll={canManageCourse ? handleEnrollClick : undefined}
               />
+
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="students" className="mt-0">
-          <Card className="overflow-hidden rounded-2xl border border-border/70 bg-card/90">
-            <CardContent className="p-0">
-              <StudentsTable students={students} search={search} onDelete={(id) => setDeleteId(id)} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="teachers" className="mt-0">
-          <Card className="overflow-hidden rounded-2xl border border-border/70 bg-card/90">
-            <CardContent className="p-0">
-              <TeachersTab 
-                loading={loading} 
-                initialTeachers={teachers as any} 
-                createOpen={teacherModalOpen}
-                onCreateOpenChange={setTeacherModalOpen}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="assignments" className="mt-0">
-          <Card className="overflow-hidden rounded-2xl border border-border/70 bg-card/90">
-            <CardContent className="p-0">
-              <AssignmentsTable assignments={assignments} search={search} onDelete={(id) => setDeleteId(id)} />
-            </CardContent>
-          </Card>
+        <TabsContent value="assessments" className="mt-0">
+          <TeacherAssessmentWorkspace />
         </TabsContent>
       </Tabs>
 
@@ -127,6 +92,15 @@ export default function AcademicsPage() {
         onOpenChange={setCourseModalOpen}
         onSuccess={onCourseCreated}
       />
+
+      <BulkEnrollmentModal 
+        open={enrollmentModalOpen}
+        onOpenChange={setEnrollmentModalOpen}
+        course={selectedCourse}
+        onSuccess={refreshData}
+      />
     </div>
+
   );
 }
+

@@ -44,7 +44,13 @@ export default function ManagerClassesPage() {
         setForm={page.setForm}
         onSubmit={page.handleSubmit}
         onTimetableSave={page.handleTimetableSave}
+        addSemester={page.addSemester}
+        removeSemester={page.removeSemester}
+        addSubjectToSemester={page.addSubjectToSemester}
+        removeSubjectFromSemester={page.removeSubjectFromSemester}
+        updateSubjectInSemester={page.updateSubjectInSemester}
       />
+
     </DashboardContent>
   );
 }

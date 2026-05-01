@@ -50,7 +50,8 @@ export function initStudentForm(student?: ApiUser): StudentForm {
         sex: student.userDetails?.sex ?? "other",
         dob: student.userDetails?.dob?.slice(0, 10) ?? "",
         phone: student.userDetails?.phone ?? "",
-        collegeId: "",
+        collegeId: student.college?.id ? String(student.college.id) : "",
+
         classId: student.enrollments?.[0]?.courseId ? String(student.enrollments[0].courseId) : "",
     }
 }

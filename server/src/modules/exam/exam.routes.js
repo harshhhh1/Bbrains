@@ -18,19 +18,19 @@ import {
 
 const router = express.Router();
 
-router.get('/setup', verifyToken, authorize('teacher', 'admin'), getExamSetupHandler);
+router.get('/setup', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), getExamSetupHandler);
 router.get('/upcoming', verifyToken, getUpcomingExamsHandler);
 router.get('/results/me', verifyToken, getMyExamResultsHandler);
 router.get('/my', verifyToken, getMyExamResultsHandler);
-router.get('/results/all', verifyToken, authorize('teacher', 'admin', 'manager'), getAllExamResultsHandler);
-router.get('/teacher', verifyToken, authorize('teacher', 'admin', 'manager'), listTeacherExamsHandler);
-router.get('/', verifyToken, authorize('teacher', 'admin', 'manager'), listTeacherExamsHandler);
-router.get('/course-students/:courseId', verifyToken, authorize('teacher', 'admin', 'manager'), listCourseStudentsHandler);
-router.get('/:id', verifyToken, authorize('teacher', 'admin', 'manager'), getExamHandler);
-router.post('/', verifyToken, authorize('teacher', 'admin'), createExamHandler);
-router.put('/:id', verifyToken, authorize('teacher', 'admin'), updateExamHandler);
-router.post('/:examId/results', verifyToken, authorize('teacher', 'admin', 'manager'), createExamResultHandler);
-router.post('/:examId/results/bulk', verifyToken, authorize('teacher', 'admin', 'manager'), saveStudentExamResultsHandler);
+router.get('/results/all', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), getAllExamResultsHandler);
+router.get('/teacher', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), listTeacherExamsHandler);
+router.get('/', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), listTeacherExamsHandler);
+router.get('/course-students/:courseId', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), listCourseStudentsHandler);
+router.get('/:id', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), getExamHandler);
+router.post('/', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), createExamHandler);
+router.put('/:id', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), updateExamHandler);
+router.post('/:examId/results', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), createExamResultHandler);
+router.post('/:examId/results/bulk', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), saveStudentExamResultsHandler);
 
 export default router;
 

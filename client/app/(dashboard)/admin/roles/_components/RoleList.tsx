@@ -184,8 +184,6 @@ export default function RoleList({
         position: index + 1,
       }));
 
-      // In a real app, we'd use a single RPC or batch update
-      // For now, sequentially or Promise.all
       await Promise.all(updates.map(u => 
         api.put(`/roles/${u.id}`, { position: u.position })
       ));
@@ -242,7 +240,9 @@ export default function RoleList({
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5">
+      <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5 bg-background">
+
+
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}

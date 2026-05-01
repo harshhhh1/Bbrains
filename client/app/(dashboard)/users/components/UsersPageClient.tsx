@@ -275,19 +275,6 @@ export default function UsersPageClient() {
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={handleFixRoles}
-            disabled={isFixingRoles}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
-          >
-            {isFixingRoles ? (
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-            ) : (
-              <ShieldCheck className="h-4 w-4 text-primary" />
-            )}
-            Fix Permissions
-          </button>
-          <button
-            type="button"
             onClick={handleAddUser}
             className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
           >

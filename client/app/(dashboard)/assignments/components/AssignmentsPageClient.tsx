@@ -4,13 +4,13 @@ import { DashboardContent } from "@/components/dashboard-content"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2 } from "lucide-react"
 import { TeacherGradingView } from "@/features/grading/components/TeacherGradingView"
-import { TeacherAssessmentWorkspace } from "@/features/assignments/components/TeacherAssessmentWorkspace"
 import { AssignmentsAdminView } from "./AssignmentsAdminView"
 import { useAssignments } from "../hooks/use-assignments"
 import { StudentAssignmentsView } from "./StudentAssignmentsView"
 import { AssignmentViewDialog } from "./AssignmentViewDialog"
 import { AssignmentSubmitDrawer } from "./AssignmentSubmitDrawer"
-import { BookOpen, GraduationCap, ListChecks } from "lucide-react"
+import { BookOpen, ListChecks } from "lucide-react"
+
 
 export default function AssignmentsPage() {
   const {
@@ -52,34 +52,27 @@ export default function AssignmentsPage() {
                 Manage institutional assignments, review submissions, and publish results.
               </p>
             </div>
-            <TabsList className="bg-muted/50 p-1">
-              <TabsTrigger value="manage" className="gap-2">
-                <BookOpen className="size-3.5" />
-                Manage
-              </TabsTrigger>
-              <TabsTrigger value="review" className="gap-2">
-                <ListChecks className="size-3.5" />
-                Review
-              </TabsTrigger>
-              <TabsTrigger value="assessments" className="gap-2">
-                <GraduationCap className="size-3.5" />
-                Tests & Exams
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          
-          <TabsContent value="manage" className="mt-0 border-none p-0 outline-none">
-            <AssignmentsAdminView />
-          </TabsContent>
-          
-          <TabsContent value="review" className="mt-0 border-none p-0 outline-none">
-            <TeacherGradingView />
-          </TabsContent>
-          
-          <TabsContent value="assessments" className="mt-0 border-none p-0 outline-none">
-            <TeacherAssessmentWorkspace />
-          </TabsContent>
-        </Tabs>
+          <TabsList className="bg-muted/50 p-1">
+            <TabsTrigger value="manage" className="gap-2">
+              <BookOpen className="size-3.5" />
+              Manage
+            </TabsTrigger>
+            <TabsTrigger value="review" className="gap-2">
+              <ListChecks className="size-3.5" />
+              Review
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <TabsContent value="manage" className="mt-0 border-none p-0 outline-none">
+          <AssignmentsAdminView />
+        </TabsContent>
+        
+        <TabsContent value="review" className="mt-0 border-none p-0 outline-none">
+          <TeacherGradingView />
+        </TabsContent>
+      </Tabs>
+
       </DashboardContent>
     )
   }

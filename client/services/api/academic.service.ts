@@ -1,7 +1,8 @@
 import { api } from "./base";
 
 export const academicApi = {
-  getCourses: () => api.get<any[]>("/courses"),
+  getCourses: (config?: any) => api.get<any[]>("/courses", config),
+
   getCourseStudents: (courseId: number | string) => api.get<any[]>(`/courses/${courseId}/students`),
   getCourseTeachers: (courseId: number | string) => api.get<any[]>(`/courses/${courseId}/teachers`),
   createCourse: (data: any) => api.post<any>("/courses", data),
@@ -50,5 +51,7 @@ export const academicApi = {
   getMyAchievements: () => api.get<any[]>("/achievements/me"),
   
   enroll: (courseId: number | string) => api.post<any>("/enrollments", { courseId }),
+  enrollBulk: (courseId: number | string, userIds: string[]) => api.post<any>("/enrollments/bulk", { courseId, userIds }),
   getMyEnrollments: () => api.get<any[]>("/enrollments/me"),
+
 };

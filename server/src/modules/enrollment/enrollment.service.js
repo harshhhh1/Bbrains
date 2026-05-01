@@ -12,6 +12,14 @@ export const enrollUser = async (userId, courseId) => {
     });
 };
 
+export const enrollBulk = async (userIds, courseId) => {
+    return await prisma.enrollment.createMany({
+        data: userIds.map(userId => ({ userId, courseId })),
+        skipDuplicates: true
+    });
+};
+
+
 export const getMyEnrollments = async (userId) => {
     return await prisma.enrollment.findMany({
         where: { userId },

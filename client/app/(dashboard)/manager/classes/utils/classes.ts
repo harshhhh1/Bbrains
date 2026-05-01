@@ -38,7 +38,11 @@ export const emptyForm: ClassFormState = {
   durationUnit: "months",
   studentCapacity: "",
   timetable: [],
+  semesters: [
+    { id: "1", semesterNumber: 1, subjects: [{ id: "1", name: "", code: "", examTotalMarks: 100 }] }
+  ],
 };
+
 
 export function parseSubjects(value: string) {
   return value

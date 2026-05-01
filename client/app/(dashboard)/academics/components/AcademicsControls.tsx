@@ -16,24 +16,26 @@ export function AcademicsControls({ tab, search, onSearchChange, onAddClick, can
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <TabsList>
         <TabsTrigger value="courses"><BookOpen className="w-4 h-4 mr-1" /> Courses</TabsTrigger>
-        <TabsTrigger value="students"><GraduationCap className="w-4 h-4 mr-1" /> Students</TabsTrigger>
-        <TabsTrigger value="teachers"><Users className="w-4 h-4 mr-1" /> Teachers</TabsTrigger>
-        <TabsTrigger value="assignments"><ClipboardList className="w-4 h-4 mr-1" /> Assignments</TabsTrigger>
+        <TabsTrigger value="assessments"><GraduationCap className="w-4 h-4 mr-1" /> Tests & Exams</TabsTrigger>
       </TabsList>
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search..." 
-            value={search} 
-            onChange={(e) => onSearchChange(e.target.value)} 
-            className="pl-9" 
-          />
+      {tab === "courses" && (
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search courses..." 
+              value={search} 
+              onChange={(e) => onSearchChange(e.target.value)} 
+              className="pl-9" 
+            />
+          </div>
+          <Button onClick={onAddClick} disabled={!canAdd}>
+            <Plus className="w-4 h-4 mr-1" /> Add Course
+          </Button>
         </div>
-        <Button onClick={onAddClick} disabled={!canAdd}>
-          <Plus className="w-4 h-4 mr-1" /> Add {tab === "courses" ? "Course" : tab === "students" ? "Student" : tab === "teachers" ? "Teacher" : "Assignment"}
-        </Button>
-      </div>
+      )}
+
+
     </div>
   );
 }
