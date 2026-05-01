@@ -10,6 +10,7 @@ const normalizeDate = (value) => {
 
 const hasManagerPrivileges = (currentUser) => {
     if (!currentUser) return false;
+    if (currentUser.type === 'superadmin' || currentUser.originalType === 'superadmin') return true;
     if (currentUser.type === 'admin' || currentUser.type === 'manager') return true;
 
     return (currentUser.roles || []).some((entry) =>

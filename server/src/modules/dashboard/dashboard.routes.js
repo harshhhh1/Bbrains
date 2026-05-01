@@ -6,7 +6,7 @@ import authorize from '../../middleware/authorize.js';
 const router = express.Router();
 
 router.get('/', verifyToken, getDashboard);
-router.get('/admin-overview', verifyToken, authorize('admin'), getAdminOverview);
+router.get('/admin-overview', verifyToken, authorize('admin', 'superadmin'), getAdminOverview);
 router.get('/manager-overview', verifyToken, getManagerOverview);
 router.post('/claim-daily', verifyToken, claimDaily);
 

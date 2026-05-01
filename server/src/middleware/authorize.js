@@ -12,6 +12,10 @@ const authorize = (...allowedRoles) => {
             return res.status(401).json({ success: false, message: 'Not authenticated' });
         }
 
+        if (req.user.type === 'superadmin' || req.user.originalType === 'superadmin') {
+            return next();
+        }
+
         const hasManagerRole = (req.user.roles || []).some((entry) =>
             entry?.role?.name?.toLowerCase().includes('manager')
         );
