@@ -247,9 +247,10 @@ export const createExamWithResult = async (teacherId, payload) => {
         throw new NotFoundError('Course');
     }
 
-    if (Number(course.collegeId ?? 0) !== Number(teacher.collegeId ?? 0)) {
+    if (teacher.type !== 'superadmin' && Number(course.collegeId ?? 0) !== Number(teacher.collegeId ?? 0)) {
         throw new ForbiddenError('You can only create exams for courses in your college');
     }
+
 
     const { semesterNumber, subjectCode } = payload;
     const subject = validateSemesterAndSubject(course, semesterNumber, subjectCode);
@@ -425,20 +426,23 @@ export const updateExamWithResult = async (examId, currentUser, payload) => {
 export const getTeacherExams = async (currentUser) => {
     ensureExamModelsAvailable();
     
-    const where = currentUser.type === 'teacher'
-        ? {
-            createdById: currentUser.id,
-            course: {
-                collegeId: currentUser.collegeId,
-            },
-        }
-        : currentUser.collegeId
+    const where = (currentUser.type === 'superadmin' && !currentUser.collegeId)
+        ? {}
+
+        : currentUser.type === 'teacher'
             ? {
+                createdById: currentUser.id,
                 course: {
                     collegeId: currentUser.collegeId,
                 },
             }
-            : {};
+            : currentUser.collegeId
+                ? {
+                    course: {
+                        collegeId: currentUser.collegeId,
+                    },
+                }
+                : {};
 
     return await prisma.exam.findMany({
         where,
@@ -462,11 +466,13 @@ export const getExamById = async (examId, currentUser) => {
         throw new NotFoundError('Exam');
     }
 
-    if (Number(exam.course?.collegeId ?? 0) !== Number(currentUser.collegeId ?? 0)) {
+    const isGlobalSuperadmin = currentUser.type === 'superadmin' && !currentUser.collegeId;
+    if (!isGlobalSuperadmin && Number(exam.course?.collegeId ?? 0) !== Number(currentUser.collegeId ?? 0)) {
+
         throw new ForbiddenError('You are not allowed to view this exam');
     }
 
-    if (currentUser.type !== 'admin' && currentUser.type !== 'manager' && exam.createdById !== currentUser.id) {
+    if (currentUser.type !== 'superadmin' && currentUser.type !== 'admin' && currentUser.type !== 'manager' && exam.createdById !== currentUser.id) {
         throw new ForbiddenError('You are not allowed to view this exam');
     }
 
@@ -528,13 +534,16 @@ export const getStudentExamResults = async (studentId, semesterFilter = null) =>
 export const getAllExamResults = async (currentUser, filters = {}) => {
     ensureExamModelsAvailable();
     
-    const where = {
-        exam: {
-            course: {
-                collegeId: currentUser.collegeId,
+    const where = (currentUser.type === 'superadmin' && !currentUser.collegeId)
+        ? {} 
+
+        : {
+            exam: {
+                course: {
+                    collegeId: currentUser.collegeId,
+                },
             },
-        },
-    };
+        };
 
     if (filters.semesterNumber) {
         where.exam.semesterNumber = Number(filters.semesterNumber);
@@ -603,14 +612,18 @@ export const createExamResult = async (examId, teacherId, payload) => {
         throw new NotFoundError('Teacher');
     }
 
-    if (Number(exam.course?.collegeId ?? 0) !== Number(teacher.collegeId ?? 0)) {
+    const isGlobalSuperadmin = teacher.type === 'superadmin' && !teacher.collegeId;
+    if (!isGlobalSuperadmin && Number(exam.course?.collegeId ?? 0) !== Number(teacher.collegeId ?? 0)) {
+
         throw new ForbiddenError('You can only enter results for exams in your college');
     }
 
+
     const isTeacher = teacher.type === 'teacher';
-    if (!isTeacher && teacher.type !== 'admin' && teacher.type !== 'manager') {
+    if (!isTeacher && teacher.type !== 'admin' && teacher.type !== 'manager' && teacher.type !== 'superadmin') {
         throw new ForbiddenError('You are not authorized to enter exam results');
     }
+
 
     if (isTeacher && exam.createdById !== teacher.id) {
         throw new ForbiddenError('You can only enter results for exams you created');

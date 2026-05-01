@@ -86,7 +86,20 @@ export function useManagerClassesPage() {
       durationUnit: course.durationUnit || "months",
       studentCapacity: course.studentCapacity ? String(course.studentCapacity) : "",
       timetable: course.timetable?.length ? course.timetable : [],
+      semesters: course.semesters?.length
+        ? course.semesters.map((sem) => ({
+            id: String(sem.id || Math.random()),
+            semesterNumber: sem.semesterNumber,
+            subjects: sem.subjects.map((sub) => ({
+              id: String(sub.id || Math.random()),
+              name: sub.name,
+              code: sub.code,
+              examTotalMarks: sub.examTotalMarks,
+            })),
+          }))
+        : [{ id: "1", semesterNumber: 1, subjects: [{ id: "1", name: "", code: "", examTotalMarks: 100 }] }],
     });
+
     setDialogOpen(true);
     setTimetableDialogOpen(openTimetable);
   }
@@ -98,6 +111,76 @@ export function useManagerClassesPage() {
     }));
     toast.success("Timetable assigned to this class");
   }
+
+  function addSemester() {
+    setForm((current) => {
+      const nextNum = current.semesters.length + 1;
+      return {
+        ...current,
+        semesters: [
+          ...current.semesters,
+          {
+            id: Math.random().toString(36).substr(2, 9),
+            semesterNumber: nextNum,
+            subjects: [{ id: Math.random().toString(36).substr(2, 9), name: "", code: "", examTotalMarks: 100 }],
+          },
+        ],
+      };
+    });
+  }
+
+  function removeSemester(semesterId: string) {
+    setForm((current) => ({
+      ...current,
+      semesters: current.semesters.filter((s) => s.id !== semesterId),
+    }));
+  }
+
+  function addSubjectToSemester(semesterId: string) {
+    setForm((current) => ({
+      ...current,
+      semesters: current.semesters.map((sem) =>
+        sem.id === semesterId
+          ? {
+              ...sem,
+              subjects: [
+                ...sem.subjects,
+                { id: Math.random().toString(36).substr(2, 9), name: "", code: "", examTotalMarks: 100 },
+              ],
+            }
+          : sem
+      ),
+    }));
+  }
+
+  function removeSubjectFromSemester(semesterId: string, subjectId: string) {
+    setForm((current) => ({
+      ...current,
+      semesters: current.semesters.map((sem) =>
+        sem.id === semesterId ? { ...sem, subjects: sem.subjects.filter((sub) => sub.id !== subjectId) } : sem
+      ),
+    }));
+  }
+
+  function updateSubjectInSemester(
+    semesterId: string,
+    subjectId: string,
+    field: string,
+    value: string | number
+  ) {
+    setForm((current) => ({
+      ...current,
+      semesters: current.semesters.map((sem) =>
+        sem.id === semesterId
+          ? {
+              ...sem,
+              subjects: sem.subjects.map((sub) => (sub.id === subjectId ? { ...sub, [field]: value } : sub)),
+            }
+          : sem
+      ),
+    }));
+  }
+
 
   async function handleSubmit() {
     const subjects = parseSubjects(form.subjectsText);
@@ -132,7 +215,18 @@ export function useManagerClassesPage() {
         subject: entry.subject.trim(),
         room: entry.room?.trim() || null,
       })),
+      semesters: form.semesters.map((sem) => ({
+        semesterNumber: sem.semesterNumber,
+        subjects: sem.subjects
+          .filter((sub) => sub.name.trim() && sub.code.trim())
+          .map((sub) => ({
+            name: sub.name.trim(),
+            code: sub.code.trim().toUpperCase(),
+            examTotalMarks: Number(sub.examTotalMarks) || 100,
+          })),
+      })).filter(sem => sem.subjects.length > 0),
     };
+
 
     if (payload.feePerStudent !== undefined && payload.feePerStudent < 0) {
       toast.error("Fee per student cannot be negative");
@@ -218,8 +312,14 @@ export function useManagerClassesPage() {
     setSelectedClassId,
     openCreateDialog,
     openEditDialog,
+    addSemester,
+    removeSemester,
+    addSubjectToSemester,
+    removeSubjectFromSemester,
+    updateSubjectInSemester,
     handleTimetableSave,
     handleSubmit,
     handleDelete,
   };
 }
+

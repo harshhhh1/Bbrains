@@ -1,19 +1,28 @@
 import { z } from 'zod';
 import {
-    enrollUser, getMyEnrollments, getCourseEnrollments,
+    enrollUser, enrollBulk, getMyEnrollments, getCourseEnrollments,
     unenrollUser, updateEnrollmentGrade
 } from './enrollment.service.js';
+
 import { sendSuccess, sendCreated, sendError } from '../../utils/response.js';
 import { createAuditLog } from '../../utils/auditLog.js';
 
 const enrollSchema = z.object({
-    userId: z.string().uuid().optional(),
+    userId: z.string().optional(),
     courseId: z.number().int().positive()
 });
+
 
 const gradeSchema = z.object({
     grade: z.string().max(5)
 });
+
+const enrollBulkSchema = z.object({
+    userIds: z.array(z.string()),
+    courseId: z.number().int().positive()
+});
+
+
 
 // POST /enrollments
 export const enroll = async (req, res) => {
@@ -32,12 +41,35 @@ export const enroll = async (req, res) => {
         await createAuditLog(req.user.id, 'ACADEMIC', 'CREATE', 'Enrollment', `${userId}-${validated.courseId}`);
         return sendCreated(res, enrollment, 'Enrolled successfully');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || error.errors || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         if (error.message === 'Already enrolled in this course') return sendError(res, error.message, 409);
+
         console.error(error);
         return sendError(res, 'Failed to enroll', 500);
     }
 };
+
+// POST /enrollments/bulk
+export const enrollBulkUsers = async (req, res) => {
+    try {
+        const validated = enrollBulkSchema.parse(req.body);
+
+        // Only teachers/admins can enroll other students
+        if (req.user.type !== 'teacher' && req.user.type !== 'admin' && req.user.type !== 'superadmin' && req.user.type !== 'manager') {
+            return sendError(res, 'Not authorized to enroll other users', 403);
+        }
+
+        const result = await enrollBulk(validated.userIds, validated.courseId);
+        await createAuditLog(req.user.id, 'ACADEMIC', 'CREATE', 'BulkEnrollment', `Course:${validated.courseId}-UsersCount:${validated.userIds.length}`);
+        return sendCreated(res, result, `Successfully enrolled ${result.count} users`);
+    } catch (error) {
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || error.errors || []).map(e => ({ field: e.path.join('.'), message: e.message })));
+        console.error(error);
+
+        return sendError(res, 'Failed to enroll in bulk', 500);
+    }
+};
+
 
 // GET /enrollments/me
 export const getEnrollments = async (req, res) => {
@@ -65,10 +97,14 @@ export const getCourseEnrollmentsList = async (req, res) => {
 export const unenroll = async (req, res) => {
     try {
         const { userId, courseId } = req.params;
-        // Only self or admin
-        if (userId !== req.user.id && req.user.type !== 'admin') {
-            return sendError(res, 'Not authorized', 403);
+        // Only self or authorized staff
+        const isSelf = userId === req.user.id;
+        const isStaff = ['admin', 'superadmin', 'manager', 'bbrains_official'].includes(req.user.type);
+
+        if (!isSelf && !isStaff) {
+            return sendError(res, 'Not authorized to unenroll this user', 403);
         }
+
 
         await unenrollUser(userId, parseInt(courseId));
         await createAuditLog(req.user.id, 'ACADEMIC', 'DELETE', 'Enrollment', `${userId}-${courseId}`);

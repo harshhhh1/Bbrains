@@ -14,27 +14,19 @@ export function useAcademics() {
   const [deleteId, setDeleteId] = useState<number | string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [courseModalOpen, setCourseModalOpen] = useState(false);
+  const [enrollmentModalOpen, setEnrollmentModalOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+
 
   const [courses, setCourses] = useState<Course[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [assignments, setAssignments] = useState<AdminAssignment[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const [coursesRes, studentsRes, teachersRes, assignmentsRes] = await Promise.all([
-        courseApi.getCourses(),
-        userApi.getStudents(),
-        userApi.getTeachers(),
-        assignmentApi.getAssignments(),
-      ]);
+      const coursesRes = await courseApi.getCourses();
 
       if (coursesRes.success) setCourses(coursesRes.data || []);
-      if (studentsRes.success) setStudents(studentsRes.data || []);
-      if (teachersRes.success) setTeachers(teachersRes.data || []);
-      if (assignmentsRes.success) setAssignments(assignmentsRes.data || []);
     } catch (error) {
       console.error("Failed to fetch academics data:", error);
       toast.error("Failed to load academic data");
@@ -49,20 +41,14 @@ export function useAcademics() {
 
   const handleAddClick = () => {
     if (tab === "courses") {
-      router.push("/dashboard/manager/classes");
+      setCourseModalOpen(true);
       return;
     }
-
-    if (tab === "students") {
-      router.push("/dashboard/admin/students");
-      return;
-    }
-
-    router.push("/dashboard/admin/assignments");
   };
 
+
   const handleEditClick = (course: Course) => {
-    router.push(`/dashboard/manager/classes?courseId=${course.id}`);
+    router.push(`/manager/classes?courseId=${course.id}`);
   };
 
   const handleDelete = useCallback(async () => {
@@ -77,21 +63,9 @@ export function useAcademics() {
           throw new Error(response.message || "Failed to delete course");
         }
         setCourses((current) => current.filter((course) => String(course.id) !== String(deleteId)));
-      } else if (tab === "assignments") {
-        const response = await api.delete(`/academic/assignments/${deleteId}`);
-        if (!response.success) {
-          throw new Error(response.message || "Failed to delete assignment");
-        }
-        setAssignments((current) => current.filter((assignment) => String(assignment.id) !== String(deleteId)));
-      } else {
-        const response = await api.delete(`/user/delete/${deleteId}`);
-        if (!response.success) {
-          throw new Error(response.message || "Failed to delete student");
-        }
-        setStudents((current) => current.filter((student) => String(student.id) !== String(deleteId)));
       }
 
-      toast.success(`${tab === "courses" ? "Course" : tab === "assignments" ? "Assignment" : "Student"} deleted`);
+      toast.success(`${tab === "courses" ? "Course" : "Item"} deleted`);
       setDeleteId(null);
     } catch (error) {
       console.error(error);
@@ -105,6 +79,12 @@ export function useAcademics() {
     setCourses((current) => [...current, newCourse]);
   }, []);
 
+  const handleEnrollClick = (course: Course) => {
+    setSelectedCourse(course);
+    setEnrollmentModalOpen(true);
+  };
+
+
   return {
     tab,
     setTab,
@@ -114,9 +94,6 @@ export function useAcademics() {
     setDeleteId,
     deleting,
     courses,
-    students,
-    teachers,
-    assignments,
     loading,
     canCreateCourse,
     canManageCourse,
@@ -126,6 +103,12 @@ export function useAcademics() {
     courseModalOpen,
     setCourseModalOpen,
     onCourseCreated,
+    handleEnrollClick,
+    enrollmentModalOpen,
+    setEnrollmentModalOpen,
+    selectedCourse,
     router,
+
   };
 }
+

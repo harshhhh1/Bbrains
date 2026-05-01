@@ -579,6 +579,16 @@ export interface ApiCourse {
             lastName?: string
         }
     } | null
+    semesters?: Array<{
+        id?: number;
+        semesterNumber: number;
+        subjects: Array<{
+            id?: number;
+            name: string;
+            code: string;
+            examTotalMarks: number;
+        }>;
+    }>;
     isEnrolled?: boolean
     enrolledStudents?: number
     _count?: {

@@ -1,7 +1,8 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { CalendarDays, Loader2, X } from "lucide-react";
+import { CalendarDays, Loader2, Plus, Trash2, X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
@@ -36,7 +37,13 @@ type ClassFormDrawerProps = {
   setForm: Dispatch<SetStateAction<ClassFormState>>;
   onSubmit: () => Promise<void>;
   onTimetableSave: (entries: ClassFormState["timetable"]) => void;
+  addSemester: () => void;
+  removeSemester: (id: string) => void;
+  addSubjectToSemester: (id: string) => void;
+  removeSubjectFromSemester: (semId: string, subId: string) => void;
+  updateSubjectInSemester: (semId: string, subId: string, field: string, value: string | number) => void;
 };
+
 
 export function ClassFormDrawer({
   open,
@@ -51,7 +58,13 @@ export function ClassFormDrawer({
   setForm,
   onSubmit,
   onTimetableSave,
+  addSemester,
+  removeSemester,
+  addSubjectToSemester,
+  removeSubjectFromSemester,
+  updateSubjectInSemester,
 }: ClassFormDrawerProps) {
+
   return (
     <>
       <Drawer
@@ -174,14 +187,93 @@ export function ClassFormDrawer({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="class-subjects">Subjects</Label>
+                <Label htmlFor="class-subjects">Simple Subjects (Optional)</Label>
                 <Textarea
                   id="class-subjects"
                   value={form.subjectsText}
                   onChange={(event) => setForm((current) => ({ ...current, subjectsText: event.target.value }))}
                   placeholder={`Add one subject per line\nMathematics\nScience\nEnglish`}
                 />
+                <p className="text-xs text-muted-foreground italic">Note: For detailed exams and results, use the Semester section below.</p>
               </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                    <div className="space-y-0.5">
+                        <Label className="text-base font-semibold">Semesters & Curriculum</Label>
+                        <p className="text-xs text-muted-foreground text-balance">Define structured semesters with specific subject codes and total marks.</p>
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={addSemester}>
+                        <Plus className="mr-1 h-4 w-4" /> Add Semester
+                    </Button>
+                </div>
+
+                <div className="grid gap-6">
+                    {form.semesters.map((semester) => (
+                        <div key={semester.id} className="relative space-y-4 rounded-2xl border border-border/60 bg-muted/5 p-5 transition-colors hover:bg-muted/10">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-bold uppercase tracking-widest text-primary/80">Semester {semester.semesterNumber}</h4>
+                                <div className="flex gap-2">
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => addSubjectToSemester(semester.id)} className="h-8 text-xs">
+                                        <Plus className="mr-1 h-3 w-3" /> Add Subject
+                                    </Button>
+                                    {form.semesters.length > 1 && (
+                                        <Button type="button" variant="ghost" size="sm" onClick={() => removeSemester(semester.id)} className="h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive">
+                                            <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                {semester.subjects.map((subject) => (
+                                    <div key={subject.id} className="grid grid-cols-12 gap-3 items-center">
+                                        <div className="col-span-5 space-y-1">
+                                            <Input 
+                                                placeholder="Subject Name" 
+                                                value={subject.name}
+                                                onChange={(e) => updateSubjectInSemester(semester.id, subject.id, "name", e.target.value)}
+                                                className="h-9 text-sm"
+                                            />
+                                        </div>
+                                        <div className="col-span-3 space-y-1">
+                                            <Input 
+                                                placeholder="Code" 
+                                                value={subject.code}
+                                                onChange={(e) => updateSubjectInSemester(semester.id, subject.id, "code", e.target.value)}
+                                                className="h-9 text-sm uppercase"
+                                            />
+                                        </div>
+                                        <div className="col-span-3 space-y-1">
+                                            <Input 
+                                                type="number"
+                                                placeholder="Marks" 
+                                                value={subject.examTotalMarks}
+                                                onChange={(e) => updateSubjectInSemester(semester.id, subject.id, "examTotalMarks", Number(e.target.value))}
+                                                className="h-9 text-sm"
+                                            />
+                                        </div>
+                                        <div className="col-span-1 flex justify-end">
+                                            {semester.subjects.length > 1 && (
+                                                <Button 
+                                                    type="button" 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    onClick={() => removeSubjectFromSemester(semester.id, subject.id)}
+                                                    className="size-8 text-muted-foreground hover:text-destructive"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+              </div>
+
 
               <div className="space-y-3">
                 <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">

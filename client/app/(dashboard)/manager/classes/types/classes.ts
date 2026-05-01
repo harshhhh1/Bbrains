@@ -1,4 +1,15 @@
-import type { ClassTimetableEntry } from "@/services/api/client";
+export type SemesterSubject = {
+  id: string;
+  name: string;
+  code: string;
+  examTotalMarks: number;
+};
+
+export type SemesterEntry = {
+  id: string;
+  semesterNumber: number;
+  subjects: SemesterSubject[];
+};
 
 export type ClassFormState = {
   name: string;
@@ -10,4 +21,6 @@ export type ClassFormState = {
   durationUnit: "months" | "years";
   studentCapacity: string;
   timetable: ClassTimetableEntry[];
+  semesters: SemesterEntry[];
 };
+
