@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import prisma from '../../utils/prisma.js';
 import {
     createExamResult,
     createExamWithResult,
@@ -205,5 +206,134 @@ export const getAllExamResultsHandler = async (req, res) => {
     } catch (error) {
         console.error(error);
         return sendError(res, getErrorMessage(error, 'Failed to fetch exam results'), getStatusCode(error));
+    }
+};
+
+export const listCourseStudentsHandler = async (req, res) => {
+    try {
+        const courseId = Number(req.params.courseId);
+        if (!Number.isInteger(courseId) || courseId <= 0) {
+            return sendError(res, 'Invalid course ID', 400);
+        }
+
+        const enrollments = await prisma.enrollment.findMany({
+            where: { courseId },
+            select: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        userDetails: {
+                            select: {
+                                firstName: true,
+                                lastName: true,
+                                avatar: true,
+                            },
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                user: { username: 'asc' },
+            },
+        });
+
+        return sendSuccess(res, enrollments.map((e) => e.user));
+    } catch (error) {
+        console.error(error);
+        return sendError(res, getErrorMessage(error, 'Failed to fetch students'), getStatusCode(error));
+    }
+};
+
+export const saveStudentExamResultsHandler = async (req, res) => {
+    try {
+        const examId = Number(req.params.examId);
+        if (!Number.isInteger(examId) || examId <= 0) {
+            return sendError(res, 'Invalid exam ID', 400);
+        }
+
+        const schema = z.object({
+            studentId: z.string().uuid(),
+            marksObtained: z.coerce.number().min(0),
+            remark: z.string().trim().max(255).optional().or(z.literal('')),
+        });
+
+        const validated = schema.parse(req.body);
+        const result = await createExamResult(examId, req.user.id, validated);
+        return sendSuccess(res, result, 'Result saved');
+    } catch (error) {
+        if (error?.name === 'ZodError') {
+            return sendError(
+                res,
+                'Validation failed',
+                400,
+                error.errors.map((entry) => ({
+                    field: entry.path.join('.'),
+                    message: entry.message,
+                }))
+            );
+        }
+
+        console.error(error);
+        return sendError(res, getErrorMessage(error, 'Failed to save result'), getStatusCode(error));
+    }
+};
+
+export const getUpcomingExamsHandler = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const alertWindowDays = 7;
+        const cutoff = new Date(today);
+        cutoff.setDate(cutoff.getDate() + alertWindowDays);
+
+        // For students: filter by their enrolled courses; for others: filter by college
+        const user = req.user;
+        let whereClause = {};
+
+        if (user.type === 'student') {
+            // Get the student's enrolled course IDs
+            const enrollments = await prisma.enrollment.findMany({
+                where: { userId: user.id },
+                select: { courseId: true },
+            });
+            const courseIds = enrollments.map((e) => e.courseId);
+
+            whereClause = {
+                courseId: { in: courseIds },
+                examDate: { gte: today, lte: cutoff },
+            };
+        } else {
+            // Teachers/admins: filter by college
+            whereClause = {
+                course: user.collegeId ? { collegeId: user.collegeId } : undefined,
+                examDate: { gte: today, lte: cutoff },
+            };
+        }
+
+        const exams = await prisma.exam.findMany({
+            where: whereClause,
+            select: {
+                id: true,
+                courseId: true,
+                semesterNumber: true,
+                subjectName: true,
+                subjectCode: true,
+                topic: true,
+                examDate: true,
+                totalMarks: true,
+                course: {
+                    select: { id: true, name: true, standard: true },
+                },
+            },
+            orderBy: { examDate: 'asc' },
+        });
+
+        return sendSuccess(res, exams);
+    } catch (error) {
+        console.error(error);
+        return sendError(res, getErrorMessage(error, 'Failed to fetch upcoming exams'), getStatusCode(error));
     }
 };
