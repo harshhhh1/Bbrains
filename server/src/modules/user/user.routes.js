@@ -3,7 +3,7 @@ import {
     getMe, getUserByUsername, getStudents, getTeachers, getStaff,
     getStudentByUsername, getTeacherByUsername,
     addTeacher, addStudent, addManager, addAdmin, getManagers, getAdmins, updateTeacher, updateStudent, deleteTeacher, searchUser,
-    checkUsernameAvailability, batchImportUsers, fixMissingRoles
+    checkUsernameAvailability, batchImportUsers, fixMissingRoles, getMyPermissions
 } from './user_management.controller.js';
 import { editUser, removeUser, dailyClaim } from './user_actions.controller.js';
 import { createDetails, getMyDetails, updateMyDetails, getUserDetails } from './userDetails.controller.js';
@@ -23,6 +23,7 @@ const upload = multer({
 
 // Profile
 router.get('/me', verifyToken, getMe);
+router.get('/permissions', verifyToken, getMyPermissions);
 router.get('/search', verifyToken, searchUser);
 router.get('/check-username/:username', verifyToken, checkUsernameAvailability);
 

@@ -49,6 +49,7 @@ export const announcementApi = communicationApi;
 export const eventApi = communicationApi;
 export const suggestionApi = communicationApi;
 export const assessmentApi = academicApi;
+export const examApi = academicApi;
 export const assignmentApi = academicApi;
 export const courseApi = academicApi;
 export const attendanceApi = academicApi;
@@ -125,5 +126,9 @@ export type {
     SalesData,
     ApiOrder as Order,
     DashboardData,
-    LeaderboardEntry
+    LeaderboardEntry,
+    ApiExam,
+    ApiExamResult,
+    StudentExamResult,
+    ExamCourseOption
 } from "@/lib/types/api";

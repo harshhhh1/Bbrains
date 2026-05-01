@@ -69,19 +69,72 @@ const mapCourseRecord = (course) => {
     const subjects = normalizeStringArray(course.subjects);
     const subjectProgress = buildSubjectProgress(subjects, course.subjectProgress);
 
+    let parsedSemesters = [];
+    if (course.semesters) {
+        try {
+            parsedSemesters = typeof course.semesters === 'string'
+                ? JSON.parse(course.semesters)
+                : course.semesters;
+        } catch {
+            parsedSemesters = [];
+        }
+    }
+
     return {
         ...course,
         subjects,
         subjectProgress,
+        semesters: parsedSemesters,
     };
 };
 
+const normalizeSemesters = (value) => {
+    if (!Array.isArray(value)) return null;
+
+    return value
+        .map((entry) => {
+            const semesterNumber = Number(entry?.semesterNumber);
+            if (!Number.isFinite(semesterNumber) || semesterNumber < 1) return null;
+
+            const subjects = Array.isArray(entry?.subjects)
+                ? entry.subjects
+                    .map((sub) => {
+                        const name = String(sub?.name ?? '').trim();
+                        const code = String(sub?.code ?? '').trim().toUpperCase();
+                        const examTotalMarks = Number(sub?.examTotalMarks);
+                        if (!name || !code || !Number.isFinite(examTotalMarks) || examTotalMarks <= 0) return null;
+
+                        return { name, code, examTotalMarks };
+                    })
+                    .filter(Boolean)
+                : [];
+
+            if (subjects.length === 0) return null;
+
+            return {
+                semesterNumber,
+                subjects,
+            };
+        })
+        .filter(Boolean);
+};
+
 const prepareCreateCourseData = (data, currentUser = null) => {
-    const subjects = normalizeStringArray(data.subjects);
+    const semesters = normalizeSemesters(data.semesters);
+    let subjects = normalizeStringArray(data.subjects);
+
+    // If no subjects provided but semesters exist, extract unique subject names
+    if (subjects.length === 0 && semesters.length > 0) {
+        const allSubjectNames = semesters.flatMap(sem => 
+            sem.subjects.map(sub => String(sub.name).trim())
+        );
+        subjects = [...new Set(allSubjectNames)].filter(Boolean);
+    }
 
     return {
         ...data,
         ...(currentUser?.collegeId ? { collegeId: Number(currentUser.collegeId) } : {}),
+        ...(semesters && { semesters: JSON.stringify(semesters) }),
         subjects,
         subjectProgress: buildSubjectProgress(subjects, data.subjectProgress),
     };
@@ -112,6 +165,11 @@ const prepareUpdateCourseData = async (id, data) => {
             data.subjectProgress,
             currentCourse?.subjectProgress
         );
+    }
+
+    if (data.semesters !== undefined) {
+        const semesters = normalizeSemesters(data.semesters);
+        payload.semesters = semesters ? JSON.stringify(semesters) : null;
     }
 
     return payload;

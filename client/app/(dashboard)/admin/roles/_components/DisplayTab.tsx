@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import type { Role } from "../_types";
-import { createClient } from "@/services/supabase/client";
+import { api } from "@/services/api/client";
 import { Trash2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 
 interface DisplayTabProps {
   role: Role;
@@ -19,7 +20,6 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
     setName(role.name);
@@ -32,15 +32,14 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
     if (isSuperAdmin) return;
     setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("role")
-        .update({ name, color })
-        .eq("role_id", role.id);
+      const res = await api.put(`/roles/${role.id}`, { name, color });
+      if (!res.success) throw new Error(res.message);
       
-      if (error) throw error;
+      toast.success("Display settings saved");
       onUpdate();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save display settings:", err);
+      toast.error(err.message || "Failed to save settings");
     } finally {
       setIsSaving(false);
     }
@@ -58,16 +57,15 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
     if (!canDeleteRole) return;
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from("role")
-        .delete()
-        .eq("role_id", role.id);
+      const res = await api.delete(`/roles/${role.id}`);
+      if (!res.success) throw new Error(res.message);
       
-      if (error) throw error;
+      toast.success("Role deleted");
       onUpdate();
       setShowDeleteConfirm(false);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to delete role:", err);
+      toast.error(err.message || "Failed to delete role");
     } finally {
       setIsDeleting(false);
     }
@@ -119,8 +117,6 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
             You cannot edit the display properties of the SuperAdmin role.
           </div>
         )}
-
-        
 
         {canDeleteRole && (
           <div className="border-t border-border/60 pt-6">

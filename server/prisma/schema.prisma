@@ -66,6 +66,8 @@ model User {
   classTeacherCourse Course?              @relation("CourseClassTeacher")
   assessments        Assessment[]         @relation("AssessmentCreator")
   assessmentResults  AssessmentResult[]   @relation("AssessmentStudent")
+  exams             Exam[]              @relation("ExamCreator")
+  examResults       ExamResult[]         @relation("ExamStudent")
   reviewedSubmissions Submission[]        @relation("SubmissionReviewer")
   reviews            Review[]
   acknowledged      Acknowledged[]
@@ -142,6 +144,7 @@ model Course {
   studentCapacity Int?                @map("student_capacity")
   classTeacherId  String?             @unique @map("class_teacher_id")
   subjects        Json?
+  semesters      Json?
   subjectProgress Json?               @map("subject_progress")
   timetable       Json?
   createdAt       DateTime            @default(now()) @map("created_at")
@@ -149,8 +152,9 @@ model Course {
   assignments     Assignment[]
   enrollments     Enrollment[]
   classTeacher    User?               @relation("CourseClassTeacher", fields: [classTeacherId], references: [id], onDelete: SetNull)
-  assessments     Assessment[]
-  college         College?            @relation(fields: [collegeId], references: [id], onDelete: Cascade)
+  assessments    Assessment[]
+  exams          Exam[]
+  college        College?             @relation(fields: [collegeId], references: [id], onDelete: Cascade)
 
   @@map("course")
 }
@@ -180,11 +184,15 @@ model Assignment {
   dueDate     DateTime     @map("due_date") @db.Date
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
+  type        AssignmentType @default(assignment) @map("type")
+  semesterNumber Int?      @map("semester_number")
+  subjectCode   String?    @map("subject_code")
   course      Course       @relation(fields: [courseId], references: [id])
   createdBy   User?        @relation("AssignmentCreator", fields: [createdById], references: [id], onDelete: SetNull)
   grades      Grade[]
   submissions Submission[]
 
+  @@index([courseId, type])
   @@map("assignment")
 }
 
@@ -258,6 +266,44 @@ model AssessmentResult {
   @@unique([assessmentId, studentId])
   @@index([studentId, createdAt(sort: Desc)])
   @@map("assessment_result")
+}
+
+model Exam {
+  id             Int      @id @default(autoincrement()) @map("exam_id")
+  courseId       Int      @map("course_id")
+  createdById    String   @map("created_by_id")
+  semesterNumber Int      @map("semester_number")
+  subjectName    String   @map("subject_name") @db.VarChar(100)
+  subjectCode    String   @map("subject_code") @db.VarChar(50)
+  topic          String   @db.VarChar(150)
+  examDate       DateTime @map("exam_date") @db.Date
+  totalMarks     Decimal  @map("total_marks") @db.Decimal(8, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdBy User      @relation("ExamCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  results   ExamResult[]
+  
+  @@index([courseId, semesterNumber, subjectCode])
+  @@map("exam")
+}
+
+model ExamResult {
+  id            Int       @id @default(autoincrement()) @map("exam_result_id")
+  examId        Int       @map("exam_id")
+  studentId     String    @map("student_id")
+  marksObtained Decimal   @map("marks_obtained") @db.Decimal(8, 2)
+  remark        String?   @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  
+  exam    Exam  @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student User  @relation("ExamStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  
+  @@unique([examId, studentId])
+  @@index([studentId, createdAt(sort: Desc)])
+  @@map("exam_result")
 }
 
 model Role {
@@ -604,6 +650,11 @@ enum LogCategory {
   USER
   SYSTEM
   LEVELS
+}
+
+enum AssignmentType {
+  assignment
+  test
 }
 
 enum AssessmentType {

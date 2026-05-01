@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import type { Role, Permission } from "../_types";
-import { createClient } from "@/services/supabase/client";
+import { api } from "@/services/api/client";
+import { toast } from "sonner";
 
 interface PermissionsTabProps {
   role: Role;
@@ -19,7 +20,6 @@ export default function PermissionsTab({ role, allPermissions, isSelectedRoleSup
   // Local state for toggles: { [permId]: enabled }
   const [pendingPermissions, setPendingPermissions] = useState<Record<number, boolean>>({});
   const [isSaving, setIsSaving] = useState(false);
-  const supabase = createClient();
 
   const isHierarchyLocked = role.position <= userLowestPosition && !isUserSuperAdmin;
 
@@ -55,21 +55,20 @@ export default function PermissionsTab({ role, allPermissions, isSelectedRoleSup
     if (isSelectedRoleSuperAdmin || isHierarchyLocked) return;
     setIsSaving(true);
     try {
-      // For each permission, upsert the record
+      // Map to service expectations: { permissionId, enabled }
       const updates = Object.entries(pendingPermissions).map(([id, enabled]) => ({
-        role_id: role.id,
-        permission_id: parseInt(id),
+        permissionId: parseInt(id),
         enabled
       }));
 
-      const { error } = await supabase
-        .from("role_permissions")
-        .upsert(updates, { onConflict: 'role_id,permission_id' });
+      const res = await api.put(`/roles/${role.id}/permissions`, { permissions: updates });
+      if (!res.success) throw new Error(res.message);
       
-      if (error) throw error;
+      toast.success("Permissions updated successfully");
       onUpdate();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to save permissions:", err);
+      toast.error(err.message || "Failed to save permissions");
     } finally {
       setIsSaving(false);
     }

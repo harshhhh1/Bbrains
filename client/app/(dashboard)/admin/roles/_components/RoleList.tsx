@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Plus, Shield, Lock, Search, GripVertical } from "lucide-react";
 import type { Role } from "../_types";
-import { createClient } from "@/services/supabase/client";
+import { api } from "@/services/api/client";
 import {
   DndContext,
   closestCenter,
@@ -21,6 +21,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { toast } from "sonner";
 
 interface RoleListProps {
   roles: Role[];
@@ -66,9 +67,9 @@ function SortableRoleItem({
         onClick={onSelect}
         className={`flex w-full items-center justify-between rounded-lg p-2 text-left transition-colors ${
           isSelected
-            ? "bg-muted/80 text-foreground"
+            ? "bg-primary/10 text-primary"
             : isLocked
-            ? "text-muted-foreground/50 cursor-default opacity-70"
+            ? "text-muted-foreground/50 opacity-70"
             : "text-muted-foreground hover:bg-muted hover:text-foreground"
         }`}
       >
@@ -120,7 +121,6 @@ export default function RoleList({
   const [search, setSearch] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
-  const supabase = createClient();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -137,30 +137,24 @@ export default function RoleList({
     if (!collegeId) return;
     setIsCreating(true);
     try {
-      // Find current max position to put new role at the bottom (but before student if possible)
       const maxPos = Math.max(...roles.map(r => r.position < 100 ? r.position : 0), 4);
       
-      const { data, error } = await supabase
-        .from("role")
-        .insert({
-          name: "New Role",
-          color: "#99aab5",
-          college_id: collegeId,
-          is_system: false,
-          is_default: false,
-          position: maxPos + 1,
-        })
-        .select("id:role_id")
-        .single();
+      const res = await api.post<any>("/roles", {
+        name: "New Role",
+        color: "#99aab5",
+        position: maxPos + 1,
+      });
 
-      if (error) throw error;
+      if (!res.success) throw new Error(res.message);
 
+      toast.success("Role created successfully");
       onRoleCreated();
-      if (data) {
-        onSelectRole(data.id);
+      if (res.data) {
+        onSelectRole(res.data.id);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to create role:", err);
+      toast.error(err.message || "Failed to create role");
     } finally {
       setIsCreating(false);
     }
@@ -176,7 +170,6 @@ export default function RoleList({
     if (oldIndex === -1 || newIndex === -1) return;
 
     const draggedRole = sortedRoles[oldIndex];
-    const targetRole = sortedRoles[newIndex];
 
     // Hierarchy check for dragging
     if (draggedRole.name.toLowerCase() === "superadmin" && !isUserSuperAdmin) return;
@@ -187,21 +180,21 @@ export default function RoleList({
     setIsReordering(true);
     try {
       const updates = newOrder.map((role, index) => ({
-        role_id: role.id,
-        position: index + 1, // Keep it 1-based
+        id: role.id,
+        position: index + 1,
       }));
 
       // In a real app, we'd use a single RPC or batch update
-      for (const update of updates) {
-        await supabase
-          .from("role")
-          .update({ position: update.position })
-          .eq("role_id", update.role_id);
-      }
+      // For now, sequentially or Promise.all
+      await Promise.all(updates.map(u => 
+        api.put(`/roles/${u.id}`, { position: u.position })
+      ));
 
+      toast.success("Order updated");
       onRoleCreated();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to reorder roles:", err);
+      toast.error("Failed to reorder roles");
     } finally {
       setIsReordering(false);
     }
@@ -263,11 +256,6 @@ export default function RoleList({
               const isSelected = selectedRoleId === role.id;
               const isSuperAdminRole = role.name.toLowerCase() === "superadmin";
               
-              // LOGIC: Higher position (lower number) manages lower position (higher number).
-              // SuperAdmin (1) is ALWAYS locked for selection by ANYONE (even itself).
-              // Other roles are locked if their position is LESS THAN OR EQUAL TO yours.
-              // Example: Admin (2) can manage Manager (3) because 3 > 2.
-              // Example: Admin (2) CANNOT manage Admin (2) because 2 <= 2.
               const isLocked =
                 isSuperAdminRole ||
                 (role.position <= userLowestPosition && !isUserSuperAdmin);
@@ -278,11 +266,7 @@ export default function RoleList({
                   role={role}
                   isSelected={isSelected}
                   isLocked={isLocked}
-                  onSelect={() => {
-                    if (!isLocked) {
-                      onSelectRole(role.id);
-                    }
-                  }}
+                  onSelect={() => onSelectRole(role.id)}
                 />
               );
             })}

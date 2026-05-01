@@ -11,6 +11,7 @@ import {
     findUserByEmail,
     findUserByUsername
 } from "./user.service.js";
+import { resolveCollegeId } from "../../utils/collegeUtils.js";
 import { processCSVFile, validateCSVData, generateUsername, generatePassword } from "../../utils/csvProcessor.js";
 import bcrypt from "bcrypt";
 import { sendSuccess, sendPaginated, sendError, sendCreated } from "../../utils/response.js";
@@ -77,35 +78,6 @@ const formatZodErrors = (error) => {
     }));
 };
 
-const resolveCollegeId = async (requestedCollegeId, fallbackCollegeId, userType = null) => {
-    if (
-        userType !== 'superadmin' &&
-        userType !== 'bbrains_official' &&
-        requestedCollegeId !== undefined &&
-        requestedCollegeId !== null &&
-        fallbackCollegeId &&
-        Number(requestedCollegeId) !== Number(fallbackCollegeId)
-    ) {
-        throw new Error('You can only manage users within your own college');
-    }
-
-    const collegeId = requestedCollegeId ?? fallbackCollegeId;
-
-    if (!collegeId) {
-        throw new Error('No college is associated with the current admin account');
-    }
-
-    const college = await prisma.college.findUnique({
-        where: { id: Number(collegeId) },
-        select: { id: true }
-    });
-
-    if (!college) {
-        throw new Error(`College ${collegeId} does not exist`);
-    }
-
-    return college.id;
-};
 
 const findCourseInCollege = async (tx, courseId, collegeId, notFoundMessage) => {
     const course = await tx.course.findUnique({
@@ -226,12 +198,12 @@ export const getMe = async (req, res) => {
             if (college) {
                 userData.collegeId = college.id;
                 userData.college = college;
-                userData.type = 'admin';
+                userData.type = req.user.originalType || userData.type; // Preserve superadmin status
                 userData.isImpersonating = true;
                 userData.originalType = req.user.originalType;
                 // Add admin role to roles array for frontend sidebar logic
                 if (!userData.roles) userData.roles = [];
-                userData.roles = [{ role: { name: 'admin' } }];
+                userData.roles = [{ role: { name: 'Admin' } }];
             }
         }
 
@@ -239,6 +211,50 @@ export const getMe = async (req, res) => {
     } catch (error) {
         console.error('getMe error:', error);
         return sendError(res, `Failed to fetch profile: ${error.message}`, 500);
+    }
+};
+
+// GET /users/permissions - Get current user's permissions
+export const getMyPermissions = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        
+        // Fetch user's roles and permissions
+        const userRoles = await prisma.userRoles.findMany({
+            where: { userId },
+            include: {
+                role: {
+                    include: {
+                        permissions: {
+                            include: {
+                                permission: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const activeRoles = userRoles.map(ur => ur.role);
+        const activeKeys = new Set();
+        
+        activeRoles.forEach(role => {
+            if (role?.permissions) {
+                role.permissions.forEach(rp => {
+                    if (rp.enabled && rp.permission?.key) {
+                        activeKeys.add(rp.permission.key);
+                    }
+                });
+            }
+        });
+
+        return sendSuccess(res, {
+            roles: activeRoles,
+            permissions: Array.from(activeKeys)
+        });
+    } catch (error) {
+        console.error('getMyPermissions error:', error);
+        return sendError(res, 'Failed to fetch permissions', 500);
     }
 };
 
@@ -281,7 +297,7 @@ export const getUserByUsername = async (req, res) => {
 // GET /users/students
 export const getStudents = async (req, res) => {
     try {
-        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type);
+        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type, req.user.originalType);
         const result = await getUsersByRole('student', collegeId);
         return sendSuccess(res, result);
     } catch (error) {
@@ -292,7 +308,7 @@ export const getStudents = async (req, res) => {
 // GET /users/teachers
 export const getTeachers = async (req, res) => {
     try {
-        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type);
+        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type, req.user.originalType);
         const result = await getUsersByRole('teacher', collegeId);
         return sendSuccess(res, result);
     } catch (error) {
@@ -303,7 +319,7 @@ export const getTeachers = async (req, res) => {
 // GET /users/staff
 export const getStaff = async (req, res) => {
     try {
-        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type);
+        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type, req.user.originalType);
         const result = await getUsersByRole('staff', collegeId);
         return sendSuccess(res, result);
     } catch (error) {
@@ -314,7 +330,7 @@ export const getStaff = async (req, res) => {
 // GET /users/managers
 export const getManagers = async (req, res) => {
     try {
-        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type);
+        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type, req.user.originalType);
         const managers = await prisma.user.findMany({
             where: {
                 collegeId,
@@ -383,7 +399,7 @@ export const getManagers = async (req, res) => {
 // GET /users/admins
 export const getAdmins = async (req, res) => {
     try {
-        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type);
+        const collegeId = await resolveCollegeId(req.query.collegeId, req.user.collegeId, req.user.type, req.user.originalType);
         const admins = await prisma.user.findMany({
             where: {
                 collegeId,
@@ -499,7 +515,7 @@ export const getTeacherByUsername = async (req, res) => {
 export const addTeacher = async (req, res) => {
     try {
         const validated = addTeacherSchema.parse(req.body);
-        const collegeId = await resolveCollegeId(validated.collegeId, req.user.collegeId);
+        const collegeId = await resolveCollegeId(validated.collegeId, req.user.collegeId, req.user.type, req.user.originalType);
         const [existingEmail, existingUsername] = await Promise.all([
             findUserByEmail(validated.email),
             findUserByUsername(validated.username),
@@ -526,7 +542,7 @@ export const addTeacher = async (req, res) => {
 export const addStudent = async (req, res) => {
     try {
         const validated = createStudentSchema.parse(req.body);
-        const collegeId = await resolveCollegeId(validated.collegeId, req.user.collegeId);
+        const collegeId = await resolveCollegeId(validated.collegeId, req.user.collegeId, req.user.type, req.user.originalType);
         const [existingEmail, existingUsername] = await Promise.all([
             findUserByEmail(validated.email),
             findUserByUsername(validated.username),
@@ -553,7 +569,7 @@ export const addStudent = async (req, res) => {
 export const addManager = async (req, res) => {
     try {
         const validated = createManagerSchema.parse(req.body);
-        const collegeId = await resolveCollegeId(validated.collegeId, req.user.collegeId);
+        const collegeId = await resolveCollegeId(validated.collegeId, req.user.collegeId, req.user.type, req.user.originalType);
         const [existingEmail, existingUsername] = await Promise.all([
             findUserByEmail(validated.email),
             findUserByUsername(validated.username),
@@ -580,7 +596,7 @@ export const addManager = async (req, res) => {
 export const addAdmin = async (req, res) => {
     try {
         const validated = createAdminSchema.parse(req.body);
-        const collegeId = await resolveCollegeId(validated.collegeId, req.user.collegeId, req.user.type);
+        const collegeId = await resolveCollegeId(validated.collegeId, req.user.collegeId, req.user.type, req.user.originalType);
         const [existingEmail, existingUsername] = await Promise.all([
             findUserByEmail(validated.email),
             findUserByUsername(validated.username),
@@ -611,7 +627,9 @@ export const updateTeacher = async (req, res) => {
             where: {
                 id,
                 type: 'teacher',
-                collegeId: req.user.collegeId,
+                ...(req.user.type !== 'superadmin' && req.user.originalType !== 'superadmin' 
+                    ? { collegeId: req.user.collegeId } 
+                    : {}),
             }
         });
         if (!user || user.type !== 'teacher') return sendError(res, 'Teacher not found', 404);
@@ -628,7 +646,7 @@ export const updateTeacher = async (req, res) => {
             classTeacherCourseId,
         } = req.body;
         const effectiveCollegeId = collegeId !== undefined
-            ? await resolveCollegeId(collegeId, req.user.collegeId)
+            ? await resolveCollegeId(collegeId, req.user.collegeId, req.user.type, req.user.originalType)
             : user.collegeId;
 
         await prisma.$transaction(async (tx) => {
@@ -684,7 +702,9 @@ export const updateStudent = async (req, res) => {
             where: {
                 id,
                 type: 'student',
-                collegeId: req.user.collegeId,
+                ...(req.user.type !== 'superadmin' && req.user.originalType !== 'superadmin' 
+                    ? { collegeId: req.user.collegeId } 
+                    : {}),
             }
         });
         if (!user || user.type !== 'student') return sendError(res, 'Student not found', 404);
@@ -700,7 +720,7 @@ export const updateStudent = async (req, res) => {
             classId,
         } = req.body;
         const effectiveCollegeId = collegeId !== undefined
-            ? await resolveCollegeId(collegeId, req.user.collegeId)
+            ? await resolveCollegeId(collegeId, req.user.collegeId, req.user.type, req.user.originalType)
             : user.collegeId;
 
         await prisma.$transaction(async (tx) => {

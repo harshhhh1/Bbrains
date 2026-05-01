@@ -2,7 +2,7 @@ import express from 'express';
 import { 
     createRole, getRoles, updateRole, deleteRole, 
     assignRole, removeRole, listUsers, listUserRoles,
-    getPermissions, updatePermissions, updateMembers
+    getAllData
 } from './role.controller.js';
 import verifyToken from '../../middleware/auth.middleware.js';
 import authorize from '../../middleware/authorize.js';
@@ -10,11 +10,9 @@ import authorize from '../../middleware/authorize.js';
 const router = express.Router();
 
 // Role CRUD (admin only)
+router.get('/all-data', verifyToken, authorize('admin', 'superadmin'), getAllData);
 router.post('/', verifyToken, authorize('admin', 'superadmin'), createRole);
 router.get('/', verifyToken, authorize('admin', 'superadmin'), getRoles);
-router.get('/permissions', verifyToken, authorize('admin', 'superadmin'), getPermissions);
-router.put('/:id/permissions', verifyToken, authorize('admin', 'superadmin'), updatePermissions);
-router.put('/:id/members', verifyToken, authorize('admin', 'superadmin'), updateMembers);
 router.put('/:id', verifyToken, authorize('admin', 'superadmin'), updateRole);
 router.delete('/:id', verifyToken, authorize('admin', 'superadmin'), deleteRole);
 
