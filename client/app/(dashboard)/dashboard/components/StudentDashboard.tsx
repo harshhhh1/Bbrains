@@ -6,8 +6,10 @@ import { AttendanceCard } from "@/features/dashboard/components/AttendanceCard";
 import { DashboardContent } from "@/components/dashboard-content";
 import { LevelWidget } from "@/features/dashboard/components/LevelWidget";
 import { CurrentDate } from "@/features/dashboard/components/CurrentDate";
+import { UpcomingExamsAlert } from "@/features/dashboard/components/UpcomingExamsAlert";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
+
 
 // Lazy load heavy cards
 const LeaderboardCard = dynamic(() => import("@/features/dashboard/components/LeaderboardCard").then(mod => mod.LeaderboardCard), {
@@ -70,6 +72,9 @@ export function StudentDashboard({
         </div>
         <CurrentDate />
       </div>
+
+      {/* Upcoming Exam Alert — auto-hides when no exams within 7 days */}
+      <UpcomingExamsAlert />
 
       {/* Top row cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

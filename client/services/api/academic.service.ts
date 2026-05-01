@@ -32,10 +32,14 @@ export const academicApi = {
   updateExam: (id: string | number, data: any) => api.put<any>(`/academic/exams/${id}`, data),
   getMyExamResults: () => api.get<any[]>("/academic/exams/my"),
   getMyExamResultsBySemester: (semester: number) => api.get<any[]>(`/academic/exams/results/me?semester=${semester}`),
+  getUpcomingExams: () => api.get<any[]>("/academic/exams/upcoming"),
   getCourseSemesters: (courseId: number) => api.get<any[]>(`/courses/${courseId}/semesters`),
   createExamResult: (examId: number, data: { studentId: string; marksObtained: number; remark?: string }) => 
     api.post<any>(`/academic/exams/${examId}/results`, data),
   getAllResults: (params?: any) => api.get<any[]>(`/academic/exams/results/all`, { params }),
+  getCourseStudents: (courseId: number) => api.get<any[]>(`/academic/exams/course-students/${courseId}`),
+  saveExamResult: (examId: number, data: { studentId: string; marksObtained: number; remark?: string }) =>
+    api.post<any>(`/academic/exams/${examId}/results/bulk`, data),
   
   getAttendance: (date: string) => api.get<any[]>(`/attendance?date=${date}`),
   getAttendanceByDate: (date: string) => api.get<any[]>(`/attendance?date=${date}`),
