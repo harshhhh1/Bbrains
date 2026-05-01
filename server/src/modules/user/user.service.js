@@ -101,6 +101,7 @@ const userSummarySelect = {
                     id: true,
                     name: true,
                     description: true,
+                    position: true,
                 }
             }
         }
@@ -170,6 +171,7 @@ const getUserDetailsByID = async (id) => {
                         select: {
                             name: true,
                             description: true,
+                            position: true,
                         },
                     },
                 },

@@ -2,44 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { createClient } from "@/services/supabase/client";
 import { useUser } from "@/hooks/use-user";
 import RoleList from "../_components/RoleList";
 import RoleDetail from "../_components/RoleDetail";
 import type { Role, Permission, UserWithRoles } from "../_types";
-
-type RoleRelation = {
-  position?: number | null;
-  name?: string | null;
-};
-
-type RawRole = Role & {
-  is_default: boolean;
-  is_system: boolean;
-  college_id?: number | null;
-};
-
-type RawUser = {
-  user_id: string;
-  username: string;
-  user_details?: Array<{
-    first_name?: string | null;
-    last_name?: string | null;
-    avatar?: string | null;
-  }>;
-  user_roles: Array<{
-    role_id: number;
-  }>;
-};
-
-type RawUserRole = {
-  role_id: number;
-  role: RoleRelation | RoleRelation[] | null;
-};
+import { api } from "@/services/api/client";
 
 export default function RolesPage() {
   const { user, loading: userLoading } = useUser();
-  const supabase = createClient();
   
   const [roles, setRoles] = useState<Role[]>([]);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
@@ -52,135 +22,66 @@ export default function RolesPage() {
   const [userLowestPosition, setUserLowestPosition] = useState<number>(Infinity);
   const [isUserSuperAdmin, setIsUserSuperAdmin] = useState(false);
 
-  const normalizeRoleRelation = (roleRelation: RoleRelation | RoleRelation[] | null): RoleRelation | null => {
-    if (Array.isArray(roleRelation)) {
-      return roleRelation[0] ?? null;
-    }
-
-    return roleRelation ?? null;
-  };
-
-  const loadData = useCallback(async (collegeId: number, currentUser: NonNullable<typeof user>) => {
+  const loadData = useCallback(async (collegeId: number, currentUser: any) => {
     setLoading(true);
     setLoadError(null);
     try {
-      // Fetch Roles (global + college-specific)
-      const { data: rolesData, error: rolesError } = await supabase
-        .from("role")
-        .select(`
-          id:role_id, 
-          name, 
-          description, 
-          color, 
-          is_default, 
-          is_system, 
-          position, 
-          college_id,
-          permissions:role_permissions (
-            enabled,
-            permission:permission ( 
-              id:permission_id, 
-              key, 
-              label, 
-              description, 
-              category 
-            )
-          ),
-          _count:user_roles ( count )
-        `)
-        .or(`college_id.eq.${collegeId},college_id.is.null`)
-        .order('position', { ascending: true });
+      // Fetch Roles via Server API
+      const rolesResp = await api.get<any[]>("/roles");
+      if (!rolesResp.success) throw new Error(rolesResp.message);
 
-      if (rolesError) throw rolesError;
-
-      // Map snake_case to camelCase
-      const formattedRoles = (rolesData ?? []).map((r: RawRole) => ({
+      const formattedRoles = (rolesResp.data ?? []).map((r: any) => ({
         ...r,
-        isDefault: r.is_default,
-        isSystem: r.is_system,
-        collegeId: r.college_id,
+        // Ensure structure matches frontend expectations
+        permissions: r.permissions?.map((rp: any) => ({
+          enabled: rp.enabled,
+          permission: rp.permission
+        })) || []
       })) as Role[];
 
       setRoles(formattedRoles);
 
-      // Fetch all available permissions for the matrix
-      const { data: permsData, error: permsError } = await supabase
-        .from("permission")
-        .select(`
-          id:permission_id,
-          key,
-          label,
-          description,
-          category
-        `);
-      
-      if (permsError) throw permsError;
-      console.log("Fetched permissions:", permsData?.length);
-      setAllPermissions(permsData as Permission[]);
+      // Fetch all available permissions
+      const permsResp = await api.get<Permission[]>("/roles/permissions");
+      if (permsResp.success) {
+        setAllPermissions(permsResp.data || []);
+      }
 
-      // For managing members, we would typically paginate, but for now we fetch users in the college
-      // Since Prisma uses `user`, but Supabase query is direct:
-      const { data: usersData, error: usersError } = await supabase
-        .from("user")
-        .select(`
-          user_id, username,
-          user_details ( first_name, last_name, avatar ),
-          user_roles ( role_id )
-        `)
-        .eq("college_id", collegeId);
-      
-      if (!usersError && usersData) {
-        const formattedUsers = (usersData as RawUser[]).map((u) => ({
-          id: u.user_id,
+      // Fetch users with roles
+      const usersResp = await api.get<any[]>("/roles/users");
+      if (usersResp.success && usersResp.data) {
+        const formattedUsers = usersResp.data.map((u) => ({
+          id: u.id,
           username: u.username,
-          firstName: u.user_details?.[0]?.first_name || "",
-          lastName: u.user_details?.[0]?.last_name || "",
-          avatar: u.user_details?.[0]?.avatar ?? undefined,
-          roles: u.user_roles.map((ur) => ur.role_id.toString())
+          email: u.email,
+          firstName: u.userDetails?.firstName || "",
+          lastName: u.userDetails?.lastName || "",
+          avatar: u.userDetails?.avatar ?? undefined,
+          roles: u.roles?.map((ur: any) => ur.role?.id?.toString()) || []
         })) as UserWithRoles[];
         setUsers(formattedUsers);
       }
 
-      // Fetch current user's role positions for hierarchy
-      const { data: userRolesData, error: userRolesError } = await supabase
-        .from("user_roles")
-        .select("role_id, role:role(position, name)")
-        .eq("user_id", currentUser.id);
+      // Set hierarchy info
+      // SuperAdmin check
+      const isSuper = currentUser.type === 'superadmin' || 
+                     currentUser.roles?.some((r: any) => r.role?.name?.toLowerCase() === "superadmin");
       
-      if (userRolesError) console.error("Error fetching user roles for hierarchy:", userRolesError);
+      // Get min position from user's roles
+      const userRoles = currentUser.roles || [];
+      const positions = userRoles.map((ur: any) => ur.role?.position ?? 1000);
+      const minPos = positions.length > 0 ? Math.min(...positions) : 1000;
+      
+      setUserLowestPosition(isSuper ? 0 : minPos);
+      setIsUserSuperAdmin(isSuper);
 
-      if (userRolesData && userRolesData.length > 0) {
-        const normalizedUserRoles = (userRolesData as RawUserRole[]).map((ur) =>
-          normalizeRoleRelation(ur.role)
-        );
-        const positions = normalizedUserRoles.map((role) => role?.position ?? 1000);
-        const minPos = Math.min(...positions);
-        const isSuper = normalizedUserRoles.some((role) =>
-          role?.name?.toLowerCase() === "superadmin"
-        );
-        
-        console.log("Hierarchy Debug:", {
-          userId: currentUser.id,
-          roles: normalizedUserRoles.map((role) => role?.name),
-          minPos,
-          isSuper
-        });
-        
-        setUserLowestPosition(minPos);
-        setIsUserSuperAdmin(isSuper);
-      } else {
-        console.warn("No roles found for current user, hierarchy management will be restricted.");
-        setUserLowestPosition(1000); // Default to very low authority
-        setIsUserSuperAdmin(false);
-      }
-
-    } catch (error) {
-      console.error("Failed to load roles data:", error);
-      setLoadError("Failed to load roles. Check console/network, and verify database columns + RLS policies.");
+    } catch (error: any) {
+      console.error("Failed to load roles data:", error?.message || error);
+      setLoadError(`Failed to load roles: ${error?.message || "Internal Server Error"}. Check backend logs.`);
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     if (userLoading) return;
@@ -191,26 +92,7 @@ export default function RolesPage() {
 
     const collegeId = user.collegeId;
     loadData(collegeId, user);
-
-    // Subscribe to realtime role updates
-    const channel = supabase
-      .channel("admin_roles_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "role" },
-        () => loadData(collegeId, user)
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "role_permissions" },
-        () => loadData(collegeId, user)
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [loadData, user, userLoading, supabase]);
+  }, [loadData, user, userLoading]);
 
   const handleSelectRole = (id: number) => {
     setSelectedRoleId(id);

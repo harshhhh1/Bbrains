@@ -15,6 +15,7 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   message?: string;
   error?: string;
+  errors?: any[];
   pagination?: {
     page: number;
     limit: number;
@@ -28,6 +29,7 @@ export interface ApiError {
   success: false;
   message: string;
   error?: string;
+  errors?: any[];
 }
 
 export async function getAuthToken(): Promise<string | null> {
@@ -115,6 +117,7 @@ export async function makeRequest<T>(
         success: false,
         message: data.message || 'An error occurred',
         error: data.error || data.message,
+        errors: data.errors,
       };
     }
 

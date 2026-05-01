@@ -1,27 +1,21 @@
 import { z } from 'zod';
 import {
-    createRoleRecord, getAllRoles, updateRoleRecord,
-    deleteRoleRecord, assignRoleToUser, removeRoleFromUser, getUserRoles, getUsersWithRoles,
-    getAllPermissions, updateRolePermissions, updateRoleMembers
+    createRoleRecord, getAllRoles, getAllPermissions, updateRoleRecord,
+    deleteRoleRecord, assignRoleToUser, removeRoleFromUser, getUserRoles, getUsersWithRoles
 } from './role.service.js';
 import { sendSuccess, sendCreated, sendError } from '../../utils/response.js';
 import { createAuditLog } from '../../utils/auditLog.js';
 
 const roleSchema = z.object({
     name: z.string().min(1).max(50),
-    description: z.string().max(255).optional(),
-    color: z.string().max(7).optional(),
-    position: z.number().optional()
+    description: z.string().max(255).optional()
 });
 
 // POST /roles
 export const createRole = async (req, res) => {
     try {
         const validated = roleSchema.parse(req.body);
-        const role = await createRoleRecord({
-            ...validated,
-            collegeId: req.user.collegeId
-        });
+        const role = await createRoleRecord(validated);
         await createAuditLog(req.user.id, 'SYSTEM', 'CREATE', 'Role', role.id);
         return sendCreated(res, role, 'Role created successfully');
     } catch (error) {
@@ -37,18 +31,23 @@ export const getRoles = async (req, res) => {
         const roles = await getAllRoles(req.user.collegeId);
         return sendSuccess(res, roles);
     } catch (error) {
-        console.error('getRoles error:', error);
         return sendError(res, 'Failed to fetch roles', 500);
     }
 };
 
-// GET /roles/permissions
-export const getPermissions = async (req, res) => {
+// GET /roles/all-data
+export const getAllData = async (req, res) => {
     try {
-        const permissions = await getAllPermissions();
-        return sendSuccess(res, permissions);
+        const collegeId = req.user.collegeId;
+        const [roles, permissions, users] = await Promise.all([
+            getAllRoles(collegeId),
+            getAllPermissions(),
+            getUsersWithRoles(collegeId)
+        ]);
+        return sendSuccess(res, { roles, permissions, users });
     } catch (error) {
-        return sendError(res, 'Failed to fetch permissions', 500);
+        console.error("Roles data error:", error);
+        return sendError(res, 'Failed to fetch comprehensive roles data', 500);
     }
 };
 
@@ -74,40 +73,6 @@ export const updateRole = async (req, res) => {
     } catch (error) {
         if (error.code === 'P2025') return sendError(res, 'Role not found', 404);
         return sendError(res, 'Failed to update role', 500);
-    }
-};
-
-// PUT /roles/:id/permissions
-export const updatePermissions = async (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        if (isNaN(id)) return sendError(res, 'Invalid role ID', 400);
-        const { permissions } = req.body;
-        if (!Array.isArray(permissions)) return sendError(res, 'Permissions must be an array', 400);
-
-        await updateRolePermissions(id, permissions);
-        await createAuditLog(req.user.id, 'SYSTEM', 'UPDATE', 'RolePermissions', id);
-        return sendSuccess(res, null, 'Permissions updated successfully');
-    } catch (error) {
-        console.error('updatePermissions error:', error);
-        return sendError(res, 'Failed to update permissions', 500);
-    }
-};
-
-// PUT /roles/:id/members
-export const updateMembers = async (req, res) => {
-    try {
-        const id = parseInt(req.params.id);
-        if (isNaN(id)) return sendError(res, 'Invalid role ID', 400);
-        const { userIds } = req.body;
-        if (!Array.isArray(userIds)) return sendError(res, 'userIds must be an array', 400);
-
-        await updateRoleMembers(id, userIds);
-        await createAuditLog(req.user.id, 'SYSTEM', 'UPDATE', 'RoleMembers', id);
-        return sendSuccess(res, null, 'Members updated successfully');
-    } catch (error) {
-        console.error('updateMembers error:', error);
-        return sendError(res, 'Failed to update members', 500);
     }
 };
 
@@ -150,16 +115,22 @@ export const removeRole = async (req, res) => {
         await createAuditLog(req.user.id, 'SYSTEM', 'DELETE', 'UserRoles', `${userId}-${roleId}`);
         return sendSuccess(res, null, 'Role removed successfully');
     } catch (error) {
+        if (error.code === 'P2025') return sendError(res, 'Role assignment not found', 404);
         return sendError(res, 'Failed to remove role', 500);
     }
 };
 
+// GET /users/:userId/roles
 export const listUserRoles = async (req, res) => {
     try {
         const { userId } = req.params;
+        // Self or admin
+        if (userId !== req.user.id && req.user.type !== 'admin') {
+            return sendError(res, 'Not authorized', 403);
+        }
         const roles = await getUserRoles(userId);
         return sendSuccess(res, roles);
     } catch (error) {
-        return sendError(res, 'Failed to fetch user roles', 500);
+        return sendError(res, 'Failed to fetch roles', 500);
     }
 };

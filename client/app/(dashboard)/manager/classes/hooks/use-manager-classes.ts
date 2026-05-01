@@ -123,19 +123,27 @@ export function useManagerClassesPage() {
       description: form.description.trim() || undefined,
       standard: form.standard.trim(),
       subjects,
-      feePerStudent: Number(form.feePerStudent || 0),
-      durationValue: Number(form.durationValue || 0),
+      feePerStudent: form.feePerStudent ? Number(form.feePerStudent) : undefined,
+      durationValue: form.durationValue ? Number(form.durationValue) : undefined,
       durationUnit: form.durationUnit,
-      studentCapacity: Number(form.studentCapacity || 0),
+      studentCapacity: form.studentCapacity ? Number(form.studentCapacity) : undefined,
       timetable: timetable.map((entry) => ({
         ...entry,
         subject: entry.subject.trim(),
-        room: entry.room?.trim() || "",
+        room: entry.room?.trim() || null,
       })),
     };
 
-    if (payload.feePerStudent < 0 || payload.durationValue <= 0 || payload.studentCapacity <= 0) {
-      toast.error("Fees, duration, and student capacity must be valid positive values");
+    if (payload.feePerStudent !== undefined && payload.feePerStudent < 0) {
+      toast.error("Fee per student cannot be negative");
+      return;
+    }
+    if (payload.durationValue !== undefined && payload.durationValue <= 0) {
+      toast.error("Duration must be a positive number");
+      return;
+    }
+    if (payload.studentCapacity !== undefined && payload.studentCapacity <= 0) {
+      toast.error("Student capacity must be at least 1");
       return;
     }
 
@@ -146,7 +154,14 @@ export function useManagerClassesPage() {
         : await courseApi.createCourse(payload);
 
       if (!response.success || !response.data) {
-        toast.error(response.message || "Failed to save class");
+        if (response.errors && Array.isArray(response.errors)) {
+          console.table(response.errors);
+          response.errors.forEach((err: any) => {
+            toast.error(`${err.field}: ${err.message}`);
+          });
+        } else {
+          toast.error(response.message || "Failed to save class");
+        }
         return;
       }
 

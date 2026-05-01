@@ -47,7 +47,7 @@ export const sidebarItems = [
     { "title": "Colleges", "url": "/colleges", "icon": "Building2", "access": ["superadmin"] },
     { "title": "Roles & Access", "url": "/admin/roles", "icon": "Shield", "access": ["admin"] },
     { "title": "Sidebar Config", "url": "/admin/config/sidebar-access", "icon": "Settings2", "access": ["admin"] },
-    { "title": "Academics", "url": "/admin/academics", "icon": "GraduationCap", "access": ["admin", "manager"] },
+    { "title": "Academics", "url": "/academics", "icon": "GraduationCap", "access": ["admin", "manager"] },
     { "title": "Products", "url": "/products", "icon": "ShoppingBag", "access": ["admin", "teacher", "manager"] },
     // { "title": "Statistics", "url": "/admin/stats", "icon": "BarChart3", "access": ["admin",  ] },
     { "title": "Audit Log", "url": "/admin/audit-log", "icon": "FileText", "access": ["admin", , "teacher"] },

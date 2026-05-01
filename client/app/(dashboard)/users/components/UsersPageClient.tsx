@@ -84,13 +84,13 @@ export default function UsersPageClient() {
       toast.success(`Successfully imported ${responseData.data?.count} users`);
       await loadUsers();
     } catch (error: any) {
-      setImportResult({ 
+      setImportResult({
         successCount: 0,
-        error: { 
-          row: 0, 
-          field: 'unknown', 
-          message: error.message || 'Failed to import users' 
-        } 
+        error: {
+          row: 0,
+          field: 'unknown',
+          message: error.message || 'Failed to import users'
+        }
       });
       toast.error(error.message || 'Failed to import users');
     } finally {
@@ -122,7 +122,7 @@ export default function UsersPageClient() {
         api.get<any[]>("/roles"),
         api.get<any>("/courses")
       ]);
-      
+
       if (rolesRes.success) setRoles(rolesRes.data || []);
       if (coursesRes.success) setCourses(coursesRes.data?.courses || []);
     } catch (error) {
@@ -152,7 +152,7 @@ export default function UsersPageClient() {
       return true;
     });
   }, [search, typeFilter, users]);
-  
+
   const handleFixRoles = async () => {
     try {
       setIsFixingRoles(true);
@@ -192,7 +192,7 @@ export default function UsersPageClient() {
 
     try {
       setSubmitting(true);
-      
+
       let endpoint = "/user/staff";
       if (form.type === "student") endpoint = "/users/students";
       else if (form.type === "teacher") endpoint = "/users/teachers";
@@ -209,7 +209,7 @@ export default function UsersPageClient() {
         dob: form.dob || "1995-01-01",
         phone: form.phone || undefined,
         roleIds: form.roleIds,
-        ...( (pageCollegeId || form.collegeId) ? { collegeId: Number(pageCollegeId || form.collegeId) } : {}),
+        ...((pageCollegeId || form.collegeId) ? { collegeId: Number(pageCollegeId || form.collegeId) } : {}),
       };
 
       if (form.type === "student") {

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, UserMinus, UserPlus } from "lucide-react";
 import type { Role, UserWithRoles } from "../_types";
-import { createClient } from "@/services/supabase/client";
+import { api } from "@/services/api/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 interface ManageMembersTabProps {
   role: Role;
@@ -15,68 +16,93 @@ interface ManageMembersTabProps {
   isUserSuperAdmin: boolean;
 }
 
-export default function ManageMembersTab({ role, allUsers, isSuperAdmin, onUpdate, userLowestPosition, isUserSuperAdmin }: ManageMembersTabProps) {
+export default function ManageMembersTab({ 
+  role, 
+  allUsers, 
+  isSuperAdmin, 
+  onUpdate, 
+  userLowestPosition, 
+  isUserSuperAdmin 
+}: ManageMembersTabProps) {
   const [search, setSearch] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const supabase = createClient();
-
-  const members = allUsers.filter((u) => u.roles.includes(role.id.toString()));
-  const nonMembers = allUsers.filter((u) => !u.roles.includes(role.id.toString()));
+  // Local state for members: Array of user IDs
+  const [pendingMemberIds, setPendingMemberIds] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const isHierarchyLocked = role.position <= userLowestPosition && !isUserSuperAdmin;
 
-  const handleAddMember = async (userId: string) => {
+  // Initialize local state from role members
+  useEffect(() => {
+    const currentMemberIds = allUsers
+      .filter((u) => u.roles.includes(role.id.toString()))
+      .map(u => u.id);
+    setPendingMemberIds(currentMemberIds);
+  }, [role, allUsers]);
+
+  const handleAddMember = (userId: string) => {
     if (isSuperAdmin || isHierarchyLocked) return;
-    setIsProcessing(true);
+    setPendingMemberIds(prev => [...prev, userId]);
+  };
+
+  const handleRemoveMember = (userId: string) => {
+    if (isSuperAdmin || isHierarchyLocked) return;
+    setPendingMemberIds(prev => prev.filter(id => id !== userId));
+  };
+
+  const handleReset = () => {
+    const currentMemberIds = allUsers
+      .filter((u) => u.roles.includes(role.id.toString()))
+      .map(u => u.id);
+    setPendingMemberIds(currentMemberIds);
+  };
+
+  const handleSave = async () => {
+    if (isSuperAdmin || isHierarchyLocked) return;
+    setIsSaving(true);
     try {
-      const { error } = await supabase
-        .from("user_roles")
-        .insert({ user_id: userId, role_id: role.id });
+      const res = await api.put(`/roles/${role.id}/members`, { userIds: pendingMemberIds });
+      if (!res.success) throw new Error(res.message);
       
-      if (error) throw error;
+      toast.success("Members updated successfully");
       onUpdate();
-    } catch (err) {
-      console.error("Failed to add member:", err);
+    } catch (err: any) {
+      console.error("Failed to save members:", err);
+      toast.error(err.message || "Failed to save members");
     } finally {
-      setIsProcessing(false);
+      setIsSaving(false);
     }
   };
 
-  const handleRemoveMember = async (userId: string) => {
-    if (isSuperAdmin || isHierarchyLocked) return;
-    setIsProcessing(true);
-    try {
-      const { error } = await supabase
-        .from("user_roles")
-        .delete()
-        .match({ user_id: userId, role_id: role.id });
-      
-      if (error) throw error;
-      onUpdate();
-    } catch (err) {
-      console.error("Failed to remove member:", err);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  // Check for changes
+  const originalMemberIds = allUsers
+    .filter((u) => u.roles.includes(role.id.toString()))
+    .map(u => u.id);
+  
+  const hasChanges = 
+    pendingMemberIds.length !== originalMemberIds.length ||
+    pendingMemberIds.some(id => !originalMemberIds.includes(id));
 
-  const filteredMembers = members.filter((u) =>
-    (u.firstName + " " + u.lastName).toLowerCase().includes(search.toLowerCase()) ||
-    u.username.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredMembers = allUsers
+    .filter(u => pendingMemberIds.includes(u.id))
+    .filter((u) =>
+      (u.firstName + " " + u.lastName).toLowerCase().includes(search.toLowerCase()) ||
+      u.username.toLowerCase().includes(search.toLowerCase())
+    );
 
-  const filteredNonMembers = nonMembers.filter((u) =>
-    (u.firstName + " " + u.lastName).toLowerCase().includes(search.toLowerCase()) ||
-    u.username.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredNonMembers = allUsers
+    .filter(u => !pendingMemberIds.includes(u.id))
+    .filter((u) =>
+      (u.firstName + " " + u.lastName).toLowerCase().includes(search.toLowerCase()) ||
+      u.username.toLowerCase().includes(search.toLowerCase())
+    );
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col relative">
       <div className="border-b border-border/60 p-4 shrink-0 bg-muted/20">
         <div className="relative">
           <input
             type="text"
-            placeholder="Search members"
+            placeholder="Search users"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-lg bg-muted/50 py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground/60 outline-none border border-transparent focus:border-primary/20 transition-colors"
@@ -85,7 +111,7 @@ export default function ManageMembersTab({ role, allUsers, isSuperAdmin, onUpdat
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-8">
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-32">
         {isSuperAdmin && (
           <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20">
             SuperAdmin membership is managed securely at the database level.
@@ -101,7 +127,7 @@ export default function ManageMembersTab({ role, allUsers, isSuperAdmin, onUpdat
         {/* Current Members */}
         <div className="space-y-4">
           <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            Members ({members.length})
+            Members ({pendingMemberIds.length})
           </h3>
           <div className="space-y-1">
             {filteredMembers.length > 0 ? (
@@ -110,7 +136,7 @@ export default function ManageMembersTab({ role, allUsers, isSuperAdmin, onUpdat
                   <div className="flex items-center gap-3">
                     <Avatar className="size-9 border border-border/60">
                       <AvatarImage src={user.avatar} alt={user.username} />
-                      <AvatarFallback name={user.username}>
+                      <AvatarFallback>
                         {user.firstName?.charAt(0) || user.username?.charAt(0) || "?"}
                       </AvatarFallback>
                     </Avatar>
@@ -123,7 +149,7 @@ export default function ManageMembersTab({ role, allUsers, isSuperAdmin, onUpdat
                   </div>
                   <button
                     onClick={() => handleRemoveMember(user.id)}
-                    disabled={isSuperAdmin || isHierarchyLocked || isProcessing}
+                    disabled={isSuperAdmin || isHierarchyLocked || isSaving}
                     className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all disabled:opacity-50"
                     title="Remove from role"
                   >
@@ -150,7 +176,7 @@ export default function ManageMembersTab({ role, allUsers, isSuperAdmin, onUpdat
                     <div className="flex items-center gap-3">
                       <Avatar className="size-9 border border-border/60">
                         <AvatarImage src={user.avatar} alt={user.username} />
-                        <AvatarFallback name={user.username}>
+                        <AvatarFallback>
                           {user.firstName?.charAt(0) || user.username?.charAt(0) || "?"}
                         </AvatarFallback>
                       </Avatar>
@@ -163,7 +189,7 @@ export default function ManageMembersTab({ role, allUsers, isSuperAdmin, onUpdat
                     </div>
                     <button
                       onClick={() => handleAddMember(user.id)}
-                      disabled={isProcessing}
+                      disabled={isSaving}
                       className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-all disabled:opacity-50"
                       title="Add to role"
                     >
@@ -178,6 +204,29 @@ export default function ManageMembersTab({ role, allUsers, isSuperAdmin, onUpdat
           </div>
         )}
       </div>
+
+      {/* Unsaved Changes Bar */}
+      {hasChanges && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl animate-in slide-in-from-bottom-5 rounded-2xl bg-card p-4 shadow-2xl border border-border/60 flex items-center justify-between z-50">
+          <p className="text-sm text-foreground font-semibold pl-2">Careful — you have unsaved changes!</p>
+          <div className="flex gap-2">
+            <button
+              onClick={handleReset}
+              disabled={isSaving}
+              className="px-4 py-2 text-sm font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="rounded-xl bg-primary px-6 py-2 text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/90 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
+            >
+              {isSaving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

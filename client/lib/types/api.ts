@@ -38,10 +38,13 @@ export interface ApiAssignment {
     title: string
     description?: string
     content?: string
-    file?: string // Added missing file property
+    file?: string
     rewardPoints?: number
     dueDate: string
     createdAt: string
+    type?: "assignment" | "test"
+    semesterNumber?: number
+    subjectCode?: string
     course?: { id?: number; name: string; standard?: string }
     createdBy?: {
         id: string
@@ -54,6 +57,70 @@ export interface ApiAssignment {
     submission?: ApiSubmission
     status?: string
     _count?: { submissions: number }
+}
+
+export interface ApiExam {
+    id: number
+    courseId: number
+    semesterNumber: number
+    subjectName: string
+    subjectCode: string
+    topic: string
+    examDate: string
+    totalMarks: number | string
+    course?: { id: number; name: string; standard?: string }
+    createdBy?: { username: string; userDetails?: any }
+    results?: ApiExamResult[]
+}
+
+export interface ApiExamResult {
+    id: number
+    examId: number
+    studentId: string
+    marksObtained: number | string
+    remark?: string
+    exam?: ApiExam
+    student?: {
+        id: string
+        username: string
+        userDetails?: {
+            firstName: string
+            lastName: string
+        }
+    }
+}
+
+export interface StudentExamResult {
+    id: number
+    examId: number
+    userId: string
+    marksObtained: number | string
+    remark?: string
+    exam: {
+        id: number
+        subjectName: string
+        subjectCode: string
+        topic: string
+        examDate: string
+        totalMarks: number | string
+        semesterNumber: number
+        course?: { name: string }
+    }
+}
+
+export interface ExamCourseOption {
+    id: number
+    name: string
+    standard?: string
+    semesters?: Array<{
+        semesterNumber: number
+        subjects: Array<{
+            name: string
+            code: string
+            examTotalMarks: number
+        }>
+    }>
+    semesterCount?: number
 }
 
 export interface ApiAssessment {

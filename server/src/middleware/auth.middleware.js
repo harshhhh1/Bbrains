@@ -56,7 +56,6 @@ const verifyToken = async (req, res, next) => {
 
     req.user = dbUser;
 
-    // Impersonation logic for superadmins
     const impersonateCollegeId = req.headers['x-impersonate-college-id'] || req.cookies?.impersonateCollegeId;
     if (impersonateCollegeId && (dbUser.type === 'superadmin' || dbUser.type === 'bbrains_official')) {
       const collegeId = parseInt(impersonateCollegeId);
@@ -64,9 +63,8 @@ const verifyToken = async (req, res, next) => {
         req.user.collegeId = collegeId;
         req.user.isImpersonating = true;
         req.user.originalType = dbUser.type;
-        // Temporarily change type to admin to trigger correct frontend/backend permissions
-        req.user.type = 'admin';
-        console.log(`[AuthMiddleware] User ${dbUser.username} is impersonating college ${collegeId}`);
+        // Keep the original type as superadmin/bbrains_official to retain full privileges
+        console.log(`[AuthMiddleware] User ${dbUser.username} is impersonating college ${collegeId} as ${dbUser.type}`);
       }
     }
     

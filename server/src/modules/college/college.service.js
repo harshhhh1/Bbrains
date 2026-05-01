@@ -2,7 +2,18 @@ import prisma from '../../utils/prisma.js';
 
 // Create college
 export const createCollegeRecord = async (data) => {
-    return await prisma.college.create({ data });
+    const { address, ...rest } = data;
+    return await prisma.college.create({
+        data: {
+            ...rest,
+            ...(address && {
+                address: {
+                    create: address
+                }
+            })
+        },
+        include: { address: true }
+    });
 };
 
 // Get all colleges with pagination
@@ -63,9 +74,22 @@ export const getCollegeById = async (id) => {
 
 // Update college
 export const updateCollegeRecord = async (id, data) => {
+    const { address, ...rest } = data;
+    
     return await prisma.college.update({
         where: { id },
-        data
+        data: {
+            ...rest,
+            ...(address && {
+                address: {
+                    upsert: {
+                        create: address,
+                        update: address
+                    }
+                }
+            })
+        },
+        include: { address: true }
     });
 };
 

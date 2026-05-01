@@ -6,61 +6,56 @@ export const createRoleRecord = async (data) => {
 
 export const getAllRoles = async (collegeId) => {
     return await prisma.role.findMany({
-        where: collegeId ? {
+        where: {
             OR: [
-                { collegeId },
+                { collegeId: collegeId ? Number(collegeId) : null },
                 { collegeId: null }
             ]
-        } : {},
-        include: {
+        },
+        include: { 
+            _count: { select: { users: true } },
             permissions: {
                 include: {
                     permission: true
                 }
-            },
-            _count: {
-                select: {
-                    users: true
-                }
             }
         },
-        orderBy: {
-            position: 'asc'
-        }
+        orderBy: { position: 'asc' }
     });
 };
 
 export const getAllPermissions = async () => {
     return await prisma.permission.findMany({
-        orderBy: {
-            category: 'asc'
-        }
+        orderBy: { category: 'asc' }
     });
 };
 
 export const updateRoleRecord = async (id, data) => {
-    return await prisma.role.update({ where: { id }, data });
-};
+    const { permissions, ...roleData } = data;
+    
+    return await prisma.$transaction(async (tx) => {
+        const role = await tx.role.update({ 
+            where: { id: Number(id) }, 
+            data: roleData 
+        });
 
-export const updateRolePermissions = async (roleId, permissions) => {
-    return await prisma.$transaction(
-        permissions.map((p) =>
-            prisma.rolePermission.upsert({
-                where: {
-                    roleId_permissionId: {
-                        roleId,
-                        permissionId: p.permissionId
-                    }
-                },
-                update: { enabled: p.enabled },
-                create: {
-                    roleId,
-                    permissionId: p.permissionId,
-                    enabled: p.enabled
-                }
-            })
-        )
-    );
+        if (permissions) {
+            await tx.rolePermission.deleteMany({
+                where: { roleId: Number(id) }
+            });
+
+            if (permissions.length > 0) {
+                await tx.rolePermission.createMany({
+                    data: permissions.map(p => ({
+                        roleId: Number(id),
+                        permissionId: p.permissionId,
+                        enabled: p.enabled
+                    }))
+                });
+            }
+        }
+        return role;
+    });
 };
 
 export const deleteRoleRecord = async (id) => {
@@ -86,39 +81,6 @@ export const getUserRoles = async (userId) => {
     return await prisma.userRoles.findMany({
         where: { userId },
         include: { role: true }
-    });
-};
-
-export const updateRoleMembers = async (roleId, userIds) => {
-    return await prisma.$transaction(async (tx) => {
-        // Get current members
-        const currentMappings = await tx.userRoles.findMany({
-            where: { roleId },
-            select: { userId: true }
-        });
-        const currentIds = currentMappings.map(m => m.userId);
-
-        const toAdd = userIds.filter(id => !currentIds.includes(id));
-        const toRemove = currentIds.filter(id => !userIds.includes(id));
-
-        // Add new members
-        if (toAdd.length > 0) {
-            await tx.userRoles.createMany({
-                data: toAdd.map(userId => ({ userId, roleId }))
-            });
-        }
-
-        // Remove old members
-        if (toRemove.length > 0) {
-            await tx.userRoles.deleteMany({
-                where: {
-                    roleId,
-                    userId: { in: toRemove }
-                }
-            });
-        }
-
-        return { added: toAdd.length, removed: toRemove.length };
     });
 };
 

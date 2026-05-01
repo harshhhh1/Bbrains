@@ -31,7 +31,15 @@ const createCourseSchema = z.object({
     name: z.string().min(1).max(100),
     description: z.string().max(255).optional(),
     standard: z.string().min(1).max(50),
-    subjects: z.array(z.string().min(1).max(100)).min(1),
+    subjects: z.array(z.string().min(1).max(100)).optional(),
+    semesters: z.array(z.object({
+        semesterNumber: z.number().int().min(1),
+        subjects: z.array(z.object({
+            name: z.string().min(1).max(100),
+            code: z.string().min(1).max(20),
+            examTotalMarks: z.number().positive()
+        })).min(1)
+    })).optional(),
     subjectProgress: z.array(subjectProgressEntrySchema).optional(),
     feePerStudent: z.coerce.number().min(0).optional(),
     durationValue: z.coerce.number().int().positive().optional(),
@@ -103,12 +111,19 @@ const getStatusCode = (error, fallbackStatus = 500) => {
 // POST /courses
 export const createCourse = async (req, res) => {
     try {
+        console.log("DEBUG: createCourse payload:", JSON.stringify(req.body, null, 2));
         const validated = createCourseSchema.parse(req.body);
         const course = await createCourseRecord(validated, req.user);
         await createAuditLog(req.user.id, 'ACADEMIC', 'CREATE', 'Course', course.id);
         return sendCreated(res, course, 'Course created successfully');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') {
+            const issues = error.errors || error.issues || [];
+            return sendError(res, 'Validation failed', 400, issues.map(e => ({ 
+                field: e.path.join('.'), 
+                message: e.message 
+            })));
+        }
         console.error(error);
         return sendError(res, getCourseOperationErrorMessage(error, 'Failed to create course'), 500);
     }
@@ -150,7 +165,13 @@ export const updateCourse = async (req, res) => {
         await createAuditLog(req.user.id, 'ACADEMIC', 'UPDATE', 'Course', id, { after: validated });
         return sendSuccess(res, course, 'Course updated successfully');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') {
+            const issues = error.errors || error.issues || [];
+            return sendError(res, 'Validation failed', 400, issues.map(e => ({ 
+                field: e.path.join('.'), 
+                message: e.message 
+            })));
+        }
         console.error(error);
         return sendError(res, getCourseOperationErrorMessage(error, 'Failed to update course'), getStatusCode(error));
     }

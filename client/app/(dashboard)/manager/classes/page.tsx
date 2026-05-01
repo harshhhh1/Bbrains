@@ -5,7 +5,7 @@ import { ClassFormDrawer } from "./components/ClassFormDrawer";
 import { ClassesHeader } from "./components/ClassesHeader";
 import { ClassesList } from "./components/ClassesList";
 import { ClassPreview } from "./components/ClassPreview";
-import { ClassStatsGrid } from "./components/ClassStatsGrid";
+
 import { useManagerClassesPage } from "./hooks/use-manager-classes";
 
 export default function ManagerClassesPage() {
@@ -14,8 +14,6 @@ export default function ManagerClassesPage() {
   return (
     <DashboardContent className="space-y-6">
       <ClassesHeader onCreate={page.openCreateDialog} />
-
-      <ClassStatsGrid classes={page.classes} />
 
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
         <ClassesList

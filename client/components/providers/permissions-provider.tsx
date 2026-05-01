@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/services/supabase/client";
 import { useUser } from "@/hooks/use-user";
+import { userApi } from "@/services/api/user.service";
 
 type PermissionsContextType = {
   permissions: string[];
@@ -26,7 +27,7 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
   const supabase = createClient();
 
   useEffect(() => {
-    if (!user || !supabase) {
+    if (!user) {
       setPermissions([]);
       setRoles([]);
       setIsLoading(false);
@@ -36,49 +37,14 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
     const fetchPermissions = async () => {
       try {
         setIsLoading(true);
-        // Fetch user's roles and permissions for their active college
-        const { data: userRoles, error: rolesError } = await supabase
-          .from("user_roles")
-          .select(`
-            role_id,
-            role:role (
-              id:role_id,
-              name,
-              color,
-              is_system,
-              is_default,
-              college_id,
-              permissions:role_permissions (
-                permission:permission (
-                  key
-                ),
-                enabled
-              )
-            )
-          `)
-          .eq("user_id", user.id);
+        // Fetch user's roles and permissions from the server
+        const response = await userApi.getPermissions();
 
-        if (rolesError) throw rolesError;
-
-        if (userRoles) {
-          const activeRoles = userRoles.map((ur: any) => ur.role);
+        if (response.success && response.data) {
+          const { roles: activeRoles, permissions: activeKeys } = response.data;
           setRoles(activeRoles);
-
-          // Extract all enabled permission keys
-          const activeKeys = new Set<string>();
-          activeRoles.forEach((role: any) => {
-            if (role?.permissions) {
-              role.permissions.forEach((rp: any) => {
-                if (rp.enabled && rp.permission?.key) {
-                  activeKeys.add(rp.permission.key);
-                }
-              });
-            }
-          });
-          
-          const finalPerms = Array.from(activeKeys);
-          console.log("PermissionsProvider: Calculated active keys", { userId: user.id, count: finalPerms.length, keys: finalPerms });
-          setPermissions(finalPerms);
+          setPermissions(activeKeys);
+          console.log("PermissionsProvider: Fetched active keys", { userId: user.id, count: activeKeys.length });
         }
       } catch (err) {
         console.error("Error fetching permissions:", err);
@@ -88,6 +54,8 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
     };
 
     fetchPermissions();
+
+    if (!supabase) return;
 
     // Subscribe to realtime changes
     const rolePermissionsChannel = supabase

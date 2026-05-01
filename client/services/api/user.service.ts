@@ -13,6 +13,7 @@ export const userApi = {
   updateDetails: (data: any) => api.put<ApiUser>("/user/me/details", data),
   checkUsername: (username: string) => api.get<{ available: boolean; message?: string }>(`/user/check-username/${username}`),
   getRoles: () => api.get<any[]>("/roles"),
+  getPermissions: () => api.get<{ roles: any[], permissions: string[] }>("/user/permissions"),
   getUserRoles: (userId: string) => api.get<any[]>(`/roles/users/${userId}`),
   assignRole: (userId: string, roleId: number) => api.post<any>(`/roles/users/${userId}/assign`, { roleId }),
   removeRole: (userId: string, roleId: number) => api.delete<any>(`/roles/users/${userId}/${roleId}`),
