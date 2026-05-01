@@ -50,7 +50,8 @@ const mapCourseForSetup = (course, teacherSubjects) => {
     };
 };
 
-const getTeacherAndCourses = async (teacherId) => {
+const getTeacherAndCourses = async (currentUser) => {
+    const teacherId = currentUser.id;
     const teacher = await prisma.user.findUnique({
         where: { id: teacherId },
         select: {
@@ -70,7 +71,7 @@ const getTeacherAndCourses = async (teacherId) => {
     }
 
     const courses = await prisma.course.findMany({
-        where: teacher.collegeId ? { collegeId: teacher.collegeId } : undefined,
+        where: currentUser.collegeId ? { collegeId: currentUser.collegeId } : undefined,
         include: {
             _count: {
                 select: {
@@ -87,16 +88,22 @@ const getTeacherAndCourses = async (teacherId) => {
     return { teacher, courses };
 };
 
-export const getAssessmentSetup = async (teacherId, courseId = null, date = null) => {
+export const getAssessmentSetup = async (currentUser, courseId = null, date = null, assessmentType = 'test') => {
     ensureAssessmentModelsAvailable();
-    const { teacher, courses } = await getTeacherAndCourses(teacherId);
+    const { teacher, courses } = await getTeacherAndCourses(currentUser);
     const teacherSubjects = resolveTeacherSubjects(teacher);
     const mappedCourses = courses.map((course) => mapCourseForSetup(course, teacherSubjects));
 
     let eligibleStudents = [];
 
-    if (courseId && date) {
-        eligibleStudents = await getEligibleStudents(courseId, date);
+    if (courseId) {
+        if (assessmentType === 'exam') {
+            // Exams allow all enrolled students
+            eligibleStudents = await getEnrolledStudents(courseId);
+        } else if (date) {
+            // Tests require attendance
+            eligibleStudents = await getEligibleStudents(courseId, date);
+        }
     }
 
     return {
@@ -104,6 +111,38 @@ export const getAssessmentSetup = async (teacherId, courseId = null, date = null
         courses: mappedCourses,
         eligibleStudents,
     };
+};
+
+export const getEnrolledStudents = async (courseId) => {
+    ensureAssessmentModelsAvailable();
+    const enrollments = await prisma.enrollment.findMany({
+        where: {
+            courseId: Number(courseId),
+        },
+        select: {
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                    userDetails: {
+                        select: {
+                            firstName: true,
+                            lastName: true,
+                            avatar: true,
+                        },
+                    },
+                },
+            },
+        },
+        orderBy: {
+            user: {
+                username: 'asc',
+            },
+        },
+    });
+
+    return enrollments.map((e) => e.user);
 };
 
 export const getEligibleStudents = async (courseId, date) => {

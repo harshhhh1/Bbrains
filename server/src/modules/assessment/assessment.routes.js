@@ -15,6 +15,7 @@ const router = express.Router();
 router.get('/setup', verifyToken, authorize('teacher', 'admin'), getAssessmentSetupHandler);
 router.get('/results/me', verifyToken, getMyAssessmentResultsHandler);
 router.get('/my', verifyToken, getMyAssessmentResultsHandler);
+router.get('/teacher', verifyToken, authorize('teacher', 'admin', 'manager'), listTeacherAssessmentsHandler);
 router.get('/', verifyToken, authorize('teacher', 'admin', 'manager'), listTeacherAssessmentsHandler);
 router.get('/:id', verifyToken, authorize('teacher', 'admin', 'manager'), getAssessmentHandler);
 router.post('/', verifyToken, authorize('teacher', 'admin'), createAssessmentHandler);

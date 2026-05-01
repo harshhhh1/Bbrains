@@ -148,8 +148,9 @@ const examInclude = {
     },
 };
 
-export const getExamSetup = async (teacherId, courseId = null) => {
+export const getExamSetup = async (currentUser, courseId = null) => {
     ensureExamModelsAvailable();
+    const teacherId = currentUser.id;
     
     const teacher = await prisma.user.findUnique({
         where: { id: teacherId },
@@ -165,7 +166,7 @@ export const getExamSetup = async (teacherId, courseId = null) => {
     }
 
     const courses = await prisma.course.findMany({
-        where: teacher.collegeId ? { collegeId: teacher.collegeId } : undefined,
+        where: currentUser.collegeId ? { collegeId: currentUser.collegeId } : undefined,
         select: {
             id: true,
             name: true,
