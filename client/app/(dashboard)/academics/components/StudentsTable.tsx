@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Pencil, Trash2 } from "lucide-react";
-import { Student } from "../types";
+import { Student } from "../types/academics-types";
 
 interface StudentsTableProps {
   students: Student[];

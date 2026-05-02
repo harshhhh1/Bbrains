@@ -7,7 +7,7 @@ import { Package, Loader2, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardContent } from "@/components/dashboard-content";
 import { libraryApi, LibraryItem } from "@/services/api/client";
-import { LibraryItemRow } from "../_components/LibraryItemRow";
+import { LibraryItemRow } from "./components/LibraryItemRow";
 
 export default function LibraryPage() {
   const [items, setItems] = useState<LibraryItem[]>([]);

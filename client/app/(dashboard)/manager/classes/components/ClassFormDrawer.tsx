@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { TimetableEditorDialog } from "../_components/TimetableEditorDialog";
+import { TimetableEditorDialog } from "./components/TimetableEditorDialog";
 import type { Course } from "@/services/api/client";
 import type { ClassFormState } from "../types/classes";
 import { standardOptions } from "../utils/classes";

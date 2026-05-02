@@ -1,5 +1,5 @@
 import React from "react"
-import type { ApiAuditLog } from "../types"
+import type { ApiAuditLog } from "../lib/types"
 import { AuditLogCard } from "./AuditLogCard"
 import { AuditLogEmptyState } from "./AuditLogEmptyState"
 

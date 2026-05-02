@@ -14,8 +14,8 @@ import {
 import { assessmentApi, dashboardApi, type StudentAssessmentResult } from "@/services/api/client";
 import { Loader2, Search, Trophy } from "lucide-react";
 import { toast } from "sonner";
-import { ResultCard } from "../_components/ResultCard";
-import { ResultsStats } from "../_components/ResultsStats";
+import { ResultCard } from ".//ResultCard";
+import { ResultsStats } from ".//ResultsStats";
 
 function resultPercentage(result: StudentAssessmentResult) {
   const total = Number(result.assessment.totalMarks || 0);

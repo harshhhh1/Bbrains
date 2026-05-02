@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SubjectEntry } from "../hooks/useCourseForm";
-import { Student } from "../../../types";
+import { Student } from "../../types/academics-types/academics-types";
 
 interface SubjectEntryRowProps {
   subject: SubjectEntry;

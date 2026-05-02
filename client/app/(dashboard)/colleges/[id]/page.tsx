@@ -17,9 +17,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { CollegeInfoCard } from "./_components/CollegeInfoCard";
-import { CollegeAdminsCard } from "./_components/CollegeAdminsCard";
-import { CollegeActions } from "./_components/CollegeActions";
+import { CollegeInfoCard } from "./components/CollegeInfoCard";
+import { CollegeAdminsCard } from "./components/CollegeAdminsCard";
+import { CollegeActions } from "./components/CollegeActions";
 
 export default function CollegeDetailPage() {
   const router = useRouter();

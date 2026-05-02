@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Search, Loader2 } from "lucide-react"
 import { AssignmentCard } from "./AssignmentCard"
 import type { Assignment } from "@/services/api/client"
-import { StudentAssignmentFilter } from "../types"
+import { StudentAssignmentFilter } from "@/features/assignments/assignment-types"
 
 interface StudentAssignmentsViewProps {
   searchQuery: string

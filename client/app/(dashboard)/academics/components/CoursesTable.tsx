@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, UserPlus } from "lucide-react";
 
-import { Course } from "../types";
+import { Course } from "../types/academics-types";
 
 interface CoursesTableProps {
   courses: Course[];

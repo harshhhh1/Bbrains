@@ -9,9 +9,9 @@ import { toast } from "sonner";
 import { DashboardContent } from "@/components/dashboard-content";
 import { orderApi, Order } from "@/services/api/client";
 import Link from "next/link";
-import { OrderCard } from "../_components/OrderCard";
-import { OrderDetailsDrawer } from "../_components/OrderDetailsDrawer";
-import { QRCodeDrawer } from "../_components/QRCodeDrawer";
+import { OrderCard } from ".//OrderCard";
+import { OrderDetailsDrawer } from ".//OrderDetailsDrawer";
+import { QRCodeDrawer } from ".//QRCodeDrawer";
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);

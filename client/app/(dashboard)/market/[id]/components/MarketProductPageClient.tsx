@@ -16,7 +16,7 @@ import {
   Plus, Minus
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PinDialog } from "../../_components/PinDialog";
+import { PinDialog } from ".././components/PinDialog";
 import { DashboardContent } from "@/components/dashboard-content";
 
 import { resolveApiFileUrl } from "@/lib/file-url";

@@ -5,7 +5,7 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, Dr
 import { Textarea } from "@/components/ui/textarea"
 import { ChatImagePreview } from "@/components/chat-image-preview"
 import { FileText, Loader2, RotateCcw, Upload, X } from "lucide-react"
-import { getImageMimeType, isImageFile } from "../utils"
+import { getImageMimeType, isImageFile } from "../assignment-utils"
 import type { Assignment } from "@/services/api/client"
 import { toast } from "sonner"
 import { assignmentApi } from "@/services/api/client"

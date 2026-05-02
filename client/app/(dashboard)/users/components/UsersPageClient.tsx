@@ -9,13 +9,13 @@ import { api, userApi } from "@/services/api/client";
 import { getAuthToken, getBaseUrl } from "@/services/api/client";
 import type { ApiUser } from "@/lib/types/api";
 import { CrudDrawer } from "@/features/admin/components/CrudDrawer";
-import { UserFilters } from "../_components/UserFilters";
-import { UsersGrid } from "../_components/UsersGrid";
-import { UserRolesDialog } from "../_components/UserRolesDialog";
-import { UserDetailsDrawer } from "../_components/UserDetailsDrawer";
-import { DeleteConfirmationDialog } from "../_components/DeleteConfirmationDialog";
-import { ManagerForm } from "../_components/ManagerForm";
-import { ImportUsersDialog } from "../_components/ImportUsersDialog";
+import { UserFilters } from "./components/UserFilters";
+import { UsersGrid } from "./components/UsersGrid";
+import { UserRolesDialog } from "./components/UserRolesDialog";
+import { UserDetailsDrawer } from "./components/UserDetailsDrawer";
+import { DeleteConfirmationDialog } from "./components/DeleteConfirmationDialog";
+import { ManagerForm } from "./components/ManagerForm";
+import { ImportUsersDialog } from "./components/ImportUsersDialog";
 import { emptyManagerForm, hasManagerRole, type ManagerForm as ManagerFormType } from "../_types";
 
 export default function UsersPageClient() {

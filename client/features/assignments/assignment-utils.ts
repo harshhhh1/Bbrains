@@ -1,6 +1,6 @@
 import { Assignment } from "@/services/api/client";
 import { getFileUrlBase } from "@/lib/file-url";
-import { StudentAssignmentStatus } from "../types";
+import { StudentAssignmentStatus } from "./assignment-types";
 
 export function fmtDate(value: string) {
   return new Date(value).toLocaleDateString("en-IN", {

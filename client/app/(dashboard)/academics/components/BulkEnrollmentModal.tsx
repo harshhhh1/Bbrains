@@ -17,7 +17,7 @@ import { Loader2, Search, UserCheck, X } from "lucide-react";
 import { api, userApi, courseApi, academicApi } from "@/services/api/client";
 import { toast } from "sonner";
 
-import { Course } from "../types";
+import { Course } from "../types/academics-types";
 import { Badge } from "@/components/ui/badge";
 
 interface BulkEnrollmentModalProps {
