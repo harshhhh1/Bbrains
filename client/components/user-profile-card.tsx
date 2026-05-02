@@ -4,7 +4,7 @@ import React from 'react'
 import Link from "next/link"
 import { Pencil } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { usePermissions } from "@/hooks/use-permissions"
+import { usePermissionsContext } from "@/components/providers/permissions-provider"
 
 interface UserProfileCardProps {
     user: {
@@ -21,7 +21,7 @@ interface UserProfileCardProps {
 }
 
 export function UserProfileCard({ user }: UserProfileCardProps) {
-    const { roles } = usePermissions();
+    const { roles } = usePermissionsContext();
     const joinedDate = user?.createdAt ? new Date(user.createdAt) : null
     const hasJoinedDate = Boolean(joinedDate && !Number.isNaN(joinedDate.getTime()))
     const displayName =

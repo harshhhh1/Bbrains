@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, AlertCircle } from "lucide-react";
 import { courseApi, enrollmentApi, Course } from "@/services/api/client";
 import { DashboardContent } from "@/components/dashboard-content";
-import { CourseCard } from "../_components/CourseCard";
-import { CourseSkeleton } from "../_components/CourseSkeleton";
+import { CourseCard } from "./components/CourseCard";
+import { CourseSkeleton } from "./components/CourseSkeleton";
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);

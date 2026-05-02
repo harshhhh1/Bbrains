@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
-import RoleList from "../_components/RoleList";
-import RoleDetail from "../_components/RoleDetail";
+import RoleList from "./components/RoleList";
+import RoleDetail from "./components/RoleDetail";
 import type { Role, Permission, UserWithRoles } from "../_types";
 import { api } from "@/services/api/client";
 

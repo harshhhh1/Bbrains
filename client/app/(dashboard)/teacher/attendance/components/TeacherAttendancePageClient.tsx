@@ -14,9 +14,9 @@ import { getAuthedClient } from "@/services/api/client";
 import { SectionHeader } from "@/features/admin/components/SectionHeader";
 import type { ApiUser } from "@/lib/types/api";
 import { toast } from "sonner";
-import { AttendanceStatCard } from "../_components/AttendanceStatCard";
-import { AttendanceRow } from "../_components/AttendanceRow";
-import { AttendanceHistoryDrawer } from "../_components/AttendanceHistoryDrawer";
+import { AttendanceStatCard } from "./components/AttendanceStatCard";
+import { AttendanceRow } from "./components/AttendanceRow";
+import { AttendanceHistoryDrawer } from "./components/AttendanceHistoryDrawer";
 
 type AttendanceStatus = "present" | "absent" | "late";
 

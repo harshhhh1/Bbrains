@@ -9,8 +9,8 @@ import { chatApi, type ChatMemberProfile, type ChatMentionUser } from "@/service
 import { useChatMessages } from "@/features/chat/hooks/useChatMessages";
 import { extractMentions, mapApiMember } from "@/features/chat/utils";
 import type { Member, Message } from "@/features/chat/data";
-import { groupMessagesByDate, MAX_ATTACHMENT_BYTES } from "../utils/chat-page";
-import type { PendingAttachment, ReplyingMessage, SelectedMention } from "../types/chat-page";
+import { groupMessagesByDate, MAX_ATTACHMENT_BYTES } from "../chat-page-utils";
+import type { PendingAttachment, ReplyingMessage, SelectedMention } from "../../chat-page-types";
 import { supabase } from "@/services/supabase/client";
 
 export function useChatPage() {

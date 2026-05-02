@@ -2,9 +2,9 @@ import React, { useState } from "react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { ChevronRight, ChevronDown, Info, Shield, User, Settings, Database, GraduationCap, ShoppingCart, Landmark } from "lucide-react"
-import type { ApiAuditLog, LogCategory } from "../types"
-import { categoryColors } from "../types"
-import { getInitials, fmtDate, formatChange } from "../utils"
+import type { ApiAuditLog, LogCategory } from "../lib/types"
+import { categoryColors } from "../lib/types"
+import { getInitials, fmtDate, formatChange } from "../lib/utils"
 import { cn } from "@/lib/utils"
 
 interface AuditLogCardProps {

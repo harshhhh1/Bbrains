@@ -7,7 +7,7 @@ import { SectionHeader } from "@/features/admin/components/SectionHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { ApiAuditLog } from "@/lib/types/api";
-import { AuditLogCard } from "../_components/AuditLogCard";
+import { AuditLogCard } from "./components/AuditLogCard";
 
 export default function AuditLogPage() {
   const [logs, setLogs] = useState<ApiAuditLog[]>([]);

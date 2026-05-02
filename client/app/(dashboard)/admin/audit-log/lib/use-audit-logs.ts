@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { fetchAuditLogs } from "../lib/api";
-import type { ApiAuditLog } from "../types";
+import type { ApiAuditLog } from "../lib/types";
 
 export function useAuditLogs(initialLogs: ApiAuditLog[]) {
     const [logs, setLogs] = useState<ApiAuditLog[]>(initialLogs)

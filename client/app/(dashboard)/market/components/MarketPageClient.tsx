@@ -24,9 +24,9 @@ import {
 import { toast } from "sonner";
 import { DashboardContent } from "@/components/dashboard-content";
 import { marketApi, Product, type CartItem } from "@/services/api/client";
-import { MarketProductCard } from "../_components/MarketProductCard";
-import { CartDrawer } from "../_components/CartDrawer";
-import { PinDialog } from "../_components/PinDialog";
+import { MarketProductCard } from "./components/MarketProductCard";
+import { CartDrawer } from "./components/CartDrawer";
+import { PinDialog } from "./components/PinDialog";
 
 export default function MarketPage() {
   const [products, setProducts] = useState<Product[]>([]);
