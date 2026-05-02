@@ -8,7 +8,7 @@ import { AcademicsLoadingState } from "./AcademicsLoadingState";
 import { CoursesTable } from "./CoursesTable";
 import { TeacherAssessmentWorkspace } from "@/features/assignments/components/TeacherAssessmentWorkspace";
 import { DeleteDialog } from "./DeleteDialog";
-import { CourseFormModal } from "../_features/course-form";
+import { CourseFormModal } from "./CourseFormModal";
 import { useAcademics } from "../hooks/use-academics";
 import { BulkEnrollmentModal } from "./BulkEnrollmentModal";
 

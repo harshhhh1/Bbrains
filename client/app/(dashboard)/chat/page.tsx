@@ -2,10 +2,10 @@
 
 import { ChannelHeader } from "@/features/chat/components/ChannelHeader";
 import { ProfileDialog } from "@/features/chat/components/ProfileDialog";
-import { ChatMembersPanels } from "./components/ChatMembersPanels";
-import { ChatMessagePane } from "./components/ChatMessagePane";
-import { ChatMobileSearch } from "./components/ChatMobileSearch";
-import { useChatPage } from "./hooks/use-chat-page";
+import { ChatMembersPanels } from "@/features/chat/components/ChatMembersPanels";
+import { ChatMessagePane } from "@/features/chat/components/ChatMessagePane";
+import { ChatMobileSearch } from "@/features/chat/components/ChatMobileSearch";
+import { useChatPage } from "@/features/chat/hooks/use-chat-page";
 
 export default function ChatPage() {
   const { state, refs, actions } = useChatPage();

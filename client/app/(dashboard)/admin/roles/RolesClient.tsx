@@ -3,11 +3,11 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { RoleCards } from "./_components/RoleCards"
-import { PermissionMatrix } from "./_components/PermissionMatrix"
-import { UserRolesGrid } from "./_components/UserRolesGrid"
-import { EditRoleDialog } from "./_components/EditRoleDialog"
-import { EditUserRoleDialog } from "./_components/EditUserRoleDialog"
+import { RoleCards } from "./components/RoleCards"
+import { PermissionMatrix } from "./components/PermissionMatrix"
+import { UserRolesGrid } from "./components/UserRolesGrid"
+import { EditRoleDialog } from "./components/EditRoleDialog"
+import { EditUserRoleDialog } from "./components/EditUserRoleDialog"
 import type { Role, UserWithRoles } from "./_types"
 
 interface RolesClientProps {

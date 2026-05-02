@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { LOG_CATEGORIES } from "../types"
+import { LOG_CATEGORIES } from "../lib/types"
 import { cn } from "@/lib/utils"
 
 interface CategoryFilterProps {

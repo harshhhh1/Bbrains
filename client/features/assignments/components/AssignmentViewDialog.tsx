@@ -22,7 +22,7 @@ import {
   getStatusBadgeVariant,
   getStatusLabel,
   isImageFile,
-} from "../utils"
+} from "../assignment-utils"
 
 interface AssignmentViewDialogProps {
   assignment: Assignment | null

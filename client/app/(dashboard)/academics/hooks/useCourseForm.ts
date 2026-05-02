@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { courseApi, userApi } from "@/services/api/client";
-import { Course, Student } from "../../../types";
+import { Course, Student } from "../../types/academics-types/academics-types";
 
 export interface SemesterSubject {
   id: string;

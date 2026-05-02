@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { api, courseApi, userApi, assignmentApi } from "@/services/api/client";
-import { Course, AdminAssignment, Student, Teacher } from "../types";
+import { Course, AdminAssignment, Student, Teacher } from "../types/academics-types";
 import { toast } from "sonner";
 import { useHasPermission } from "@/components/providers/permissions-provider";
 

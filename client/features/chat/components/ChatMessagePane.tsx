@@ -9,7 +9,7 @@ import { MessageInput } from "@/features/chat/components/MessageInput";
 import { MessageItem } from "@/features/chat/components/MessageItem";
 import type { Message } from "@/features/chat/data";
 import type { ChatMentionUser } from "@/services/api/client";
-import type { PendingAttachment, ReplyingMessage, SelectedMention } from "../types/chat-page";
+import type { PendingAttachment, ReplyingMessage, SelectedMention } from "../chat-page-types";
 import { useState } from "react";
 import {
   AlertDialog,

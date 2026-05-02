@@ -8,8 +8,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { Product } from "@/app/(dashboard)/market/approvals/_features/market/types"
-import { fetchPendingProducts, approveRejectProduct } from "@/app/(dashboard)/market/approvals/_features/market/data"
+import type { Product } from "@/app/(dashboard)/market/approvals/lib/types"
+import { fetchPendingProducts, approveRejectProduct } from "@/app/(dashboard)/market/approvals/lib/data"
 import { dashboardApi, type User as ApiUser } from "@/services/api/client"
 import { useHasPermission } from "@/components/providers/permissions-provider"
 

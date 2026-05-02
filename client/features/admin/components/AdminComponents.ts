@@ -5,5 +5,6 @@ export { CrudModal } from "./CrudModal"
 export { ConfirmDialog } from "./ConfirmDialog"
 export { SectionHeader } from "./SectionHeader"
 export { RoleBadge } from "./RoleBadge"
-export * from "./form"
-
+export * from "./form/FormInput"
+export * from "./form/FormSelect"
+export * from "./form/FormTextarea"

@@ -3,8 +3,8 @@
 import React from "react"
 import { CategoryFilter } from "./components/CategoryFilter"
 import { AuditLogList } from "./components/AuditLogList"
-import { useAuditLogs } from "./hooks/use-audit-logs"
-import type { ApiAuditLog } from "./types"
+import { useAuditLogs } from "./lib/use-audit-logs"
+import type { ApiAuditLog } from "./lib/types"
 import { Input } from "@/components/ui/input"
 import { Search, Filter } from "lucide-react"
 

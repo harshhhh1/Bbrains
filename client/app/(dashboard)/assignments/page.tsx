@@ -1,4 +1,4 @@
-import AssignmentsPageClient from "./components/AssignmentsPageClient";
+import AssignmentsPageClient from "@/features/assignments/components/AssignmentsPageClient";
 
 export default function Page() {
   return <AssignmentsPageClient />;

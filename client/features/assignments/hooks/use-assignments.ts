@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { assignmentApi, dashboardApi, type Assignment } from "@/services/api/client"
 import { toast } from "sonner"
 import { getAssignmentStatus } from "../utils"
-import { StudentAssignmentFilter } from "../types"
+import { StudentAssignmentFilter } from "./assignment-types"
 
 export function useAssignments() {
   const [searchQuery, setSearchQuery] = useState("")

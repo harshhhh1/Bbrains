@@ -1,126 +1,85 @@
 "use client"
 
-import { CalendarDays, CheckCircle2, Clock, Code, FileText, FunctionSquare, MoreVertical, TestTube } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Calendar, Clock, Eye, RotateCcw, Upload } from "lucide-react"
+import type { Assignment } from "@/services/api/client"
+import {
+  canSubmitAssignment,
+  fmtDate,
+  getAssignmentStatus,
+  getStatusBadgeVariant,
+  getStatusLabel,
+} from "../assignment-utils"
 
-export interface PremiumAssignment {
-    id: string
-    title: string
-    courseCode: string
-    description: string
-    dueDate: string
-    teacherName: string
-    teacherAvatar: string
-    subjectType: "code" | "math" | "science" | "general"
-    status: "active" | "completed"
-    badgeText?: string
-    badgeType?: "priority" | "exam" | "standard"
+interface AssignmentCardProps {
+  assignment: Assignment
+  onView: (assignment: Assignment) => void
+  onSubmit: (assignment: Assignment) => void
 }
 
-export function AssignmentCard({ assignment }: { assignment: PremiumAssignment }) {
-    const isActive = assignment.status === "active"
+export function AssignmentCard({ assignment, onView, onSubmit }: AssignmentCardProps) {
+  const status = getAssignmentStatus(assignment)
+  const canSubmit = canSubmitAssignment(assignment)
 
-    // Map subject types to specific colors and icons matching Stitch design
-    const getSubjectDetails = (type: PremiumAssignment["subjectType"]) => {
-        switch (type) {
-            case "code":
-                return {
-                    bg: "bg-blue-50 dark:bg-blue-900/20",
-                    text: "text-blue-600 dark:text-blue-400",
-                    icon: <Code className="size-5" />
-                }
-            case "math":
-                return {
-                    bg: "bg-purple-50 dark:bg-purple-900/20",
-                    text: "text-purple-600 dark:text-purple-400",
-                    icon: <FunctionSquare className="size-5" />
-                }
-            case "science":
-                return {
-                    bg: "bg-green-50 dark:bg-green-900/20",
-                    text: "text-green-600 dark:text-green-400",
-                    icon: <TestTube className="size-5" />
-                }
-            default:
-                return {
-                    bg: "bg-gray-100 dark:bg-gray-800",
-                    text: "text-gray-600 dark:text-gray-400",
-                    icon: <FileText className="size-5" />
-                }
-        }
-    }
+  return (
+    <Card className="border-border/60">
+      <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex-1 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">{assignment.course?.name || "General"}</Badge>
+            <Badge variant={getStatusBadgeVariant(status)}>{getStatusLabel(status)}</Badge>
+            <Badge variant="outline">
+              {assignment.rewardPoints ?? 0} point{(assignment.rewardPoints ?? 0) === 1 ? "" : "s"}
+            </Badge>
+          </div>
 
-    const getBadgeStyle = (badgeType?: PremiumAssignment["badgeType"]) => {
-        switch (badgeType) {
-            case "priority":
-                return "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-            case "exam":
-                return "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-            case "standard":
-                return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-            default:
-                return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
-        }
-    }
+          <div>
+            <p className="font-semibold text-foreground">{assignment.title}</p>
+            <p className="text-sm text-muted-foreground">
+              {assignment.description || "No description provided."}
+            </p>
+          </div>
 
-    const formatShortDate = (dateStr: string) => {
-        const d = new Date(dateStr)
-        // e.g "Oct 15, 10:00 AM" or "Oct 15"
-        return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    }
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="h-4 w-4" />
+              Due {fmtDate(assignment.dueDate)}
+            </span>
+            {assignment.submission?.submittedAt ? (
+              <span className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4" />
+                Submitted {fmtDate(assignment.submission.submittedAt)}
+              </span>
+            ) : null}
+          </div>
 
-    const { bg, text, icon } = getSubjectDetails(assignment.subjectType)
-
-    return (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 flex flex-col hover:shadow-md transition-shadow relative group">
-            <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${bg} ${text}`}>
-                        {icon}
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-1">{assignment.title.split(' ')[0]} {/* Short hack if needed, or mapping course name */}
-                            Course
-                        </h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{assignment.courseCode}</p>
-                    </div>
-                </div>
-                {assignment.badgeText && (
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getBadgeStyle(assignment.badgeType)}`}>
-                        {assignment.badgeText}
-                    </span>
-                )}
+          {assignment.submission?.reviewRemark ? (
+            <div className="rounded-2xl border border-border/60 bg-muted/40 px-4 py-3 text-sm">
+              <p className="mb-1 font-medium text-foreground">Teacher remark</p>
+              <p className="text-muted-foreground">{assignment.submission.reviewRemark}</p>
             </div>
-
-            <h4 className="font-medium text-lg text-gray-900 dark:text-white mb-2 line-clamp-1">{assignment.title}</h4>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 line-clamp-2">{assignment.description}</p>
-
-            <div className="mt-auto space-y-4">
-                <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
-                        <Avatar className="w-6 h-6">
-                            <AvatarImage src={assignment.teacherAvatar} />
-                            <AvatarFallback name={assignment.teacherName} />
-                        </Avatar>
-                        <span className="truncate max-w-[120px]">{assignment.teacherName}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-900 dark:text-white font-medium shrink-0">
-                        {isActive ? <Clock className="size-4 text-gray-500 dark:text-gray-400" /> : <CheckCircle2 className="size-4 text-green-500" />}
-                        <span>{isActive ? `Due ${formatShortDate(assignment.dueDate)}` : `Submitted`}</span>
-                    </div>
-                </div>
-
-                <div className="flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-                    <button className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                        View Details
-                    </button>
-                    {isActive && (
-                        <button className="flex-1 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-lg text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors">
-                            Submit Task
-                        </button>
-                    )}
-                </div>
-            </div>
+          ) : null}
         </div>
-    )
+
+        <div className="flex shrink-0 gap-2">
+          <Button variant="outline" className="rounded-2xl" onClick={() => onView(assignment)}>
+            <Eye className="mr-2 h-4 w-4" />
+            View Details
+          </Button>
+          {canSubmit ? (
+            <Button className="rounded-2xl" onClick={() => onSubmit(assignment)}>
+              {assignment.submission?.reviewStatus === "rework" ? (
+                <RotateCcw className="mr-2 h-4 w-4" />
+              ) : (
+                <Upload className="mr-2 h-4 w-4" />
+              )}
+              {assignment.submission?.reviewStatus === "rework" ? "Resubmit" : "Submit Work"}
+            </Button>
+          ) : null}
+        </div>
+      </CardContent>
+    </Card>
+  )
 }

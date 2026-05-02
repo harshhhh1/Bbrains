@@ -1,5 +1,5 @@
 import { getAuthToken } from "@/services/api/client";
-import type { ApiAuditLog } from "../types";
+import type { ApiAuditLog } from "../lib/types";
 
 const getBaseUrl = () => {
     if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
