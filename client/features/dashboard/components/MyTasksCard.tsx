@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Clock, Upload, Loader2, Check, XCircle, RotateCcw, Eye } from "lucide-react";
 import { assignmentApi, type Assignment } from "@/services/api/client";
 import { Button } from "@/components/ui/button";
-import { canSubmitAssignment } from "@/@/features/assignments/assignment-utils";
+import { canSubmitAssignment } from "@/features/assignments/assignment-utils";
 import { AssignmentSubmitDrawer } from "@/features/assignments/components/AssignmentSubmitDrawer";
 import { AssignmentViewDialog } from "@/features/assignments/components/AssignmentViewDialog";
 import { toast } from "sonner";

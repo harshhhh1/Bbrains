@@ -7,7 +7,6 @@ import { usePathname, useRouter } from "next/navigation"
 import { useTheme } from "@/context/theme"
 import { Button } from "@/components/ui/button"
 import {
-
     CalendarDays,
     LogOut,
     User,
