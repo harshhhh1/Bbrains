@@ -210,12 +210,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         init()
     }, [router, pathname])
 
-    const isComingSoon = sidebarItems.some(item => {
-        const itemUrl = (item as any).isDashboard ? '/dashboard' : item.url;
-        if (itemUrl === pathname && (item as any).cs) return true;
-        if (item.subItems?.some(sub => sub.url === pathname && (sub as any).cs)) return true;
-        return false;
-    });
+    const isComingSoon = React.useMemo(() => {
+        return sidebarItems.some(item => {
+            const itemUrl = (item as any).isDashboard ? '/dashboard' : item.url;
+            if (itemUrl === pathname && (item as any).cs) return true;
+            if (item.subItems?.some(sub => sub.url === pathname && (sub as any).cs)) return true;
+            return false;
+        });
+    }, [pathname]);
 
     return (
         <SidebarProvider defaultOpen={true}>

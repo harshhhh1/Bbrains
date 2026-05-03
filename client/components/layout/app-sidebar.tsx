@@ -59,8 +59,8 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
     const [showProfileCard, setShowProfileCard] = useState(false)
 
     const userRoles = user?.roles || [user?.type || "student"]
-    const resolvedRoles = resolveRole(userRoles) as Role[]
-    const groups = getSidebarGroups(resolvedRoles, sidebarAccessOverride)
+    const resolvedRoles = React.useMemo(() => resolveRole(userRoles) as Role[], [userRoles])
+    const groups = React.useMemo(() => getSidebarGroups(resolvedRoles, sidebarAccessOverride), [resolvedRoles, sidebarAccessOverride])
 
     return (
         <Sidebar collapsible="icon" className="border-r border-sidebar-border">
