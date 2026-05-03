@@ -818,7 +818,7 @@ export const batchImportUsers = async (req, res) => {
         // Validate required fields - only the essentials
         const requiredFields = [
             'firstname', 'lastname', 'email', 'type',
-            'sex', 'dob', 'courseId'
+            'sex', 'dob', 'courseid'
         ];
 
         const validationResult = validateCSVData(csvData, requiredFields);
@@ -884,15 +884,15 @@ export const batchImportUsers = async (req, res) => {
                     const collegeId = await resolveCollegeId(null, req.user.collegeId);
 
                     // Validate course exists and belongs to same college
-                    const course = await findCourseInCollege(tx, Number(row.courseId), collegeId, 'Selected course was not found for this college');
+                    const course = await findCourseInCollege(tx, Number(row.courseid), collegeId, 'Selected course was not found for this college');
 
                     // Create Address record only if address fields present
                     let address = null;
-                    if (row.addressLine1 && row.city && row.country) {
+                    if (row.addressline1 && row.city && row.country) {
                         address = await tx.address.create({
                             data: {
-                                addressLine1: row.addressLine1,
-                                addressLine2: row.addressLine2 || null,
+                                addressLine1: row.addressline1,
+                                addressLine2: row.addressline2 || null,
                                 city: row.city,
                                 state: row.state || null,
                                 postalCode: row.postalCode || null,
@@ -973,7 +973,7 @@ export const batchImportUsers = async (req, res) => {
                     await tx.enrollment.create({
                         data: {
                             userId: user.id,
-                            courseId: Number(row.courseId),
+                            courseId: Number(row.courseid),
                             enrolledAt: new Date()
                         }
                     });
@@ -996,9 +996,6 @@ export const batchImportUsers = async (req, res) => {
             }
         }
 
-        // Clean up uploaded file
-        fs.unlinkSync(req.file.path);
-
         // Return success response
         return sendSuccess(res, {
             message: `Successfully imported ${results.successCount} users`,
@@ -1006,11 +1003,6 @@ export const batchImportUsers = async (req, res) => {
         });
 
     } catch (error) {
-        // Clean up uploaded file if it exists
-        if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
-
         console.error("Batch Import Error:", error);
 
         if (error.name === 'ZodError') {
@@ -1018,6 +1010,15 @@ export const batchImportUsers = async (req, res) => {
         }
 
         return sendError(res, error.message || 'Failed to import users', 500);
+    } finally {
+        // Clean up uploaded file if it exists
+        if (req.file && fs.existsSync(req.file.path)) {
+            try {
+                fs.unlinkSync(req.file.path);
+            } catch (unlinkError) {
+                console.error("Failed to delete temp CSV file:", unlinkError);
+            }
+        }
     }
 };
 

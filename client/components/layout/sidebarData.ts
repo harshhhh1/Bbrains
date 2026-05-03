@@ -16,12 +16,13 @@ export type SidebarItem = {
     url: string | ((role: Role) => string);
     icon: LucideIcon;
     access: Role[];
-    subItems?: { title: string; url: string; icon?: LucideIcon }[];
+    subItems?: { title: string; url: string; icon?: LucideIcon; cs?: boolean }[];
+    cs?: boolean;
 };
 
 export type SidebarGroup = {
     groupLabel?: string;
-    items: { title: string; url: string; icon: LucideIcon; subItems?: any[] }[];
+    items: { title: string; url: string; icon: LucideIcon; subItems?: any[]; cs?: boolean }[];
 };
 
 const ALL_ROLES: Role[] = ["student", "teacher", "admin", "staff", "manager", "superadmin", "bbrains_official"];
@@ -41,9 +42,11 @@ const masterSidebarItems: SidebarItem[] = (sidebarItemsRaw as any[]).map(item =>
     ...item,
     icon: getIcon(item.icon),
     url: item.isDashboard ? getDashboardUrl : item.url,
+    cs: item.cs || false,
     subItems: item.subItems?.map((sub: any) => ({
         ...sub,
-        icon: sub.icon ? getIcon(sub.icon) : undefined
+        icon: sub.icon ? getIcon(sub.icon) : undefined,
+        cs: sub.cs || false
     }))
 }));
 
@@ -86,7 +89,8 @@ export function getSidebarGroups(role: Role | Role[], sidebarAccessOverride?: Re
         title: item.title,
         url: typeof item.url === "function" ? item.url(primaryRole) : item.url,
         icon: item.icon,
-        subItems: item.subItems
+        subItems: item.subItems,
+        cs: item.cs
     }));
 
     return [

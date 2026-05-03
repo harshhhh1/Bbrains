@@ -1,10 +1,12 @@
 'use client'
 
 import { useEffect, useState, use } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { MainNavbar } from "@/components/layout/main-navbar"
 import { AppSidebar } from "@/components/layout/app-sidebar"
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav"
+import { sidebarItems } from "@/components/layout/sidebarItems"
+import { Rocket, Clock } from "lucide-react"
 
 import {
     SidebarInset,
@@ -64,6 +66,7 @@ async function fetchSidebarAccess(token: string): Promise<Record<string, string[
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
         })
 
         if (!response.ok) return null
@@ -97,6 +100,7 @@ async function fetchUser(token: string) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter()
+    const pathname = usePathname()
     const [loading, setLoading] = useState(true)
     const [user, setUser] = useState<{
         id: string
@@ -127,6 +131,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
 
         const init = async () => {
+            // Optimization: Skip re-fetching if we already have user data and we're not on the dashboard root
+            // This prevents redundant requests on every sub-page navigation
+            if (user && sidebarAccess && pathname !== '/dashboard') {
+                setLoading(false)
+                return
+            }
+
             const [dbUser, sidebarAccessOverride] = await Promise.all([
                 fetchUser(token),
                 fetchSidebarAccess(token)
@@ -197,7 +208,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
 
         init()
-    }, [router])
+    }, [router, pathname])
+
+    const isComingSoon = sidebarItems.some(item => {
+        const itemUrl = (item as any).isDashboard ? '/dashboard' : item.url;
+        if (itemUrl === pathname && (item as any).cs) return true;
+        if (item.subItems?.some(sub => sub.url === pathname && (sub as any).cs)) return true;
+        return false;
+    });
 
     return (
         <SidebarProvider defaultOpen={true}>
@@ -219,7 +237,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                              </div>
                                          </div>
                                      ) : (
-                                         children
+                                         isComingSoon ? (
+                                             <div className="flex flex-col items-center justify-center h-full text-center space-y-4 animate-in fade-in duration-500">
+                                                
+                                                 <h2 className="text-4xl font-bold text-foreground">
+                                                     Coming Soon!
+                                                 </h2>
+                                                 <p className="text-muted-foreground max-w-sm mx-auto text-lg">
+                                                     We're working hard to bring you this feature. Stay tuned for updates!
+                                                 </p>
+                                                 <div className="flex items-center gap-2 text-sm font-medium text-brand-purple/80 pt-4">
+                                                     <Clock className="w-4 h-4" />
+                                                     <span>Launching shortly</span>
+                                                 </div>
+                                             </div>
+                                         ) : children
                                      )}
                                 </main>
                                 <MobileBottomNav user={user} />

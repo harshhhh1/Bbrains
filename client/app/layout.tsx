@@ -93,8 +93,8 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://res.cloudinary.com" />
 
         {/* LCP Logo Preloads */}
-        <link rel="preload" href="/logo-dark.png" as="image" fetchpriority="high" />
-        <link rel="preload" href="/logo-white.png" as="image" fetchpriority="high" />
+        <link rel="preload" href="/logo-dark.png" as="image" fetchPriority="high" />
+        <link rel="preload" href="/logo-white.png" as="image" fetchPriority="high" />
         
         {/* PWA & iOS meta tags */}
         <link rel="icon" type="image/png" sizes="196x196" href="/favicon-196.png" />
