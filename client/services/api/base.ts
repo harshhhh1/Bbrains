@@ -74,10 +74,14 @@ export interface RequestOptions extends RequestInit {
   params?: Record<string, any>;
 }
 
+// Simple in-memory cache for in-flight GET requests to prevent duplicates
+const inflightRequests = new Map<string, Promise<any>>();
+
 export async function makeRequest<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<ApiResponse<T>> {
+  const method = options.method || 'GET';
   const token = await getAuthToken();
   const impersonateCollegeId = getCookie("impersonateCollegeId");
 
@@ -96,44 +100,62 @@ export async function makeRequest<T>(
     }
   }
 
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...(impersonateCollegeId ? { 'X-Impersonate-College-Id': impersonateCollegeId } : {}),
-    ...options.headers,
-  };
+  // Use cache key for deduplication of concurrent GET requests
+  const cacheKey = `${method}:${url}:${token}:${impersonateCollegeId}`;
+  if (method === 'GET' && inflightRequests.has(cacheKey)) {
+    return inflightRequests.get(cacheKey);
+  }
 
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers,
-      credentials: 'include',
-    });
+  const requestPromise = (async () => {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(impersonateCollegeId ? { 'X-Impersonate-College-Id': impersonateCollegeId } : {}),
+      ...options.headers,
+    };
 
-    const data = await response.json();
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers,
+        credentials: 'include',
+      });
 
-    if (!response.ok) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          success: false,
+          message: data.message || 'An error occurred',
+          error: data.error || data.message,
+          errors: data.errors,
+        };
+      }
+
+      return {
+        ...data,
+        success: true,
+        data: (data.data !== undefined ? data.data : data) as T,
+        message: data.message,
+      };
+    } catch (error) {
       return {
         success: false,
-        message: data.message || 'An error occurred',
-        error: data.error || data.message,
-        errors: data.errors,
+        message: error instanceof Error ? error.message : 'Network error',
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
+  })();
 
-    return {
-      ...data,
-      success: true,
-      data: (data.data !== undefined ? data.data : data) as T,
-      message: data.message,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : 'Network error',
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+  if (method === 'GET') {
+    inflightRequests.set(cacheKey, requestPromise);
+    requestPromise.finally(() => {
+      // Remove from in-flight map after a small delay to handle rapid sequential requests too
+      setTimeout(() => inflightRequests.delete(cacheKey), 100);
+    });
   }
+
+  return requestPromise;
 }
 
 export const api = {

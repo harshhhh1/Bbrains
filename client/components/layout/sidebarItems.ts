@@ -40,7 +40,7 @@ export const sidebarItems = [
         ]
     },
     { "title": "Study Materials", "url": "/study-materials", "icon": "FolderOpen", "access": ["student", "teacher", "admin", "staff", "manager", "superadmin"] },
-    { "title": "Tools", "url": "/tools", "icon": "Wrench", "access": ["student"] },
+    { "title": "Tools", "url": "/tools", "icon": "Wrench", "access": ["student"], "cs": true },
     { "title": "Suggestions", "url": "/suggestions", "icon": "MessageSquarePlus", "access": ["student", "teacher", "admin", "staff", "manager"] },
     { "title": "Settings", "url": "/settings", "icon": "Settings", "access": ["student", "teacher", "admin", "staff", "manager"] },
 
@@ -51,7 +51,7 @@ export const sidebarItems = [
     { "title": "Academics", "url": "/academics", "icon": "GraduationCap", "access": ["admin", "manager"] },
     { "title": "Products", "url": "/products", "icon": "ShoppingBag", "access": ["admin", "teacher", "manager"] },
     // { "title": "Statistics", "url": "/admin/stats", "icon": "BarChart3", "access": ["admin",  ] },
-    { "title": "Audit Log", "url": "/admin/audit-log", "icon": "FileText", "access": ["admin", , "teacher"] },
+    { "title": "Audit Log", "url": "/admin/audit-log", "icon": "FileText", "access": ["admin", , "teacher"], "cs": true },
     // { "title": "System Config", "url": "/admin/config", "icon": "Settings2", "access": ["admin",  , "bbrains_official"] },
     // { "title": "Grading", "url": "/teacher/grading", "icon": "CheckSquare", "access": ["teacher"] },
     { "title": "Attendance", "url": "/teacher/attendance", "icon": "Calendar", "access": ["teacher"] },

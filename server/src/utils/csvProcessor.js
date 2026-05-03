@@ -10,9 +10,16 @@ export const processCSVFile = async (filePath) => {
   return new Promise((resolve, reject) => {
     const results = [];
     fs.createReadStream(filePath)
-      .pipe(csv())
+      .pipe(csv({
+        mapHeaders: ({ header }) => header.trim().toLowerCase().replace(/^\uFEFF/, ''),
+        mapValues: ({ value }) => value.trim()
+      }))
       .on('data', (data) => {
-        results.push(data);
+        // Skip empty rows (where all values are empty strings)
+        const hasData = Object.values(data).some(val => val !== undefined && val !== null && val.trim() !== '');
+        if (hasData) {
+          results.push(data);
+        }
       })
       .on('end', () => {
         resolve(results);

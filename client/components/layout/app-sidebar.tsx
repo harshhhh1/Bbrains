@@ -74,7 +74,7 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
                                 alt="Bbrains Logo"
                                 width={150}
                                 height={150}
-                                fetchpriority="high"
+                                fetchPriority="high"
                                 loading="eager"
                                 className="dark:hidden object-contain"
                             />
@@ -83,7 +83,7 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
                                 alt="Bbrains Logo"
                                 width={150}
                                 height={150}
-                                fetchpriority="high"
+                                fetchPriority="high"
                                 loading="eager"
                                 className="hidden dark:block object-contain"
                             />
