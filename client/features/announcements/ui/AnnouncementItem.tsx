@@ -37,7 +37,7 @@ export function AnnouncementItem({
   const canDelete = isAuthor || isAdmin;
   const isHighlighted = String(highlightedId) === String(announcement.id);
   
-  const hasAcknowledged = (announcement as any).acknowledgments?.some(
+  const hasAcknowledged = (announcement as any).acknowledgedBy?.some(
     (ack: any) => ack.userId === currentUser?.id
   );
 
@@ -128,7 +128,7 @@ export function AnnouncementItem({
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:bg-muted transition-all"
           >
             <Users className="h-3.5 w-3.5" />
-            {(announcement as any).acknowledgments?.length || 0}
+            {(announcement as any).acknowledgedBy?.length || 0}
           </button>
         </div>
 

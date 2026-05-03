@@ -3,7 +3,6 @@ import { z } from "zod";
 import { findUserByEmail, createUser, getUserDetailsByID } from "../user/user.service.js";
 import dotenv from "dotenv";
 import { generateToken } from "../../utils/tokengen.js";
-import { getRandomAvatar } from "../../utils/randomavatar.js";
 import { sendSuccess, sendCreated, sendError } from "../../utils/response.js";
 import { createAuditLog } from "../../utils/auditLog.js";
 import { isDatabaseUnavailableError } from "../../utils/prisma-errors.js";
@@ -51,8 +50,7 @@ const register = async (req, res) => {
       validated.username,
       validated.email,
       validated.collegeId || 45,
-      await bcrypt.hash(validated.password, 10),
-      getRandomAvatar()
+      await bcrypt.hash(validated.password, 10)
     );
 
     await createAuditLog(newUser.id, 'AUTH', 'REGISTER', 'User', newUser.id);
@@ -78,7 +76,7 @@ const login = async (req, res) => {
 };
 
 const logout = async (req, res) => {
-  res.clearCookie("token", { httpOnly: true, sameSite: "strict" });
+  res.clearCookie("token", { httpOnly: true, secure: true, sameSite: "none" });
   return sendSuccess(res, null, "Logged out successfully");
 };
 

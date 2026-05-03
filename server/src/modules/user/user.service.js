@@ -1,6 +1,5 @@
 import prisma from "../../utils/prisma.js";
 import jwt from 'jsonwebtoken';
-import { getRandomAvatar } from "../../utils/randomavatar.js";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 
@@ -395,7 +394,6 @@ const createManagedUser = async (data) => {
                     password: hashedPassword,
                     userDetails: {
                         create: {
-                            avatar: getRandomAvatar(),
                             firstName,
                             lastName,
                             sex,

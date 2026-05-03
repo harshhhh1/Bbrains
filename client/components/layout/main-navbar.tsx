@@ -122,7 +122,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
 
     const handleLogout = async () => {
         try {
-            await fetch(`${getBaseUrl()}/logout`, { method: 'POST', credentials: 'include' })
+            await authApi.logout()
         } catch (e) {
             console.error('Logout error:', e)
         }
