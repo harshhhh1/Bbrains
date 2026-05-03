@@ -38,7 +38,7 @@ export const academicApi = {
   createExamResult: (examId: number, data: { studentId: string; marksObtained: number; remark?: string }) => 
     api.post<any>(`/academic/exams/${examId}/results`, data),
   getAllResults: (params?: any) => api.get<any[]>(`/academic/exams/results/all`, { params }),
-  getCourseStudents: (courseId: number) => api.get<any[]>(`/academic/exams/course-students/${courseId}`),
+  getExamCourseStudents: (courseId: number) => api.get<any[]>(`/academic/exams/course-students/${courseId}`),
   saveExamResult: (examId: number, data: { studentId: string; marksObtained: number; remark?: string }) =>
     api.post<any>(`/academic/exams/${examId}/results/bulk`, data),
   
