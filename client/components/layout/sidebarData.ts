@@ -1,6 +1,20 @@
-import * as LucideIcons from "lucide-react";
-import { LucideIcon } from "lucide-react";
+import { 
+    Home, Megaphone, Calendar, Book, Trophy, MessageSquare, 
+    ArrowUpDown, Wallet, ShoppingCart, ShoppingBag, Library, 
+    FileText, FolderOpen, Wrench, MessageSquarePlus, Settings, 
+    UserCog, Building2, Shield, Settings2, GraduationCap, 
+    CheckSquare, BookOpen, UserCheck, CreditCard, HelpCircle,
+    LucideIcon
+} from "lucide-react";
 import { sidebarItems as sidebarItemsRaw } from "@/components/layout/sidebarItems";
+
+const IconMap: Record<string, LucideIcon> = {
+    Home, Megaphone, Calendar, Book, Trophy, MessageSquare, 
+    ArrowUpDown, Wallet, ShoppingCart, ShoppingBag, Library, 
+    FileText, FolderOpen, Wrench, MessageSquarePlus, Settings, 
+    UserCog, Building2, Shield, Settings2, GraduationCap, 
+    CheckSquare, BookOpen, UserCheck, CreditCard
+};
 
 export type Role =
     | "student"
@@ -29,7 +43,7 @@ const ALL_ROLES: Role[] = ["student", "teacher", "admin", "staff", "manager", "s
 
 // Icon lookup map
 const getIcon = (name: string): LucideIcon => {
-    return (LucideIcons as any)[name] || LucideIcons.HelpCircle;
+    return IconMap[name] || HelpCircle;
 };
 
 // Process dynamic URLs (Dashboard)
