@@ -84,8 +84,19 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${kalam.variable} ${patrickHand.variable}`} suppressHydrationWarning>
       <head>
+        {/* Preconnect to critical origins */}
+        {process.env.NEXT_PUBLIC_API_URL && (
+          <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL} crossOrigin="anonymous" />
+        )}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+
+        {/* LCP Logo Preloads */}
+        <link rel="preload" href="/logo-dark.png" as="image" fetchpriority="high" />
+        <link rel="preload" href="/logo-white.png" as="image" fetchpriority="high" />
+        
         {/* PWA & iOS meta tags */}
-        <link rel="preload" href="/manifest.webmanifest" as="manifest" />
         <link rel="icon" type="image/png" sizes="196x196" href="/favicon-196.png" />
         <link rel="apple-touch-icon" href="/apple-icon-180.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

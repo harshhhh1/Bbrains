@@ -37,3 +37,17 @@ export const disconnectSocket = () => {
         socket = null;
     }
 };
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('pagehide', (event) => {
+        if (socket) {
+            socket.disconnect();
+        }
+    });
+
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted && socket) {
+            socket.connect();
+        }
+    });
+}

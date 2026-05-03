@@ -44,19 +44,24 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const [levelUpToast, setLevelUpToast] = useState<{ title: string, description: string } | null>(null)
     const processedNotifications = useRef<Set<number>>(new Set())
     const chatUnreadStateRef = useRef(chatUnreadState)
+    const refreshInFlightRef = useRef(false)
 
     useEffect(() => {
         chatUnreadStateRef.current = chatUnreadState
     }, [chatUnreadState])
 
     const refreshUnreadCounts = useCallback(async () => {
+        if (refreshInFlightRef.current) return
         try {
+            refreshInFlightRef.current = true
             const unreadResponse = await notificationApi.getUnreadCount()
             if (unreadResponse.success && unreadResponse.data) {
                 setChatUnreadState(unreadResponse.data)
             }
         } catch {
             // Keep current state if polling fails.
+        } finally {
+            refreshInFlightRef.current = false
         }
     }, [])
 
