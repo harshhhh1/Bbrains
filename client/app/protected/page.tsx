@@ -1,13 +1,30 @@
-import { redirect } from 'next/navigation'
-import { cookies } from 'next/headers'
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { LogoutButton } from '@/components/shell/logout-button'
 
-export default async function ProtectedPage() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('token')?.value
+export default function ProtectedPage() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [authenticated, setAuthenticated] = useState(false)
 
-  if (!token) {
-    redirect('/auth/login')
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      router.push('/auth/login')
+    } else {
+      setAuthenticated(true)
+      setLoading(false)
+    }
+  }, [router])
+
+  if (loading) {
+    return null
+  }
+
+  if (!authenticated) {
+    return null
   }
 
   return (

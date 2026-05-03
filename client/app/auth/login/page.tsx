@@ -1,13 +1,24 @@
+'use client'
+
 import { LoginForm } from '@/features/auth/ui/login-form'
-import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default async function Page() {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('token')?.value
+export default function Page() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
 
-  if (token) {
-    redirect('/dashboard')
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      router.push('/dashboard')
+    } else {
+      setLoading(false)
+    }
+  }, [router])
+
+  if (loading) {
+    return null
   }
 
   return (

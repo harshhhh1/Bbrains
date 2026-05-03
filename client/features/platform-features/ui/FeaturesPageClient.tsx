@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from 'react'
 import Link from "next/link";
 import { HandButton } from "@/components/hand-drawn/button";
 import { 
@@ -12,8 +13,23 @@ import {
 import { Brain, Star, Wallet, Store, LineChart, ArrowRight, CheckCircle } from "lucide-react";
 
 export default function FeaturesPage() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    const root = document.documentElement
+    root.classList.remove('dark')
+    root.setAttribute('data-theme', 'light')
+    root.style.setProperty('--background', '#fdf6e3')
+    root.style.setProperty('--foreground', '#1a1a1a')
+  }, [])
+
+  if (!mounted) {
+    return <div className="min-h-screen bg-[#fdf6e3]" />
+  }
+
   return (
-    <div className="min-h-screen bg-hand-paper bg-paper-texture bg-size-[24px_24px] text-hand-pencil overflow-x-hidden selection:bg-hand-yellow selection:text-hand-pencil">
+    <div className="min-h-screen bg-hand-paper bg-paper-texture bg-size-[24px_24px] text-hand-pencil overflow-x-hidden selection-bg-hand-yellow selection-text-hand-pencil">
       {/* Navigation */}
       <nav className="border-b-[3px] border-hand-pencil border-dashed bg-white/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
