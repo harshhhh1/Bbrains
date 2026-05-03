@@ -48,29 +48,51 @@ export const MessageItem = React.memo(function MessageItem({
     const isMentioned = isMentionedById || isMentionedByUsername
 
     const content = useMemo(() => {
-        if (!msg.mentions?.length) return <>{msg.content}</>
-
-        const mentionSet = new Set(msg.mentions.map(m => m.toLowerCase()))
+        const mentionSet = new Set((msg.mentions || []).map(m => m.toLowerCase()))
+        const urlRegex = /(https?:\/\/[^\s]+)/g
+        const mentionRegex = /(@[a-zA-Z0-9_]+)/g
+        const combinedRegex = /((?:https?:\/\/[^\s]+)|(?:@[a-zA-Z0-9_]+))/g
 
         return (
             <>
-                {msg.content.split(/(@[a-zA-Z0-9_]+)/g).map((part, index) => {
-                    const username = part.slice(1).toLowerCase();
-                    if (part.startsWith('@') && mentionSet.has(username)) {
+                {msg.content.split(combinedRegex).map((part, index) => {
+                    if (!part) return null
+
+                    // Handle URLs
+                    if (part.match(urlRegex)) {
+                        return (
+                            <a
+                                key={index}
+                                href={part}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline break-all"
+                            >
+                                {part}
+                            </a>
+                        )
+                    }
+
+                    // Handle Mentions
+                    if (part.match(mentionRegex)) {
+                        const username = part.slice(1).toLowerCase()
+                        // Highlight if in mentionSet OR if it looks like a valid mention pattern
                         return (
                             <span
                                 key={index}
-                                className="bg-[#5865f2]/20 text-[#5865f2] rounded px-1 font-medium"
+                                className="bg-[#5865f2]/20 text-[#5865f2] rounded px-1 font-medium cursor-pointer hover:bg-[#5865f2]/30 transition-colors"
+                                onClick={() => onMention?.(username)}
                             >
                                 {part}
                             </span>
                         )
                     }
+
                     return <React.Fragment key={index}>{part}</React.Fragment>
                 })}
             </>
         )
-    }, [msg.content, msg.mentions])
+    }, [msg.content, msg.mentions, onMention])
 
     const containerStyle = isMentioned
         ? "bg-primary/5 border-l-2 border-primary"

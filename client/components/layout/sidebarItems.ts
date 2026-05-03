@@ -39,6 +39,7 @@ export const sidebarItems = [
             { "title": "Orders", "url": "/orders", "icon": "FileText" }
         ]
     },
+    { "title": "Study Materials", "url": "/study-materials", "icon": "FolderOpen", "access": ["student", "teacher", "admin", "staff", "manager", "superadmin"] },
     { "title": "Tools", "url": "/tools", "icon": "Wrench", "access": ["student"] },
     { "title": "Suggestions", "url": "/suggestions", "icon": "MessageSquarePlus", "access": ["student", "teacher", "admin", "staff", "manager"] },
     { "title": "Settings", "url": "/settings", "icon": "Settings", "access": ["student", "teacher", "admin", "staff", "manager"] },

@@ -43,7 +43,6 @@ async function resolveMentionTargets({ collegeId, mentions = [], mentionedUserId
     });
 
     return users
-        .filter((user) => user.id !== actorUserId)
         .map((user) => ({
             id: user.id,
             username: user.username,

@@ -37,6 +37,7 @@ import suggestionRouter from "./modules/suggestion/suggestion.routes.js";
 import assessmentRouter from "./modules/assessment/assessment.routes.js";
 import examRouter, { courseSemestersRouter } from "./modules/exam/exam.routes.js";
 import sidebarAccessRouter from "./modules/sidebaraccess/sidebaraccess.routes.js";
+import studyMaterialsRouter from "./modules/study-materials/study-materials.routes.js";
 import prisma from "./utils/prisma.js";
 
 // Middleware imports
@@ -120,6 +121,7 @@ app.use("/notifications", notificationRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/config", configRouter);
 app.use("/suggestions", suggestionRouter);
+app.use("/api/study-materials", studyMaterialsRouter);
 app.use("/superadmin", superadminRoutes);
 app.use("/academic/assessments", assessmentRouter);
 app.use("/academic/exams", examRouter);

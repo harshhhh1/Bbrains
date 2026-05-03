@@ -238,7 +238,7 @@ export function MessageInput({
                             ref={inputRef}
                             value={message}
                             onChange={(e) => onChange(e.target.value)}
-                            onKeyDown={onKeyDown}
+                            onKeyDown={handleInputKeyDown}
                             autoFocus
                             aria-label="Message input"
                             placeholder={`Message #${channelName}`}

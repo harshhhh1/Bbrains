@@ -108,6 +108,8 @@ export function useAcademics() {
     setEnrollmentModalOpen,
     selectedCourse,
     router,
+    fetchData,
+    refreshData: fetchData,
 
   };
 }

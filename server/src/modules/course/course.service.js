@@ -1,5 +1,6 @@
 import prisma from '../../utils/prisma.js';
 import { ForbiddenError, NotFoundError } from '../../utils/errors.js';
+import { supabaseServer } from '../../utils/supabase-server.js';
 
 const normalizeStringArray = (value) => {
     if (!Array.isArray(value)) return [];
@@ -279,6 +280,22 @@ export const createCourseRecord = async (data, currentUser = null) => {
     const created = await prisma.course.create({
         data: prepareCreateCourseData(data, currentUser),
     });
+
+    // Auto-create study materials folder in Supabase storage
+    try {
+        const collegeId = created.collegeId || currentUser?.collegeId;
+        if (collegeId) {
+            const folderPath = `${collegeId}/${created.id}/.keep`;
+            await supabaseServer.storage
+                .from('study-materials')
+                .upload(folderPath, new Blob([''], { type: 'text/plain' }), {
+                    upsert: true,
+                    contentType: 'text/plain'
+                });
+        }
+    } catch (err) {
+        console.error('Failed to create study materials folder:', err);
+    }
 
     return mapCourseRecord(created);
 };
