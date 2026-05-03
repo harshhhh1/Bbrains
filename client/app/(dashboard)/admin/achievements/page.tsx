@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from "react"
 import { getAuthedClient } from "@/services/api/client"
-import { DataTable } from "@/features/admin/components/DataTable"
-import { CrudDrawer } from "@/features/admin/components/CrudDrawer"
-import { ConfirmDialog } from "@/features/admin/components/ConfirmDialog"
-import { SectionHeader } from "@/features/admin/components/SectionHeader"
-import { FormInput, FormTextarea } from "@/features/admin/components/form"
+import { DataTable } from "@/features/admin/ui/DataTable"
+import { CrudDrawer } from "@/features/admin/ui/CrudDrawer"
+import { ConfirmDialog } from "@/features/admin/ui/ConfirmDialog"
+import { SectionHeader } from "@/features/admin/ui/SectionHeader"
+import { FormInput, FormTextarea } from "@/features/admin/ui/form"
 import type { ApiAchievement } from "@/lib/types/api"
 
 interface AchForm { name: string; description: string; requiredXp: string; category: string; icon: string }

@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "./base";
+import { api } from "@/services/api/base";
 
 export const systemApi = {
   getConfigs: () => api.get<any[]>("/config"),

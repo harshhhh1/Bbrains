@@ -1,5 +1,5 @@
-import { api, makeRequest } from "./base";
-import type { ApiResponse } from "./base";
+import { api, makeRequest } from "@/services/api/base";
+import type { ApiResponse } from "@/services/api/base";
 
 export const authApi = {
   login: (data: any) => api.post<any>("/login", data),

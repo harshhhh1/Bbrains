@@ -1,4 +1,4 @@
-import { api, ApiResponse } from "./client";
+import { api, ApiResponse } from "@/services/api/client";
 
 export async function fetchCollegeSidebarAccess(): Promise<Record<string, string[]> | null> {
     try {

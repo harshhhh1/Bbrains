@@ -1,8 +1,8 @@
 "use client";
 
 import { DashboardContent } from "@/components/dashboard-content";
-import { WeeklySchedulePanel } from "@/features/schedule/components/WeeklySchedulePanel";
-import { defaultWeeklySchedule } from "@/features/schedule/data";
+import { WeeklySchedulePanel } from "@/features/schedule/ui/WeeklySchedulePanel";
+import { defaultWeeklySchedule } from "@/features/schedule/api/data";
 
 export default function SchedulePage() {
   return (

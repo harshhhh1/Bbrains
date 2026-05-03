@@ -1,6 +1,6 @@
 import * as LucideIcons from "lucide-react";
 import { LucideIcon } from "lucide-react";
-import { sidebarItems as sidebarItemsRaw } from "./sidebarItems";
+import { sidebarItems as sidebarItemsRaw } from "@/components/layout/sidebarItems";
 
 export type Role =
     | "student"

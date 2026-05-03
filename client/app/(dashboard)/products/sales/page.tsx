@@ -1,4 +1,4 @@
-import ProductSalesPageClient from "./components/ProductSalesPageClient";
+import ProductSalesPageClient from "@/features/products/sales/ui/ProductSalesPageClient";
 
 export default function Page() {
   return <ProductSalesPageClient />;

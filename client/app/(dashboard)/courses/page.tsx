@@ -1,4 +1,4 @@
-import CoursesPageClient from "./components/CoursesPageClient";
+import CoursesPageClient from "@/features/courses/ui/CoursesPageClient";
 
 export default function Page() {
   return <CoursesPageClient />;

@@ -1,0 +1,35 @@
+import type { ChatMentionUser } from "@/services/api/client";
+import type { Member, Message, SelectedMention, ReplyingMessage, PendingAttachment, GroupedMessages } from "@/features/chat/api/data";
+
+export type { Member, Message, SelectedMention, ReplyingMessage, PendingAttachment, GroupedMessages };
+
+export type ChatPageState = {
+  messages: Message[];
+  loading: boolean;
+  isConnected: boolean;
+  currentUserId: string | null;
+  isUploading: boolean;
+  loadingMore: boolean;
+  hasMore: boolean;
+  searchResults: Message[];
+  isSearching: boolean;
+  message: string;
+  membersPanelOpen: boolean;
+  isMounted: boolean;
+  profileUser: Member | null;
+  showProfile: boolean;
+  editingMsgId: string | null;
+  replyingMsg: ReplyingMessage;
+  mentionQuery: string | null;
+  mentionIndex: number;
+  mentionSuggestions: ChatMentionUser[];
+  membersList: Member[];
+  pendingAttachments: PendingAttachment[];
+  uploadError: string | null;
+  searchQuery: string;
+  isSearchMode: boolean;
+  isMobileSearchOpen: boolean;
+  hasNewMessages: boolean;
+  currentUsername: string | null;
+  groupedMessages: GroupedMessages;
+};

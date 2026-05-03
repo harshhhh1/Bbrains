@@ -1,5 +1,5 @@
 import { announcementApi } from "@/services/api/client";
-import { AnnouncementsClient } from "./AnnouncementsClient";
+import { AnnouncementsClient } from "@/features/announcements/ui/AnnouncementsClient";
 
 export default async function AnnouncementsPage() {
   const announcementsRes = await announcementApi.getAnnouncements();

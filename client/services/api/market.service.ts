@@ -1,4 +1,4 @@
-import { api } from "./base";
+import { api } from "@/services/api/base";
 
 export const marketApi = {
   getProducts: (page = 1, limit = 10) => api.get<any[]>(`/market/products?page=${page}&limit=${limit}`),

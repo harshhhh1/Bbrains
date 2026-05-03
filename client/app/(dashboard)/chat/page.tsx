@@ -1,11 +1,11 @@
 "use client";
 
-import { ChannelHeader } from "@/features/chat/components/ChannelHeader";
-import { ProfileDialog } from "@/features/chat/components/ProfileDialog";
-import { ChatMembersPanels } from "./components/ChatMembersPanels";
-import { ChatMessagePane } from "./components/ChatMessagePane";
-import { ChatMobileSearch } from "./components/ChatMobileSearch";
-import { useChatPage } from "./hooks/use-chat-page";
+import { ChannelHeader } from "@/features/chat/ui/ChannelHeader";
+import { ProfileDialog } from "@/features/chat/ui/ProfileDialog";
+import { ChatMembersPanels } from "@/features/chat/ui/ChatMembersPanels";
+import { ChatMessagePane } from "@/features/chat/ui/ChatMessagePane";
+import { ChatMobileSearch } from "@/features/chat/ui/ChatMobileSearch";
+import { useChatPage } from "@/features/chat/model/use-chat-page";
 
 export default function ChatPage() {
   const { state, refs, actions } = useChatPage();

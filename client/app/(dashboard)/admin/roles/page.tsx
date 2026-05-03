@@ -1,4 +1,4 @@
-import AdminRolesPageClient from "./components/AdminRolesPageClient";
+import AdminRolesPageClient from "@/features/admin/roles/ui/AdminRolesPageClient";
 
 export default function Page() {
   return <AdminRolesPageClient />;

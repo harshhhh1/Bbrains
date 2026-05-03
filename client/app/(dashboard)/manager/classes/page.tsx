@@ -1,12 +1,12 @@
 "use client";
 
 import { DashboardContent } from "@/components/dashboard-content";
-import { ClassFormDrawer } from "./components/ClassFormDrawer";
-import { ClassesHeader } from "./components/ClassesHeader";
-import { ClassesList } from "./components/ClassesList";
-import { ClassPreview } from "./components/ClassPreview";
+import { ClassFormDrawer } from "@/features/manager/classes/ui/ClassFormDrawer";
+import { ClassesHeader } from "@/features/manager/classes/ui/ClassesHeader";
+import { ClassesList } from "@/features/manager/classes/ui/ClassesList";
+import { ClassPreview } from "@/features/manager/classes/ui/ClassPreview";
 
-import { useManagerClassesPage } from "./hooks/use-manager-classes";
+import { useManagerClassesPage } from "@/features/manager/classes/model/use-manager-classes";
 
 export default function ManagerClassesPage() {
   const page = useManagerClassesPage();
