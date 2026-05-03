@@ -15,7 +15,7 @@ interface StudentFormProps {
 
 export function StudentForm({ form, onChange, disabled, courses, isEditing }: StudentFormProps) {
     const filteredCourses = form.collegeId
-        ? courses.filter((course) => String(course.collegeId) === String(form.collegeId))
+        ? courses.filter((course) => String(course.college?.id) === String(form.collegeId))
         : [];
 
     const classOptions = [
