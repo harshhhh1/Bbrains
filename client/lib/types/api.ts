@@ -478,6 +478,16 @@ export interface AssessmentCourseOption {
     standard?: string
     subjects?: string[]
     availableSubjects?: string[]
+    semesters?: Array<{
+        id?: number;
+        semesterNumber: number;
+        subjects: Array<{
+            id?: number;
+            name: string;
+            code: string;
+            examTotalMarks: number;
+        }>;
+    }>;
 }
 
 export interface AssessmentStudent {
@@ -557,6 +567,8 @@ export interface ApiCourse {
     name: string
     description?: string
     standard?: string
+    collegeId?: number | string
+    college?: { id: number; name: string }
     subjects?: string[]
     subjectProgress?: SubjectChapterProgress[]
     feePerStudent?: number | string

@@ -1,3 +1,11 @@
+export type ClassTimetableEntry = {
+  day: string;
+  subject: string;
+  startTime: string;
+  endTime: string;
+  room?: string | null;
+};
+
 export type SemesterSubject = {
   id: string;
   name: string;
