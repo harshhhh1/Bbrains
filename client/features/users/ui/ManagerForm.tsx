@@ -1,40 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
 import { FormInput, FormSelect } from "@/features/admin/ui/form";
 import type { ManagerForm as ManagerFormType } from "@/features/users/types";
-
-interface RoleSelectorProps {
-  roles: any[];
-  selectedRoleIds: number[];
-  onChange: (roleId: number) => void;
-  disabled?: boolean;
-}
-
-const RoleSelector = ({ roles, selectedRoleIds, onChange, disabled }: RoleSelectorProps) => (
-  <div className="col-span-2 space-y-2">
-    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Assign Roles (Multi-select)</label>
-    <div className="grid grid-cols-2 gap-2 bg-black/20 p-4 rounded-xl border border-white/5">
-      {roles.map((role) => (
-        <label key={role.id} className="flex items-center gap-3 cursor-pointer group hover:bg-white/5 p-2 rounded-lg transition-colors">
-          <input
-            type="checkbox"
-            checked={selectedRoleIds.includes(role.id)}
-            onChange={() => onChange(role.id)}
-            disabled={disabled}
-            className="w-4 h-4 rounded border-white/10 bg-white/5 text-primary focus:ring-primary/50"
-          />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-white group-hover:text-primary transition-colors">{role.name}</span>
-            {role.description && <span className="text-[10px] text-gray-500 line-clamp-1">{role.description}</span>}
-          </div>
-        </label>
-      ))}
-      {roles.length === 0 && <p className="text-xs text-gray-500 italic">No custom roles found for this college.</p>}
-    </div>
-  </div>
-);
+import { RoleSelector } from "./manager/RoleSelector";
+import { SubjectSelector, type SubjectInfo } from "./manager/SubjectSelector";
 
 interface ManagerFormProps {
   form: ManagerFormType;
@@ -45,22 +15,51 @@ interface ManagerFormProps {
 }
 
 export function ManagerForm({ form, onChange, disabled, roles = [], courses = [] }: ManagerFormProps) {
+  const updateField = (field: keyof ManagerFormType, value: any) => {
+    onChange({ ...form, [field]: value });
+  };
+
   const handleRoleToggle = (roleId: number) => {
     const nextRoles = form.roleIds.includes(roleId)
       ? form.roleIds.filter((id) => id !== roleId)
       : [...form.roleIds, roleId];
-    onChange({ ...form, roleIds: nextRoles });
+    updateField("roleIds", nextRoles);
   };
 
-  const updateField = (field: keyof ManagerFormType, value: any) => {
-    onChange({ ...form, [field]: value });
+  const handleSubjectToggle = (subject: string) => {
+    const currentSubjects = form.teacherSubjects.split(",").map(s => s.trim()).filter(Boolean);
+    const nextSubjects = currentSubjects.includes(subject)
+      ? currentSubjects.filter((s) => s !== subject)
+      : [...currentSubjects, subject];
+    updateField("teacherSubjects", nextSubjects.join(", "));
   };
+
+  const availableSubjects = React.useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    courses.forEach(c => {
+      if (Array.isArray(c.subjects)) {
+        c.subjects.forEach((s: any) => {
+          const trimmed = String(s || "").trim();
+          if (trimmed) {
+            if (!map.has(trimmed)) map.set(trimmed, new Set());
+            map.get(trimmed)!.add(c.name);
+          }
+        });
+      }
+    });
+    return Array.from(map.entries())
+      .map(([name, courses]) => ({
+        name,
+        courses: Array.from(courses)
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [courses]);
 
   return (
     <div className="space-y-6">
       {/* Account Identity */}
       <section className="space-y-4">
-        <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-white/5 pb-2">Account Identity</h3>
+        <SectionHeader title="Account Identity" />
         <div className="grid grid-cols-2 gap-4">
           <div className="col-span-2">
             <FormSelect
@@ -73,7 +72,6 @@ export function ManagerForm({ form, onChange, disabled, roles = [], courses = []
                 { value: "teacher", label: "Teacher" },
                 { value: "manager", label: "Manager" },
                 { value: "admin", label: "Admin" },
-                { value: "staff", label: "Staff" },
               ]}
               disabled={disabled}
             />
@@ -100,7 +98,7 @@ export function ManagerForm({ form, onChange, disabled, roles = [], courses = []
 
       {/* Security */}
       <section className="space-y-4">
-        <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-white/5 pb-2">Security</h3>
+        <SectionHeader title="Security" />
         <div className="grid grid-cols-2 gap-4">
           <FormInput
             label="Temporary Password"
@@ -125,7 +123,7 @@ export function ManagerForm({ form, onChange, disabled, roles = [], courses = []
 
       {/* Profile Details */}
       <section className="space-y-4">
-        <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-white/5 pb-2">Profile Details</h3>
+        <SectionHeader title="Profile Details" />
         <div className="grid grid-cols-2 gap-4">
           <FormInput
             label="First Name"
@@ -173,15 +171,15 @@ export function ManagerForm({ form, onChange, disabled, roles = [], courses = []
         </div>
       </section>
 
-      {/* Role Specific */}
+      {/* Assignment & Permissions */}
       <section className="space-y-4">
-        <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-white/5 pb-2">Assignment & Permissions</h3>
+        <SectionHeader title="Assignment & Permissions" />
         <div className="grid grid-cols-2 gap-4">
-          {form.type === "student" && (
+          {(form.type === "student" || form.type === "teacher") && (
             <div className="col-span-2">
               <FormSelect
-                label="Enrolled Course"
-                required
+                label={form.type === "student" ? "Enrolled Course" : "Assigned Class (Class Teacher)"}
+                required={form.type === "student"}
                 value={form.classId}
                 onChange={(value) => updateField("classId", value)}
                 options={courses.map((c) => ({
@@ -194,16 +192,12 @@ export function ManagerForm({ form, onChange, disabled, roles = [], courses = []
           )}
 
           {form.type === "teacher" && (
-            <div className="col-span-2">
-              <FormInput
-                label="Teaching Subjects (comma separated)"
-                required
-                value={form.teacherSubjects}
-                onChange={(e) => updateField("teacherSubjects", e.target.value)}
-                placeholder="Math, Science, English"
-                disabled={disabled}
-              />
-            </div>
+            <SubjectSelector 
+              subjects={availableSubjects} 
+              selectedSubjects={form.teacherSubjects.split(",").map(s => s.trim()).filter(Boolean)} 
+              onChange={handleSubjectToggle}
+              disabled={disabled}
+            />
           )}
 
           {(form.type === "manager" || form.type === "admin" || form.type === "staff") && (
@@ -226,10 +220,12 @@ export function ManagerForm({ form, onChange, disabled, roles = [], courses = []
           />
         </div>
       </section>
-
-      <p className="text-xs text-muted-foreground border-t border-white/5 pt-4">
-        Users created here will receive an email (if configured) or can be provided with their temporary credentials manually.
-      </p>
     </div>
   );
 }
+
+const SectionHeader = ({ title }: { title: string }) => (
+  <h3 className="text-sm font-bold text-primary uppercase tracking-widest border-b border-white/5 pb-2">
+    {title}
+  </h3>
+);

@@ -62,6 +62,15 @@ export function setAuthToken(token: string | null) {
   }
 }
 
+export function setImpersonateCollegeId(collegeId: string | null) {
+  if (typeof window === "undefined") return;
+  if (collegeId) {
+    document.cookie = `impersonateCollegeId=${collegeId}; path=/; max-age=2592000; SameSite=Lax`;
+  } else {
+    document.cookie = "impersonateCollegeId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  }
+}
+
 function getCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
   const value = `; ${document.cookie}`;
