@@ -1,4 +1,4 @@
-import XpConfigPageClient from "./components/XpConfigPageClient";
+import XpConfigPageClient from "@/features/admin/xpconfig/ui/XpConfigPageClient";
 
 export default function Page() {
   return <XpConfigPageClient />;

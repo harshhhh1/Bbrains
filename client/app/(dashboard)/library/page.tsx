@@ -1,4 +1,4 @@
-import LibraryPageClient from "./components/LibraryPageClient";
+import LibraryPageClient from "@/features/library/ui/LibraryPageClient";
 
 export default function Page() {
   return <LibraryPageClient />;

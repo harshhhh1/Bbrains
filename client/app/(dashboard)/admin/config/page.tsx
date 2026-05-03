@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { ConfigClient } from "@/app/(dashboard)/admin/config/ConfigClient";
-import { fetchConfigs } from "@/app/(dashboard)/admin/config/data";
+import { ConfigClient } from "@/features/admin/config/ui/ConfigClient";
+import { fetchConfigs } from "@/features/admin/config/api/data";
 import type { SystemConfig } from "@/services/api/client";
 
 export default function ConfigPage() {

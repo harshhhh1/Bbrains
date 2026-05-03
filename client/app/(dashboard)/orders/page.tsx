@@ -1,4 +1,4 @@
-import OrdersPageClient from "./components/OrdersPageClient";
+import OrdersPageClient from "@/features/orders/ui/OrdersPageClient";
 
 export default function Page() {
   return <OrdersPageClient />;

@@ -3,13 +3,13 @@
 import { Loader2, Lock, User, Wallet } from "lucide-react";
 import { DashboardContent } from "@/components/dashboard-content";
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
-import { formatCurrency } from "./lib/settings";
-import { SettingsHero } from "./components/SettingsHero";
-import { SettingsProfileTab } from "./components/SettingsProfileTab";
-import { SettingsSecurityTab } from "./components/SettingsSecurityTab";
-import { SettingsWalletTab } from "./components/SettingsWalletTab";
-import { TabButton } from "./components/settings-ui";
-import { useSettingsPage } from "./hooks/use-settings-page";
+import { formatCurrency } from "@/features/settings/model/settings";
+import { SettingsHero } from "@/features/settings/ui/SettingsHero";
+import { SettingsProfileTab } from "@/features/settings/ui/SettingsProfileTab";
+import { SettingsSecurityTab } from "@/features/settings/ui/SettingsSecurityTab";
+import { SettingsWalletTab } from "@/features/settings/ui/SettingsWalletTab";
+import { TabButton } from "@/features/settings/ui/settings-ui";
+import { useSettingsPage } from "@/features/settings/model/use-settings-page";
 
 export default function SettingsPage() {
   const settings = useSettingsPage();

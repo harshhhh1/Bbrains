@@ -1,4 +1,4 @@
-import MarketPageClient from "./components/MarketPageClient";
+import MarketPageClient from "@/features/market/ui/MarketPageClient";
 
 export default function Page() {
   return <MarketPageClient />;

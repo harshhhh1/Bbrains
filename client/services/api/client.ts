@@ -1,18 +1,18 @@
 // --- Base Logic & Types ---
-export * from "./base";
+export * from "@/services/api/base";
 
 // --- Domain Services ---
-import { authApi } from "./auth.service";
-import { userApi } from "./user.service";
-import { academicApi } from "./academic.service";
-import { marketApi } from "./market.service";
-import { financeApi } from "./finance.service";
-import { notificationApi } from "./notification.service";
-import { communicationApi } from "./communication.service";
-import { chatApi } from "./chat.service";
-import { gamificationApi } from "./gamification.service";
-import { dashboardService } from "./dashboard.service";
-import { systemApi } from "./system.service";
+import { authApi } from "@/services/api/auth.service";
+import { userApi } from "@/services/api/user.service";
+import { academicApi } from "@/services/api/academic.service";
+import { marketApi } from "@/services/api/market.service";
+import { financeApi } from "@/services/api/finance.service";
+import { notificationApi } from "@/services/api/notification.service";
+import { communicationApi } from "@/services/api/communication.service";
+import { chatApi } from "@/services/api/chat.service";
+import { gamificationApi } from "@/services/api/gamification.service";
+import { dashboardService } from "@/services/api/dashboard.service";
+import { systemApi } from "@/services/api/system.service";
 
 // Re-export services for backward compatibility and centralized access
 export {

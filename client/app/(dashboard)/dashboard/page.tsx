@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { cookies } from "next/headers";
-import { getDashboardOverviewData } from "@/features/dashboard/data";
-import { DashboardClient } from "./DashboardClient";
+import { getDashboardOverviewData } from "@/features/dashboard/api/data";
+import { DashboardClient } from "@/features/dashboard/ui/DashboardClient";
 
 export const metadata: Metadata = {
   title: "Dashboard | BBrains",

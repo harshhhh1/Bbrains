@@ -1,4 +1,4 @@
-import MarketApprovalsPageClient from "./components/MarketApprovalsPageClient";
+import MarketApprovalsPageClient from "@/features/market/approvals/ui/MarketApprovalsPageClient";
 
 export default function Page() {
   return <MarketApprovalsPageClient />;

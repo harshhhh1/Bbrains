@@ -1,4 +1,4 @@
-import { api } from "./base";
+import { api } from "@/services/api/base";
 
 export const dashboardService = {
   getDashboard: () => api.get<any>("/dashboard"),

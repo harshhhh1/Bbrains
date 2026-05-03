@@ -1,4 +1,4 @@
-import { api } from "./base";
+import { api } from "@/services/api/base";
 
 export const academicApi = {
   getCourses: (config?: any) => api.get<any[]>("/courses", config),

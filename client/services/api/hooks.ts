@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { ApiResponse } from './client';
+import { ApiResponse } from '@/services/api/client';
 
 export interface UseApiState<T> {
   data: T | null;

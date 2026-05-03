@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
-import { TeachersClient } from "@/app/(dashboard)/admin/teachers/TeachersClient";
-import { fetchTeachers } from "@/app/(dashboard)/admin/teachers/data";
-import type { ApiUser } from "@/app/(dashboard)/admin/teachers/_types";
+import { TeachersClient } from "@/features/admin/teachers/ui/TeachersClient";
+import { fetchTeachers } from "@/features/admin/teachers/api/data";
+import type { ApiUser } from "@/features/admin/teachers/types";
 
 export default function TeachersPage() {
   const [teachers, setTeachers] = useState<ApiUser[]>([]);

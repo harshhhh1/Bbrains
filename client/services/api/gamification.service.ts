@@ -1,4 +1,4 @@
-import { api } from "./base";
+import { api } from "@/services/api/base";
 
 export const gamificationApi = {
   getLeaderboard: (category: string, sortBy: string, limit = 20, offset = 0) => 

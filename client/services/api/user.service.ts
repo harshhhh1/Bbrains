@@ -1,4 +1,4 @@
-import { api } from "./base";
+import { api } from "@/services/api/base";
 import type { ApiUser } from "@/lib/types/api";
 
 export const userApi = {

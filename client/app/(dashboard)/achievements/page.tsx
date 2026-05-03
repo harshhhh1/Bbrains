@@ -1,9 +1,9 @@
 "use client"
 
-import { useAchievements } from "./hooks/use-achievements"
-import { AchievementCard } from "./components/achievement-card"
-import { AchievementsEmptyState } from "./components/achievements-empty-state"
-import { AchievementsLoadingState } from "./components/achievements-loading-state"
+import { useAchievements } from "@/features/achievements/model/use-achievements"
+import { AchievementCard } from "@/features/achievements/ui/achievement-card"
+import { AchievementsEmptyState } from "@/features/achievements/ui/achievements-empty-state"
+import { AchievementsLoadingState } from "@/features/achievements/ui/achievements-loading-state"
 
 export default function AchievementsPage() {
   const { achievements, loading, userLoading, user } = useAchievements()

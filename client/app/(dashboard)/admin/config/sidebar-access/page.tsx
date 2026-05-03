@@ -1,4 +1,4 @@
-import SidebarAccessClient from "./SidebarAccessClient";
+import SidebarAccessClient from "@/features/admin/config/sidebar-access/ui/SidebarAccessClient";
 
 export const metadata = {
     title: "Sidebar Access Control | BBrains",

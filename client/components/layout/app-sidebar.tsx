@@ -12,12 +12,12 @@ import { Settings, BarChart3 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/context/theme";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getSidebarGroups, resolveRole } from "./sidebarData"
-import type { Role } from "./sidebarData"
-import { useNotifications } from "../providers/notification-provider"
+import { getSidebarGroups, resolveRole } from "@/components/layout/sidebarData"
+import type { Role } from "@/components/layout/sidebarData"
+import { useNotifications } from "@/components/providers/notification-provider"
 import dynamic from "next/dynamic"
 
-const UserProfileCard = dynamic(() => import("../user-profile-card").then(mod => mod.UserProfileCard), {
+const UserProfileCard = dynamic(() => import("@/components/user-profile-card").then(mod => mod.UserProfileCard), {
     ssr: true
 })
 

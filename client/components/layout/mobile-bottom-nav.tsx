@@ -5,8 +5,8 @@ import Link from "next/link"
 import * as LucideIcons from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getSidebarGroups, resolveRole } from "./sidebarData"
-import type { Role } from "./sidebarData"
+import { getSidebarGroups, resolveRole } from "@/components/layout/sidebarData"
+import type { Role } from "@/components/layout/sidebarData"
 import {
     DropdownMenu,
     DropdownMenuContent,
