@@ -61,6 +61,11 @@ export function useChatPage() {
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [hasNewMessages, setHasNewMessages] = useState(false);
   const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
+  const unreadRef = useRef(chatUnreadByChannel);
+
+  useEffect(() => {
+    unreadRef.current = chatUnreadByChannel;
+  }, [chatUnreadByChannel]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null!);
@@ -135,11 +140,11 @@ export function useChatPage() {
   useEffect(() => {
     if (!chatRoomId || messages.length === 0) return;
     
-    const unreadCount = chatUnreadByChannel[chatRoomId] || 0;
+    const unreadCount = unreadRef.current[chatRoomId] || 0;
     if (unreadCount > 0) {
       void markChannelRead(chatRoomId);
     }
-  }, [chatRoomId, markChannelRead, messages.length, chatUnreadByChannel]);
+  }, [chatRoomId, markChannelRead, messages.length]);
 
   useEffect(() => {
     if (!lastIncomingMessage) return;

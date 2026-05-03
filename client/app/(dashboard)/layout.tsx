@@ -64,7 +64,6 @@ async function fetchSidebarAccess(token: string): Promise<Record<string, string[
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
-            cache: 'no-store',
         })
 
         if (!response.ok) return null
@@ -200,10 +199,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         init()
     }, [router])
 
-    if (loading || !user) {
-        return <div className="flex h-screen items-center justify-center">Loading...</div>
-    }
-
     return (
         <SidebarProvider defaultOpen={true}>
             <NotificationProvider>
@@ -216,7 +211,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 <MainNavbar user={user} />
 
                                 <main className="scrollbar-hide p-4 flex-1 min-h-0 flex flex-col relative overflow-y-auto overflow-x-hidden pb-0 md:pb-0">
-                                     {children}
+                                     {loading || !user ? (
+                                         <div className="flex h-full items-center justify-center">
+                                             <div className="flex flex-col items-center gap-2">
+                                                 <div className="size-8 animate-spin rounded-full border-4 border-brand-purple border-t-transparent"></div>
+                                                 <p className="text-sm font-medium text-muted-foreground">Initializing...</p>
+                                             </div>
+                                         </div>
+                                     ) : (
+                                         children
+                                     )}
                                 </main>
                                 <MobileBottomNav user={user} />
                             </SidebarInset>
@@ -224,7 +228,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </TooltipProvider>
                 </PermissionsProvider>
             </NotificationProvider>
-
         </SidebarProvider>
     )
 }
