@@ -90,7 +90,7 @@ export function useChatPage() {
   }, []);
 
   useEffect(() => {
-    if (!mentionQuery) {
+    if (mentionQuery === null) {
       return;
     }
 
@@ -234,7 +234,7 @@ export function useChatPage() {
     const active = document.activeElement as HTMLInputElement | null;
     const cursorPos = active && typeof active.selectionStart === "number" ? active.selectionStart : value.length;
     const textBeforeCursor = value.slice(0, cursorPos);
-    const match = textBeforeCursor.match(/@(\w*)$/);
+    const match = textBeforeCursor.match(/(?:^|\s)@(\w*)$/);
 
     if (match) {
       setMentionQuery(match[1]);
@@ -282,7 +282,13 @@ export function useChatPage() {
         membersList.some(m => m.username.toLowerCase() === uname.toLowerCase())
       );
       
-      const mentionIds = mentionedUsers.map((user) => user.id);
+      const mentionIds = Array.from(new Set([
+        ...mentionedUsers.map((user) => user.id),
+        ...verifiedAutoMentions.map(uname => 
+          membersList.find(m => m.username.toLowerCase() === uname.toLowerCase())?.id
+        ).filter(Boolean) as string[]
+      ]));
+
       const mentions = Array.from(new Set([
         ...mentionedUsers.map((user) => user.username),
         ...verifiedAutoMentions
@@ -380,7 +386,7 @@ export function useChatPage() {
       const cursorPos = input?.selectionStart || 0;
       const textBeforeCursor = message.slice(0, cursorPos);
       const textAfterCursor = message.slice(cursorPos);
-      const beforeMention = textBeforeCursor.replace(/@(\w*)$/, "");
+      const beforeMention = textBeforeCursor.replace(/(?:^|\s)@(\w*)$/, (match) => match.startsWith(" ") ? " " : "");
       const nextMessage = `${beforeMention}@${user.username} ${textAfterCursor}`;
 
       setMessage(nextMessage);

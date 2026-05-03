@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 
 import { dashboardApi, User } from "@/services/api/client"
 
-type NormalizedUser = User & { collegeId?: number }
+type NormalizedUser = User & { collegeId?: number; originalType?: string }
 
 function normalizeUser(user: User | (User & { collegeId?: number })): NormalizedUser {
   const anyUser = user as User & { collegeId?: number }

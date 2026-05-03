@@ -159,7 +159,6 @@ async function resolveMentionTargets({ chatId, collegeId, mentions = [], mention
     });
 
     return users
-        .filter((user) => user.id !== actorUserId)
         .filter((user) => allowedUserIds.size === 0 || allowedUserIds.has(user.id))
         .map((user) => ({
             id: user.id,
@@ -563,12 +562,8 @@ export const searchChatUsers = async (req, res) => {
         const chatId = normalizeChatId(req.query.chatId, req);
         const limit = Math.min(Math.max(parseInt(String(req.query.limit || "10"), 10), 1), 50);
 
-        if (!query) {
-            return sendSuccess(res, []);
-        }
-
         const where = {
-            username: { contains: query, mode: "insensitive" },
+            ...(query ? { username: { contains: query, mode: "insensitive" } } : {}),
             ...(req.user?.collegeId ? { collegeId: req.user.collegeId } : {}),
         };
 

@@ -10,6 +10,12 @@ export interface SemesterSubject {
   examTotalMarks: number;
 }
 
+export interface SubjectEntry {
+  id: string;
+  name: string;
+  teacherId: string;
+}
+
 export interface SemesterEntry {
   id: string;
   semesterNumber: number;
