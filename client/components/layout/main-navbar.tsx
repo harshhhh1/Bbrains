@@ -14,7 +14,7 @@ import {
     Coins,
     ChevronLeft,
 } from "lucide-react"
-import { getBaseUrl, setAuthToken, marketApi, type Product } from "@/services/api/client"
+import { getBaseUrl, setAuthToken, marketApi, authApi, type Product } from "@/services/api/client"
 import { NotificationsBell } from "@/components/shell/NotificationsBell"
 import { ThemeSwitcher } from "@/components/theme-switcher"
 import { SidebarTrigger } from "@/components/ui/sidebar"
