@@ -67,13 +67,13 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
             <SidebarHeader className="bg-sidebar pt-2  ">
                 <div className="flex items-center justify-center w-full text-sidebar-foreground">
                     <Link href="/" className="flex items-center justify-center">
-                        <div className="relative w-[150px] h-[150px] flex items-center justify-center">
+                        <div className="relative w-[150px] h-[80px] flex items-center justify-center">
                             {/* Use standard img for LCP to avoid next/image lazy-loading magic */}
                             <img
                                 src="/logo-dark.png"
                                 alt="Bbrains Logo"
-                                width={150}
-                                height={150}
+                                width={130}
+                                height={40}
                                 fetchPriority="high"
                                 loading="eager"
                                 className="dark:hidden object-contain"
@@ -81,8 +81,8 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
                             <img
                                 src="/logo-white.png"
                                 alt="Bbrains Logo"
-                                width={150}
-                                height={150}
+                                width={130}
+                                height={40}
                                 fetchPriority="high"
                                 loading="eager"
                                 className="hidden dark:block object-contain"
