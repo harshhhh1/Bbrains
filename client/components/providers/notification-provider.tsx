@@ -43,6 +43,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const [loading, setLoading] = useState(false)
     const [levelUpToast, setLevelUpToast] = useState<{ title: string, description: string } | null>(null)
     const processedNotifications = useRef<Set<number>>(new Set())
+    const chatUnreadStateRef = useRef(chatUnreadState)
+
+    useEffect(() => {
+        chatUnreadStateRef.current = chatUnreadState
+    }, [chatUnreadState])
 
     const refreshUnreadCounts = useCallback(async () => {
         try {
@@ -171,7 +176,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                 return
             }
 
-            const removedUnread = chatUnreadState.byChannel[channelId] || 0
+            const removedUnread = chatUnreadStateRef.current.byChannel[channelId] || 0
             const now = new Date().toISOString()
             setNotifications((prev) =>
                 prev.map((notification) =>
@@ -198,7 +203,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         } catch {
             // Silently handle network errors
         }
-    }, [chatUnreadState.byChannel, refreshUnreadCounts])
+    }, [refreshUnreadCounts])
 
     const registerIncomingChatNotification = useCallback((channelId: string, type: "mention" | "reply") => {
         setChatUnreadState((prev) => ({

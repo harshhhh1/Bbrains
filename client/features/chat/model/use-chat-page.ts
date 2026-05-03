@@ -34,7 +34,7 @@ export function useChatPage() {
     lastIncomingMessage,
   } = useChatMessages();
 
-  const { markChannelRead, registerIncomingChatNotification } = useNotifications();
+  const { markChannelRead, registerIncomingChatNotification, chatUnreadByChannel } = useNotifications();
   const { uploadFile, isUploading } = useCloudinaryUpload();
 
   const [message, setMessage] = useState("");
@@ -134,8 +134,12 @@ export function useChatPage() {
 
   useEffect(() => {
     if (!chatRoomId || messages.length === 0) return;
-    void markChannelRead(chatRoomId);
-  }, [chatRoomId, markChannelRead, messages.length]);
+    
+    const unreadCount = chatUnreadByChannel[chatRoomId] || 0;
+    if (unreadCount > 0) {
+      void markChannelRead(chatRoomId);
+    }
+  }, [chatRoomId, markChannelRead, messages.length, chatUnreadByChannel]);
 
   useEffect(() => {
     if (!lastIncomingMessage) return;
