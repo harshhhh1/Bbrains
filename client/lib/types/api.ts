@@ -742,3 +742,16 @@ export interface LeaderboardState {
   sortBy: LeaderboardSort;
   loading: boolean;
 }
+
+export interface RewardTier {
+  rank: 1 | 2 | 3;
+  xp: number;
+  coins: number;
+}
+
+export interface LeaderboardRewardPreview {
+  category: 'weekly' | 'monthly';
+  rewards: RewardTier[];
+  topUsers: LeaderboardEntry[];
+  periodEndsAt: string;
+}

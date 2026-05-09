@@ -6,6 +6,7 @@ import cors from "cors";
 import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
+import cron from "node-cron";
 
 // Route imports
 import authRouter from "./modules/auth/auth.routes.js";
@@ -141,10 +142,20 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
+import { distributeWeeklyRewards, distributeMonthlyRewards } from "./modules/leaderboard-reward/leaderboard-reward.service.js";
+
 const server = http.createServer(app);
 initChatSocket(server);
 
-// void connectMongo(); // MongoDB removed
+console.log('Scheduling leaderboard reward cron jobs...');
+cron.schedule('59 23 * * 0', () => {
+  console.log('Running weekly leaderboard reward distribution...');
+  void distributeWeeklyRewards();
+});
+cron.schedule('0 0 1 * *', () => {
+  console.log('Running monthly leaderboard reward distribution...');
+  void distributeMonthlyRewards();
+});
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

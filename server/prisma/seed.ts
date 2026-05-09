@@ -1089,6 +1089,39 @@ async function main() {
     }
     console.log("✅ 30 Audit logs created.");
 
+    console.log("🏆 Seeding Leaderboard Reward Configs...");
+    const rewardConfigs = [
+      {
+        key: 'leaderboard_weekly_rewards',
+        value: JSON.stringify([
+          { rank: 1, xp: 500, coins: 300 },
+          { rank: 2, xp: 300, coins: 200 },
+          { rank: 3, xp: 200, coins: 100 }
+        ]),
+        description: 'Weekly leaderboard reward tiers (top 3)',
+        type: 'json'
+      },
+      {
+        key: 'leaderboard_monthly_rewards',
+        value: JSON.stringify([
+          { rank: 1, xp: 2000, coins: 1500 },
+          { rank: 2, xp: 1200, coins: 900 },
+          { rank: 3, xp: 800, coins: 500 }
+        ]),
+        description: 'Monthly leaderboard reward tiers (top 3)',
+        type: 'json'
+      }
+    ];
+
+    for (const config of rewardConfigs) {
+      await prisma.systemConfig.upsert({
+        where: { key: config.key },
+        update: {},
+        create: config
+      });
+    }
+    console.log(`✅ ${rewardConfigs.length} Leaderboard reward configs created.`);
+
     console.log("\n" + "=".repeat(70));
     console.log("✅ ✅ ✅ BBRAINS SEEDING COMPLETED SUCCESSFULLY! ✅ ✅ ✅");
     console.log("=".repeat(70));
