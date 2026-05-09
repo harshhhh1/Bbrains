@@ -61,7 +61,7 @@ export const createAssignmentHandler = async (req, res) => {
         await createAuditLog(req.user.id, 'ACADEMIC', 'CREATE', 'Assignment', assignment.id);
         return sendCreated(res, assignment, 'Assignment created');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         console.error(error);
         return sendError(res, error?.message || 'Failed to create assignment', getStatusCode(error));
     }
@@ -226,7 +226,7 @@ export const updateAssignmentHandler = async (req, res) => {
         await createAuditLog(req.user.id, 'ACADEMIC', 'UPDATE', 'Assignment', id, { after: validated });
         return sendSuccess(res, assignment, 'Assignment updated');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         if (error.code === 'P2025') return sendError(res, 'Assignment not found', 404);
         if (error.code === 'P2003') return sendError(res, 'Invalid course ID', 400);
         console.error(error);
@@ -305,7 +305,7 @@ export const submitAssignmentHandler = async (req, res) => {
         await createAuditLog(req.user.id, 'ACADEMIC', 'CREATE', 'Submission', submission.id);
         return sendCreated(res, submission, 'Assignment submitted');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         console.error(error);
         return sendError(res, error?.message || 'Failed to submit', getStatusCode(error));
     }
@@ -356,7 +356,7 @@ export const reviewSubmissionHandler = async (req, res) => {
         await createAuditLog(req.user.id, 'ACADEMIC', 'UPDATE', 'Submission', submissionId, { after: validated });
         return sendSuccess(res, submission, 'Submission reviewed');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         console.error(error);
         return sendError(res, error?.message || 'Failed to review submission', getStatusCode(error));
     }
@@ -377,7 +377,7 @@ export const createAnnouncementHandler = async (req, res) => {
         await createAuditLog(userId, 'ACADEMIC', 'CREATE', 'Announcement', announcement.id);
         return sendCreated(res, announcement, 'Announcement created');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         return sendError(res, 'Failed to create announcement', 500);
     }
 };

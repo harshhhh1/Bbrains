@@ -16,199 +16,14 @@ import React from 'react'
 import { NotificationProvider } from "@/components/providers/notification-provider"
 import { PermissionsProvider } from "@/components/providers/permissions-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { getBaseUrl } from "@/services/api/client"
+import { getBaseUrl, getAuthToken } from "@/services/api/base"
 
-type LayoutRoleEntry = {
-    role?: {
-        name?: string | null;
-    } | null;
-}
 
-type LayoutUserDetails = {
-    avatar?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    bio?: string | null;
-}
+import { UserProvider, useUser } from "@/context/user-context"
 
-type LayoutUserXP = {
-    level?: number;
-    xp?: number;
-}
-
-type LayoutDBUser = {
-    id?: string | null;
-    type?: string | null;
-    username?: string | null;
-    createdAt?: string | null;
-    roles?: LayoutRoleEntry[] | null;
-    userDetails?: LayoutUserDetails | null;
-    xp?: LayoutUserXP | null;
-    avatar?: string | null;
-    firstName?: string | null;
-    lastName?: string | null;
-    bio?: string | null;
-    college?: {
-        name?: string | null;
-    } | null;
-    wallet?: {
-        balance?: number | null;
-    } | null;
-    isImpersonating?: boolean;
-    originalType?: string;
-}
-
-async function fetchSidebarAccess(token: string): Promise<Record<string, string[]> | null> {
-    try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-        const response = await fetch(`${baseUrl}/sidebaraccess`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-        })
-
-        if (!response.ok) return null
-
-        const result = await response.json()
-        if (result.success && result.data) {
-            return result.data
-        }
-        return null
-    } catch {
-        return null
-    }
-}
-
-async function fetchUser(token: string) {
-    try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-        const response = await fetch(`${baseUrl}/user/me`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-        })
-        const result = await response.json()
-        return result.success ? result.data : null
-    } catch {
-        return null
-    }
-}
-
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const router = useRouter()
+function DashboardInner({ children }: { children: React.ReactNode }) {
+    const { user, loading, sidebarAccess } = useUser()
     const pathname = usePathname()
-    const [loading, setLoading] = useState(true)
-    const [user, setUser] = useState<{
-        id: string
-        imageUrl: string
-        firstName: string
-        lastName: string
-        bio: string
-        fullName: string
-        username: string
-        type: string
-        appRole: string
-        roles: string[]
-        level: number
-        xp: number
-        createdAt?: string
-        collegeName?: string
-        coins: number
-        isImpersonating: boolean
-        originalType?: string
-    } | null>(null)
-    const [sidebarAccess, setSidebarAccess] = useState<Record<string, string[]> | null>(null)
-
-    useEffect(() => {
-        const token = localStorage.getItem('auth_token')
-        if (!token) {
-            router.push('/auth/login')
-            return
-        }
-
-        const init = async () => {
-            // Optimization: Skip re-fetching if we already have user data and we're not on the dashboard root
-            // This prevents redundant requests on every sub-page navigation
-            if (user && sidebarAccess && pathname !== '/dashboard') {
-                setLoading(false)
-                return
-            }
-
-            const [dbUser, sidebarAccessOverride] = await Promise.all([
-                fetchUser(token),
-                fetchSidebarAccess(token)
-            ])
-
-            if (!dbUser) {
-                router.push('/auth/login')
-                return
-            }
-
-            const userXp = dbUser.xp || { level: 1, xp: 0 }
-            const roleEntries = Array.isArray(dbUser?.roles) ? (dbUser.roles as LayoutRoleEntry[]) : []
-            const roleNames = roleEntries
-                .map((entry) => entry.role?.name?.trim().toLowerCase())
-                .filter((value): value is string => Boolean(value))
-            const dbType = dbUser?.type?.trim().toLowerCase()
-
-            let appRole = dbType || 'student'
-            if (roleNames.some((name) => name.includes('bbrains_official'))) {
-                appRole = 'bbrains_official'
-            } else if (roleNames.some((name) => name.includes('manager'))) {
-                appRole = 'manager'
-            } else if (roleNames.some((name) => name.includes('superadmin'))) {
-                appRole = 'superadmin'
-            } else if (roleNames.some((name) => name.includes('admin')) || dbType === 'admin') {
-                appRole = 'admin'
-            } else if (roleNames.some((name) => name.includes('teacher')) || dbType === 'teacher') {
-                appRole = 'teacher'
-            }
-
-            const allRoles: string[] = []
-            if (dbType && dbType !== 'student') {
-                allRoles.push(dbType)
-            }
-            for (const name of roleNames) {
-                if (!allRoles.includes(name)) {
-                    allRoles.push(name)
-                }
-            }
-            if (allRoles.length === 0) {
-                allRoles.push('student')
-            }
-
-            const details = dbUser?.userDetails
-            const formattedUser = {
-                id: dbUser.id || '',
-                imageUrl: details?.avatar || dbUser?.avatar || "",
-                firstName: details?.firstName || dbUser.firstName || "",
-                lastName: details?.lastName || dbUser.lastName || "",
-                bio: details?.bio || dbUser.bio || "",
-                fullName: details?.firstName ? `${details.firstName} ${details.lastName || ""}` : (dbUser?.username || ""),
-                username: dbUser?.username || "",
-                type: dbType || "student",
-                appRole,
-                roles: allRoles,
-                level: userXp.level,
-                xp: userXp.xp,
-                createdAt: dbUser?.createdAt || undefined,
-                collegeName: dbUser?.college?.name,
-                coins: dbUser?.wallet?.balance || 0,
-                isImpersonating: dbUser?.isImpersonating || false,
-                originalType: dbUser?.originalType,
-            }
-
-            setUser(formattedUser)
-            setSidebarAccess(sidebarAccessOverride)
-            setLoading(false)
-        }
-
-        init()
-    }, [router, pathname])
 
     const isComingSoon = React.useMemo(() => {
         return sidebarItems.some(item => {
@@ -220,48 +35,57 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }, [pathname]);
 
     return (
-        <SidebarProvider defaultOpen={true}>
-            <NotificationProvider>
-                <PermissionsProvider>
-                    <TooltipProvider>
-                        <div className="flex h-screen w-full overflow-hidden bg-background">
-                            <AppSidebar user={user} sidebarAccessOverride={sidebarAccess} />
+        <div className="flex h-screen w-full overflow-hidden bg-background">
+            <AppSidebar user={user} sidebarAccessOverride={sidebarAccess} />
 
-                            <SidebarInset className="md:ml-2 flex flex-col h-full overflow-hidden min-w-0 w-full">
-                                <MainNavbar user={user} />
+            <SidebarInset className="md:ml-2 flex flex-col h-full overflow-hidden min-w-0 w-full">
+                <MainNavbar user={user} />
 
-                                <main className="scrollbar-hide p-4 flex-1 min-h-0 flex flex-col relative overflow-y-auto overflow-x-hidden pb-0 md:pb-0">
-                                     {loading || !user ? (
-                                         <div className="flex h-full items-center justify-center">
-                                             <div className="flex flex-col items-center gap-2">
-                                                 <div className="size-8 animate-spin rounded-full border-4 border-brand-purple border-t-transparent"></div>
-                                                 <p className="text-sm font-medium text-muted-foreground">Initializing...</p>
-                                             </div>
-                                         </div>
-                                     ) : (
-                                         isComingSoon ? (
-                                             <div className="flex flex-col items-center justify-center h-full text-center space-y-4 animate-in fade-in duration-500">
-                                                
-                                                 <h2 className="text-4xl font-bold text-foreground">
-                                                     Coming Soon!
-                                                 </h2>
-                                                 <p className="text-muted-foreground max-w-sm mx-auto text-lg">
-                                                     We're working hard to bring you this feature. Stay tuned for updates!
-                                                 </p>
-                                                 <div className="flex items-center gap-2 text-sm font-medium text-brand-purple/80 pt-4">
-                                                     <Clock className="w-4 h-4" />
-                                                     <span>Launching shortly</span>
-                                                 </div>
-                                             </div>
-                                         ) : children
-                                     )}
-                                </main>
-                                <MobileBottomNav user={user} />
-                            </SidebarInset>
+                <main className="scrollbar-hide p-4 flex-1 min-h-0 flex flex-col relative overflow-y-auto overflow-x-hidden pb-0 md:pb-0">
+                    {loading || !user ? (
+                        <div className="flex h-full items-center justify-center">
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="size-8 animate-spin rounded-full border-4 border-brand-purple border-t-transparent"></div>
+                                <p className="text-sm font-medium text-muted-foreground">Initializing...</p>
+                            </div>
                         </div>
-                    </TooltipProvider>
-                </PermissionsProvider>
-            </NotificationProvider>
-        </SidebarProvider>
+                    ) : (
+                        isComingSoon ? (
+                            <div className="flex flex-col items-center justify-center h-full text-center space-y-4 animate-in fade-in duration-500">
+                                <h2 className="text-4xl font-bold text-foreground">
+                                    Coming Soon!
+                                </h2>
+                                <p className="text-muted-foreground max-w-sm mx-auto text-lg">
+                                    We're working hard to bring you this feature. Stay tuned for updates!
+                                </p>
+                                <div className="flex items-center gap-2 text-sm font-medium text-brand-purple/80 pt-4">
+                                    <Clock className="w-4 h-4" />
+                                    <span>Launching shortly</span>
+                                </div>
+                            </div>
+                        ) : children
+                    )}
+                </main>
+                <MobileBottomNav user={user} />
+            </SidebarInset>
+        </div>
+    )
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <UserProvider>
+            <SidebarProvider defaultOpen={true}>
+                <NotificationProvider>
+                    <PermissionsProvider>
+                        <TooltipProvider>
+                            <DashboardInner>
+                                {children}
+                            </DashboardInner>
+                        </TooltipProvider>
+                    </PermissionsProvider>
+                </NotificationProvider>
+            </SidebarProvider>
+        </UserProvider>
     )
 }

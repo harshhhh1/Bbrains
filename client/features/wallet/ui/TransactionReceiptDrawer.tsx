@@ -3,7 +3,10 @@
 import React from "react";
 import { 
   Drawer, 
-  DrawerContent, 
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Share2, Download, CheckCircle2 } from "lucide-react";
@@ -26,6 +29,11 @@ export function TransactionReceiptDrawer({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="p-0 data-[vaul-drawer-direction=bottom]:max-h-[75vh] before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-t-[3rem]">
+        <DrawerHeader className="sr-only">
+          <DrawerTitle>Transaction Receipt</DrawerTitle>
+          <DrawerDescription>Details of your successful B-Coin transfer</DrawerDescription>
+        </DrawerHeader>
+
         <div className="p-10 text-center space-y-10">
           <div className="relative inline-block">
              <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-3xl animate-pulse" />
@@ -55,7 +63,7 @@ export function TransactionReceiptDrawer({
 
             {data.note && (
               <div className="text-left border-t border-border/40 pt-6">
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-2">Transmission Note</span>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground block mb-2">Optional Note</span>
                 <p className="text-sm font-medium text-foreground/70 italic">&ldquo;{data.note}&rdquo;</p>
               </div>
             )}

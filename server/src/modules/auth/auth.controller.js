@@ -30,7 +30,7 @@ const schemas = {
 
 const handleControllerError = (res, error, action) => {
   if (error.name === 'ZodError') {
-    return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+    return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
   }
   if (isDatabaseUnavailableError(error)) {
     console.error(`${action} database error:`, error);

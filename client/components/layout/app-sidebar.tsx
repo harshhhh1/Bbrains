@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import {
     Sidebar, SidebarContent, SidebarFooter, SidebarGroup,
     SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
-    SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail,
+    SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarRail,
     useSidebar,
 } from "@/components/ui/sidebar"
 import Link from "next/link";
@@ -132,13 +132,13 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
                                                             )}
                                                         </div>
                                                         <span className="text-[13px] group-data-[collapsible=icon]:hidden flex-1">{item.title}</span>
-                                                        {showBadge && (
-                                                            <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
-                                                                {badgeCount > 99 ? "99+" : badgeCount}
-                                                            </span>
-                                                        )}
                                                     </Link>
                                                 </SidebarMenuButton>
+                                                {showBadge && (
+                                                    <SidebarMenuBadge className="bg-red-500 text-white border-none text-[10px] font-bold px-1.5 min-w-5 h-5 flex items-center justify-center rounded-full pointer-events-none">
+                                                        {badgeCount > 99 ? "99+" : badgeCount}
+                                                    </SidebarMenuBadge>
+                                                )}
                                             </SidebarMenuItem>
 
                                             {item.subItems && item.subItems.length > 0 && isActive && (

@@ -133,6 +133,12 @@ export async function makeRequest<T>(
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401 && typeof window !== "undefined") {
+          localStorage.removeItem("auth_token");
+          document.cookie = "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          // We don't necessarily want to force a redirect here as the UI might handle it,
+          // but clearing the token ensures the next check (like in layout) will see the user as logged out.
+        }
         return {
           success: false,
           message: data.message || 'An error occurred',

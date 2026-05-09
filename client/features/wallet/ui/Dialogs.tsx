@@ -84,7 +84,7 @@ export function WalletDialogs({
     if (!transferData || pin.length < 4) return;
     try {
       setIsProcessing(true);
-      const res = await walletApi.transfer(transferData.recipientId, transferData.amount, pin);
+      const res = await walletApi.transfer(transferData.recipientId, transferData.amount, pin, transferData.note);
       if (res.success) {
         setShowPinDialog(false);
         setShowReceiptDialog(true);

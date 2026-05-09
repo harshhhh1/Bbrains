@@ -91,8 +91,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                     processedNotifications.current.add(levelUpNotif.id);
                 }
 
+                // Compute specific counts
+                const unreadNotifs = newNotifications.filter(n => !n.read);
+                const assignments = unreadNotifs.filter(n => ["submission", "grade", "assignment"].includes(n.type)).length;
+                const products = unreadNotifs.filter(n => ["approval", "rejection", "product", "market"].includes(n.type)).length;
+
                 setNotifications(newNotifications)
                 setUnreadCount(notificationsResponse.data.unreadCount)
+                setAssignmentUnreadCount(assignments)
+                setProductUnreadCount(products)
             }
 
             if (unreadResponse.success && unreadResponse.data) {
@@ -110,7 +117,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
         const interval = window.setInterval(() => {
             void fetchNotifications()
-        }, 30000)
+        }, 10000)
 
         const handleWindowFocus = () => {
             void fetchNotifications()

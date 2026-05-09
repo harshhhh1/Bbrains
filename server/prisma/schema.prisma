@@ -62,7 +62,6 @@ model User {
   streak             Streak?
   preference         UserPreference?
   chatMessages       ChatMessage[]
-  pushSubscriptions  PushSubscription[]
   classTeacherCourse Course?              @relation("CourseClassTeacher")
   assessments        Assessment[]         @relation("AssessmentCreator")
   assessmentResults  AssessmentResult[]   @relation("AssessmentStudent")
@@ -785,17 +784,4 @@ model ChatMessage {
 
   @@index([chatId, createdAt(sort: Desc)])
   @@map("chat_messages")
-}
-
-model PushSubscription {
-  id        Int      @id @default(autoincrement())
-  userId    String   @map("user_id")
-  endpoint  String   @unique @db.Text
-  p256dh    String   @db.Text
-  auth      String   @db.Text
-  createdAt DateTime @default(now()) @map("created_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt(sort: Desc)])
-  @@map("push_subscriptions")
 }

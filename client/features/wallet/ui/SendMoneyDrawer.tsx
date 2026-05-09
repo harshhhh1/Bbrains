@@ -212,9 +212,9 @@ export function SendMoneyDrawer({
                 </div>
 
                 <div className="space-y-3">
-                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Transmission Note</Label>
+                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Optional Note</Label>
                    <Input 
-                    placeholder="Optional data payload..." 
+                    placeholder="Sending you Bcoins for..." 
                     className="h-12 bg-muted/20 border-border/40 rounded-xl font-medium" 
                     value={sendNote} 
                     onChange={(e) => setSendNote(e.target.value)} 
@@ -226,7 +226,7 @@ export function SendMoneyDrawer({
 
           <DrawerFooter className="border-t border-border/60 p-8 bg-muted/5">
              <Button size="lg" className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20" onClick={handleNext} disabled={!sendTo || !sendAmount}>
-                Initialize Transfer
+                Send Coins
              </Button>
           </DrawerFooter>
         </div>

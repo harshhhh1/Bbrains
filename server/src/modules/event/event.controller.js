@@ -30,7 +30,7 @@ export const createEvent = async (req, res) => {
         const event = await createEventRecord({ ...validated, collegeId });
         return sendCreated(res, event, 'Event created successfully');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         console.error(error);
         return sendError(res, 'Failed to create event', 500);
     }
