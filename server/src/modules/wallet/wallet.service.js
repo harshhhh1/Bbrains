@@ -66,7 +66,7 @@ const transferFunds = async (senderId, recipientEmail, amount, note, pin) => {
                 status: 'success',
                 paymentMode: 'wallet',
                 primaryRecord: true,
-                note: `Sent to ${recipientWallet.id}: ${note || ''}`
+                note: note || ''
             }
         });
 
@@ -82,7 +82,7 @@ const transferFunds = async (senderId, recipientEmail, amount, note, pin) => {
                 status: 'success',
                 paymentMode: 'wallet',
                 primaryRecord: false,
-                note: `Received from ${senderWallet.id}: ${note || ''}`
+                note: note || ''
             }
         });
 

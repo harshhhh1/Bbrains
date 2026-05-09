@@ -8,8 +8,7 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
-import { TrendingUp, Share2, Download, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 interface TransactionReceiptDrawerProps {
   open: boolean;
@@ -36,10 +35,10 @@ export function TransactionReceiptDrawer({
 
         <div className="p-10 text-center space-y-10">
           <div className="relative inline-block">
-             <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-3xl animate-pulse" />
-             <div className="relative w-24 h-24 rounded-[2.5rem] bg-emerald-500/10 flex items-center justify-center border-2 border-emerald-500/20 mx-auto">
-                <CheckCircle2 className="w-12 h-12 text-emerald-600" />
-             </div>
+            <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-3xl animate-pulse" />
+            <div className="relative w-24 h-24 rounded-[2.5rem] bg-emerald-500/10 flex items-center justify-center border-2 border-emerald-500/20 mx-auto">
+              <CheckCircle2 className="w-12 h-12 text-emerald-600" />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -49,16 +48,16 @@ export function TransactionReceiptDrawer({
 
           <div className="bg-muted/30 rounded-[2.5rem] p-8 space-y-6 border border-border/50 shadow-inner">
             <div className="flex justify-between items-center">
-               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Recipient Identity</span>
-               <span className="font-mono text-xs font-bold text-foreground bg-card px-3 py-1 rounded-lg border border-border/60">{data.recipientId}</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Recipient Identity</span>
+              <span className="font-mono text-xs font-bold text-foreground bg-card px-3 py-1 rounded-lg border border-border/60">{data.recipientId}</span>
             </div>
-            
+
             <div className="flex justify-between items-end border-t border-border/40 pt-6">
-               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Volume Transferred</span>
-               <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-black text-foreground tabular-nums tracking-tighter">{data.amount}</span>
-                  <span className="text-xs font-black text-primary uppercase tracking-widest">B-Coins</span>
-               </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Volume Transferred</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-black text-foreground tabular-nums tracking-tighter">{data.amount}</span>
+                <span className="text-xs font-black text-primary uppercase tracking-widest">B-Coins</span>
+              </div>
             </div>
 
             {data.note && (
@@ -67,15 +66,6 @@ export function TransactionReceiptDrawer({
                 <p className="text-sm font-medium text-foreground/70 italic">&ldquo;{data.note}&rdquo;</p>
               </div>
             )}
-          </div>
-
-          <div className="flex gap-4">
-            <Button variant="outline" className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] border-border/60 gap-2">
-               <Share2 className="w-4 h-4" /> Share Receipt
-            </Button>
-            <Button variant="outline" className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest text-[10px] border-border/60 gap-2">
-               <Download className="w-4 h-4" /> Save Local
-            </Button>
           </div>
         </div>
       </DrawerContent>
