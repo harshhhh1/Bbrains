@@ -14,6 +14,7 @@ interface AssignmentFormData {
   dueDate: string
   file: string
   rewardPoints: string
+  rewardCoins: string
 }
 
 type ReviewSubmissionCallback = (submissionId: number, assignmentId: number, reviewStatus: "completed" | "incomplete" | "rework") => void;
@@ -210,6 +211,7 @@ export function useGrading() {
         dueDate: data.dueDate || undefined,
         file: data.file || undefined,
         rewardPoints: Math.max(0, Number(data.rewardPoints || 0)),
+        rewardCoins: Math.max(0, Number(data.rewardCoins || 0)),
       }
       const response = await client.post<{ success: boolean; data: ApiAssignment }>("/academic/assignments", payload)
       setAssignments((current) => [response.data.data, ...current])
@@ -235,6 +237,7 @@ export function useGrading() {
         dueDate: data.dueDate || undefined,
         file: data.file || undefined,
         rewardPoints: Math.max(0, Number(data.rewardPoints || 0)),
+        rewardCoins: Math.max(0, Number(data.rewardCoins || 0)),
       }
       const response = await client.put<{ success: boolean; data: ApiAssignment }>(`/academic/assignments/${id}`, payload)
       setAssignments((current) => current.map((assignment) => (assignment.id === id ? response.data.data : assignment)))

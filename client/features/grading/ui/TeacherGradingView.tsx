@@ -10,7 +10,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { SectionHeader } from "@/features/admin/ui/SectionHeader"
 import { getFileUrlBase, resolveApiFileUrl } from "@/lib/file-url"
 import { AssignmentSelector } from "@/features/grading/ui/AssignmentSelector"
-import { AssignmentForm } from "@/features/grading/ui/AssignmentForm"
+import { AssignmentForm } from "@/features/assignments/ui/AssignmentForm"
+import { CrudDrawer } from "@/features/admin/ui/CrudDrawer"
+import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload"
 import { SubmissionFilters } from "@/features/grading/ui/SubmissionFilters"
 import { SubmissionCard } from "@/features/grading/ui/SubmissionCard"
 import { GradeDialog } from "@/features/grading/ui/GradeDialog"
@@ -41,7 +43,12 @@ function canPreviewInline(filename: string) {
 export function TeacherGradingView() {
   const grading = useGrading()
   const { registerIncomingAssignmentNotification } = useNotifications()
+  const { uploadFile, isUploading } = useCloudinaryUpload()
 
+  const emptyForm = { title: "", description: "", courseId: "", dueDate: "", file: "", rewardPoints: "500", rewardCoins: "400" }
+  const [form, setForm] = useState(emptyForm)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  
   const [formOpen, setFormOpen] = useState(false)
   const [editingAssignment, setEditingAssignment] = useState<ApiAssignment | null>(null)
   const [gradeDialogOpen, setGradeDialogOpen] = useState(false)
@@ -62,12 +69,55 @@ export function TeacherGradingView() {
 
   function openCreateForm() {
     setEditingAssignment(null)
+    setForm(emptyForm)
+    setSelectedFile(null)
     setFormOpen(true)
   }
 
   function openEditForm(assignment: ApiAssignment) {
     setEditingAssignment(assignment)
+    setForm({
+      title: assignment.title,
+      description: assignment.description ?? "",
+      courseId: String(assignment.courseId),
+      dueDate: assignment.dueDate?.slice(0, 10) ?? "",
+      file: assignment.file ?? "",
+      rewardPoints: String(assignment.rewardPoints ?? 0),
+      rewardCoins: String(assignment.rewardCoins ?? 0),
+    })
+    setSelectedFile(null)
     setFormOpen(true)
+  }
+
+  async function handleSubmit() {
+    if (!form.title.trim() || !form.courseId) {
+      toast.error("Title and Class are required")
+      return
+    }
+
+    try {
+      let fileUrl = form.file
+      if (selectedFile) {
+        const uploaded = await uploadFile(selectedFile, { folder: "assignment" })
+        if (uploaded) fileUrl = uploaded
+      }
+
+      const payload = {
+        ...form,
+        file: fileUrl,
+      }
+
+      const success = editingAssignment 
+        ? await grading.updateAssignment(editingAssignment.id, payload)
+        : await grading.createAssignment(payload)
+
+      if (success) {
+        setFormOpen(false)
+      }
+    } catch (error) {
+      console.error(error)
+      toast.error("Submission failed")
+    }
   }
 
   function openReviewDialog(submission: ApiSubmission) {
@@ -227,15 +277,24 @@ export function TeacherGradingView() {
         </div>
       )}
 
-      <AssignmentForm
-        key={`${formOpen ? "open" : "closed"}:${editingAssignment?.id ?? "new"}`}
+      <CrudDrawer
         open={formOpen}
-        onOpenChange={setFormOpen}
-        courses={grading.courses}
-        assignment={editingAssignment}
-        onSubmit={editingAssignment ? handleUpdateAssignment : handleCreateAssignment}
+        onClose={() => !grading.submitting && setFormOpen(false)}
+        title={editingAssignment ? "Edit Assignment" : "Create Assignment"}
+        onSubmit={handleSubmit}
         submitting={grading.submitting}
-      />
+      >
+        <AssignmentForm
+          form={form}
+          onChange={setForm}
+          courses={grading.courses as any}
+          selectedFile={selectedFile}
+          onFileChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+          onRemoveFile={() => { setSelectedFile(null); setForm({ ...form, file: "" }) }}
+          isUploading={isUploading}
+          disabled={grading.submitting}
+        />
+      </CrudDrawer>
 
       {reviewTarget ? (
         <GradeDialog

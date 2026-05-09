@@ -218,7 +218,7 @@ export const getMe = async (req, res) => {
 export const getMyPermissions = async (req, res) => {
     try {
         const userId = req.user.id;
-        
+
         // Fetch user's roles and permissions
         const userRoles = await prisma.userRoles.findMany({
             where: { userId },
@@ -237,7 +237,7 @@ export const getMyPermissions = async (req, res) => {
 
         const activeRoles = userRoles.map(ur => ur.role);
         const activeKeys = new Set();
-        
+
         activeRoles.forEach(role => {
             if (role?.permissions) {
                 role.permissions.forEach(rp => {
@@ -627,8 +627,8 @@ export const updateTeacher = async (req, res) => {
             where: {
                 id,
                 type: 'teacher',
-                ...(req.user.type !== 'superadmin' && req.user.originalType !== 'superadmin' 
-                    ? { collegeId: req.user.collegeId } 
+                ...(req.user.type !== 'superadmin' && req.user.originalType !== 'superadmin'
+                    ? { collegeId: req.user.collegeId }
                     : {}),
             }
         });
@@ -702,8 +702,8 @@ export const updateStudent = async (req, res) => {
             where: {
                 id,
                 type: 'student',
-                ...(req.user.type !== 'superadmin' && req.user.originalType !== 'superadmin' 
-                    ? { collegeId: req.user.collegeId } 
+                ...(req.user.type !== 'superadmin' && req.user.originalType !== 'superadmin'
+                    ? { collegeId: req.user.collegeId }
                     : {}),
             }
         });
@@ -835,7 +835,7 @@ export const batchImportUsers = async (req, res) => {
         const VALID_ENUM_TYPES = ['student', 'teacher', 'admin', 'staff', 'superadmin'];
         // We still use validTypes for basic structural validation if needed, 
         // but the user wants to allow "any other role" too.
-        
+
         // Process each row in transaction
         const results = {
             successCount: 0,
@@ -969,14 +969,23 @@ export const batchImportUsers = async (req, res) => {
                         }
                     });
 
-                    // Create Enrollment record
-                    await tx.enrollment.create({
-                        data: {
-                            userId: user.id,
-                            courseId: Number(row.courseid),
-                            enrolledAt: new Date()
-                        }
-                    });
+                    // If student, create Enrollment record
+                    if (enumType === 'student') {
+                        await tx.enrollment.create({
+                            data: {
+                                userId: user.id,
+                                courseId: Number(row.courseid),
+                                enrolledAt: new Date()
+                            }
+                        });
+                    } 
+                    // If teacher, try to assign as class teacher if course has none
+                    else if (enumType === 'teacher' && !course.classTeacherId) {
+                        await tx.course.update({
+                            where: { id: course.id },
+                            data: { classTeacherId: user.id }
+                        });
+                    }
 
                     // Initialize XP record
                     await tx.xp.upsert({
@@ -1162,7 +1171,7 @@ export const fixMissingRoles = async (req, res) => {
             for (const user of usersWithoutRoles) {
                 const roleName = user.type.charAt(0).toUpperCase() + user.type.slice(1);
                 const { role } = await ensureRoleByNameInternal(tx, roleName, `${roleName} access`, user.collegeId);
-                
+
                 await tx.userRoles.create({
                     data: {
                         userId: user.id,

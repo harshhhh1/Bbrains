@@ -41,6 +41,7 @@ export interface ApiAssignment {
     content?: string
     file?: string
     rewardPoints?: number
+    rewardCoins?: number
     dueDate: string
     createdAt: string
     type?: "assignment" | "test"

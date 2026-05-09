@@ -15,7 +15,7 @@ import { SectionHeader } from "@/features/admin/ui/SectionHeader";
 import type { ApiUser } from "@/lib/types/api";
 import { toast } from "sonner";
 import { AttendanceStatCard } from "@/features/teacher/attendance/ui/AttendanceStatCard";
-import { AttendanceRow } from "@/features/teacher/attendance/ui/AttendanceRow";
+import { AttendanceStudentCard } from "@/features/teacher/attendance/ui/AttendanceStudentCard";
 import { AttendanceHistoryDrawer } from "@/features/teacher/attendance/ui/AttendanceHistoryDrawer";
 
 type AttendanceStatus = "present" | "absent" | "late";
@@ -114,6 +114,9 @@ export default function AttendancePage() {
   const markAllPresent = async () => {
     if (students.length === 0) return;
 
+    // Optimistic Update
+    setStudents(prev => prev.map(s => ({ ...s, currentStatus: "present", isUpdating: true })));
+
     const request = attendanceApi.markAttendanceBulk({
       studentIds: students.map((student) => student.id),
       date: format(date, "yyyy-MM-dd"),
@@ -122,6 +125,10 @@ export default function AttendancePage() {
       if (!response.success) throw new Error(response.message);
       void fetchStudentsAndAttendance();
       return response;
+    }).catch(err => {
+      // Revert on error if necessary, though fetchStudentsAndAttendance will fix it
+      void fetchStudentsAndAttendance();
+      throw err;
     });
 
     toast.promise(request, {
@@ -203,59 +210,42 @@ export default function AttendancePage() {
         <AttendanceStatCard label="Pending" value={stats.unmarked} color="bg-muted text-muted-foreground" />
       </div>
 
-      <Card className="rounded-[2.5rem] border-border/60 overflow-hidden bg-card/50 shadow-sm">
-        <CardHeader className="p-8 border-b border-border/40">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <CardTitle className="text-2xl font-black tracking-tight">Enrolled Students</CardTitle>
-              <CardDescription className="font-medium">Student list for current academic cycle.</CardDescription>
-            </div>
-            <div className="relative w-full md:max-w-xs group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-              <Input
-                placeholder="Search students..."
-                className="pl-10 h-11 rounded-xl bg-muted/20 border-border/40 focus:ring-2 focus:ring-primary/20"
-                value={searchQuery}
-                disabled={!hasAssignedClass}
-                onChange={(e) => setSearchQuery(e.target.value)}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black tracking-tight">Enrolled Students</h2>
+            <p className="text-muted-foreground font-medium">Student list for current academic cycle.</p>
+          </div>
+          <div className="relative w-full md:max-w-xs group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+            <Input
+              placeholder="Search students..."
+              className="pl-10 h-11 rounded-xl bg-card border-border/40 focus:ring-2 focus:ring-primary/20"
+              value={searchQuery}
+              disabled={!hasAssignedClass}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {filteredStudents.length === 0 ? (
+          <div className="py-20 text-center rounded-[2.5rem] border-2 border-dashed border-border/40 bg-muted/20">
+            <p className="text-muted-foreground font-bold italic opacity-40">No matching records in list.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {filteredStudents.map((student) => (
+              <AttendanceStudentCard 
+                key={student.id} 
+                student={student}
+                onMark={(status, notes) => handleMarkAttendance(student.id, status, notes)}
+                onNotesChange={(val) => setStudents(prev => prev.map(s => s.id === student.id ? { ...s, currentNotes: val } : s))}
+                onViewHistory={() => viewHistory(student)}
               />
-            </div>
+            ))}
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-muted/30">
-                <tr className="text-left">
-                  <th className="py-4 px-8 font-black uppercase tracking-widest text-[10px] text-muted-foreground">Student</th>
-                  <th className="py-4 px-4 font-black uppercase tracking-widest text-[10px] text-muted-foreground text-center">Attendance Status</th>
-                  <th className="py-4 px-4 font-black uppercase tracking-widest text-[10px] text-muted-foreground">Notes</th>
-                  <th className="py-4 px-8 font-black uppercase tracking-widest text-[10px] text-muted-foreground text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {filteredStudents.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="py-20 text-center text-muted-foreground font-bold italic opacity-40">
-                      No matching records in list.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredStudents.map((student) => (
-                    <AttendanceRow 
-                      key={student.id} 
-                      student={student}
-                      onMark={(status, notes) => handleMarkAttendance(student.id, status, notes)}
-                      onNotesChange={(val) => setStudents(prev => prev.map(s => s.id === student.id ? { ...s, currentNotes: val } : s))}
-                      onViewHistory={() => viewHistory(student)}
-                    />
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       <AttendanceHistoryDrawer 
         open={historyOpen}

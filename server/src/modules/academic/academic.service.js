@@ -1,6 +1,7 @@
 import prisma from "../../utils/prisma.js";
 import { createNotification } from "../notification/notification.service.js";
 import { awardXpToUser } from "../xp/xp.service.js";
+import { awardCoinsToUser } from "../wallet/wallet.service.js";
 import { ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import { getAllCourses, getCourseById } from "../course/course.service.js";
 import { deleteFromCloudinary } from "../../utils/cloudinary.js";
@@ -130,6 +131,7 @@ const createAssignment = async (currentUser, courseId, data) => {
             courseId: normalizedCourseId,
             createdById: currentUser.id,
             rewardPoints: normalizePositiveInteger(data.rewardPoints),
+            rewardCoins: normalizePositiveInteger(data.rewardCoins),
         },
         include: assignmentListInclude,
     });
@@ -140,15 +142,17 @@ const createAssignment = async (currentUser, courseId, data) => {
     });
 
     await Promise.all(
-        enrollments.map((enrollment) =>
-            createNotification(
-                enrollment.userId,
-                "New Assignment Available",
-                `${assignment.title} has been assigned${assignment.rewardPoints > 0 ? ` for ${assignment.rewardPoints} points` : ""}.`,
-                "grade",
-                String(assignment.id)
+        enrollments
+            .filter((e) => e.userId !== currentUser.id)
+            .map((enrollment) =>
+                createNotification(
+                    enrollment.userId,
+                    "New Assignment Available",
+                    `${assignment.title} has been assigned${assignment.rewardPoints > 0 ? ` for ${assignment.rewardPoints} points` : ""}.`,
+                    "grade",
+                    String(assignment.id)
+                )
             )
-        )
     );
 
     return assignment;
@@ -474,6 +478,14 @@ const reviewSubmission = async (submissionId, currentUser, payload) => {
 
     if (shouldAwardXp) {
         await awardXpToUser(submission.userId, normalizePositiveInteger(submission.assignment.rewardPoints));
+        
+        if (submission.assignment.rewardCoins > 0) {
+            await awardCoinsToUser(
+                submission.userId, 
+                normalizePositiveInteger(submission.assignment.rewardCoins),
+                `Completion of assignment: ${submission.assignment.title}`
+            );
+        }
     }
 
     const message = reviewStatus === "completed"

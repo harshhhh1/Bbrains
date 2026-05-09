@@ -10,7 +10,7 @@ router.get('/by-date', verifyToken, authorize('teacher', 'admin'), getAttendance
 // Teacher/Admin: get attendance for a specific student
 router.get('/student/:studentId', verifyToken, authorize('teacher', 'admin'), getStudentAttendance);
 // Mark attendance for a student
-router.post('/mark', verifyToken, authorize('teacher', 'admin'), markAttendance);
-router.post('/mark-bulk', verifyToken, authorize('teacher', 'admin'), markAttendanceBulk);
+router.post('/', verifyToken, authorize('teacher', 'admin'), markAttendance);
+router.post('/bulk', verifyToken, authorize('teacher', 'admin'), markAttendanceBulk);
 
 export default router;

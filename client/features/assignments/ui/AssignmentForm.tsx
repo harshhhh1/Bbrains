@@ -12,6 +12,8 @@ interface AssignmentFormValues {
   courseId: string;
   dueDate: string;
   file?: string;
+  rewardPoints: string;
+  rewardCoins: string;
 }
 
 interface AssignmentFormProps {
@@ -82,6 +84,30 @@ export function AssignmentForm({
         disabled={disabled}
         rows={4}
       />
+
+      <div className="pt-2">
+        <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Rewards
+        </label>
+        <div className="mt-2 grid grid-cols-2 gap-4">
+          <FormInput
+            label="XP Reward"
+            type="number"
+            value={form.rewardPoints}
+            onChange={(e) => updateField("rewardPoints", e.target.value)}
+            placeholder="e.g. 100"
+            disabled={disabled}
+          />
+          <FormInput
+            label="Coins Reward"
+            type="number"
+            value={form.rewardCoins}
+            onChange={(e) => updateField("rewardCoins", e.target.value)}
+            placeholder="e.g. 50"
+            disabled={disabled}
+          />
+        </div>
+      </div>
 
       <div className="space-y-2">
         <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">

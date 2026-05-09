@@ -30,9 +30,14 @@ export function AssignmentCard({ assignment, onView, onSubmit }: AssignmentCardP
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary">{assignment.course?.name || "General"}</Badge>
             <Badge variant={getStatusBadgeVariant(status)}>{getStatusLabel(status)}</Badge>
-            <Badge variant="outline">
-              {assignment.rewardPoints ?? 0} point{(assignment.rewardPoints ?? 0) === 1 ? "" : "s"}
+            <Badge variant="outline" className="border-primary/30 text-primary">
+              {assignment.rewardPoints ?? 0} XP
             </Badge>
+            {Number(assignment.rewardCoins ?? 0) > 0 && (
+              <Badge variant="outline" className="border-yellow-500/50 text-yellow-600 dark:text-yellow-400">
+                {assignment.rewardCoins} Coins
+              </Badge>
+            )}
           </div>
 
           <div>

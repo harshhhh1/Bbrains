@@ -17,6 +17,7 @@ const assignmentSchema = z.object({
     dueDate: z.string().optional(),
     file: z.string().url().optional(),
     rewardPoints: z.number().int().min(0).optional(),
+    rewardCoins: z.number().int().min(0).optional(),
 });
 
 const submissionSchema = z.object({
@@ -190,6 +191,7 @@ export const updateAssignmentHandler = async (req, res) => {
             dueDate: z.string().optional().nullable(),
             file: z.string().url().optional().nullable(),
             rewardPoints: z.number().int().min(0).optional(),
+            rewardCoins: z.number().int().min(0).optional(),
         });
 
         const validated = updateSchema.parse(req.body);
