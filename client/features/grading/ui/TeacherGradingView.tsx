@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { SectionHeader } from "@/features/admin/ui/SectionHeader"
 import { getFileUrlBase, resolveApiFileUrl } from "@/lib/file-url"
 import { AssignmentSelector } from "@/features/grading/ui/AssignmentSelector"
-import { AssignmentForm } from "@/features/assignments/ui/AssignmentForm"
+import { AssignmentForm, type AssignmentFormValues } from "@/features/assignments/ui/AssignmentForm"
 import { CrudDrawer } from "@/features/admin/ui/CrudDrawer"
 import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload"
 import { SubmissionFilters } from "@/features/grading/ui/SubmissionFilters"
@@ -45,8 +45,8 @@ export function TeacherGradingView() {
   const { registerIncomingAssignmentNotification } = useNotifications()
   const { uploadFile, isUploading } = useCloudinaryUpload()
 
-  const emptyForm = { title: "", description: "", courseId: "", dueDate: "", file: "", rewardPoints: "500", rewardCoins: "400" }
-  const [form, setForm] = useState(emptyForm)
+  const emptyForm: AssignmentFormValues = { title: "", description: "", courseId: "", dueDate: "", file: undefined, rewardPoints: "500", rewardCoins: "400" }
+  const [form, setForm] = useState<AssignmentFormValues>(emptyForm)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   
   const [formOpen, setFormOpen] = useState(false)
@@ -290,7 +290,7 @@ export function TeacherGradingView() {
           courses={grading.courses as any}
           selectedFile={selectedFile}
           onFileChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-          onRemoveFile={() => { setSelectedFile(null); setForm({ ...form, file: "" }) }}
+          onRemoveFile={() => { setSelectedFile(null); setForm({ ...form, file: undefined }) }}
           isUploading={isUploading}
           disabled={grading.submitting}
         />

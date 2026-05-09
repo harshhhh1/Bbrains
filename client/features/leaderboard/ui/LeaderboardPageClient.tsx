@@ -60,7 +60,7 @@ export default function LeaderboardPage() {
         }
 
         setRewardPreview({
-          category: cat,
+          category: cat as 'weekly' | 'monthly',
           rewards,
           topUsers: entries.slice(0, 3),
           periodEndsAt: getPeriodEndDate(cat),
@@ -69,7 +69,7 @@ export default function LeaderboardPage() {
     } catch (error) {
       console.error("Failed to fetch reward preview:", error)
       setRewardPreview({
-        category: cat,
+        category: cat as 'weekly' | 'monthly',
         rewards: cat === "weekly" ? DEFAULT_WEEKLY_REWARDS : DEFAULT_MONTHLY_REWARDS,
         topUsers: entries.slice(0, 3),
         periodEndsAt: getPeriodEndDate(cat),

@@ -65,7 +65,7 @@ export function UserCard({ user, onEdit, onDelete, onManageRoles, onView, isLast
             ) : null
           ))}
           {(user.roles || []).length > 3 && (
-            <span className="text-[10px] text-muted-foreground">+{user.roles.length - 3}</span>
+            <span className="text-[10px] text-muted-foreground">+{user.roles!.length - 3}</span>
           )}
         </div>
 

@@ -12,7 +12,7 @@ interface AssignmentFormData {
   description: string
   courseId: string
   dueDate: string
-  file: string
+  file?: string
   rewardPoints: string
   rewardCoins: string
 }
