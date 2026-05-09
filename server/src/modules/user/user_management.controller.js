@@ -978,6 +978,17 @@ export const batchImportUsers = async (req, res) => {
                         }
                     });
 
+                    // Initialize XP record
+                    await tx.xp.upsert({
+                        where: { userId: user.id },
+                        update: {},
+                        create: {
+                            userId: user.id,
+                            xp: 0,
+                            level: 1
+                        }
+                    });
+
                     results.successCount++;
                 });
             } catch (error) {

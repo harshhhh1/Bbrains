@@ -149,7 +149,7 @@ export function StudyMaterialsPage({ collegeId, courseId }: StudyMaterialsPagePr
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Search and Action Bar */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 border-b bg-dashboard-surface backdrop-blur-sm sticky top-0 z-10">
         <div className="relative w-full md:w-50">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -198,7 +198,7 @@ export function StudyMaterialsPage({ collegeId, courseId }: StudyMaterialsPagePr
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-dashboard-surface">
         {/* Breadcrumbs */}
         <div className="mb-6">
           <BreadcrumbNav breadcrumbs={breadcrumbs} onNavigate={navigateToFolder} />
