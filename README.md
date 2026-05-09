@@ -1,251 +1,128 @@
-# Bbrains 
+# Bbrains 🧠
 
-A comprehensive Learning Management System with integrated gamification features, marketplace functionality, and digital wallet system.
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-ISC-green)
+![Node](https://img.shields.io/badge/node-v18%2B-green)
+![Next.js](https://img.shields.io/badge/Next.js-16.1-black)
 
-##  Features
+A comprehensive, gamified Learning Management System (LMS) with integrated marketplace functionality and a digital wallet system. Bbrains transforms student engagement with our smart learning platform, blending modern educational needs with a rewarding user experience.
 
-### Academic Management
-- Course creation and enrollment
-- Assignment management with submissions
-- Automated grading system
-- Announcements and notifications
-- Student performance tracking
+---
 
-### Gamification System
-- XP and leveling system
-- Achievement badges
-- Leaderboards (weekly, monthly, all-time)
-- Progress tracking and milestones
+## 🌟 Key Features
 
-### Marketplace
-- Product catalog with search
-- Shopping cart functionality
-- Secure checkout process
-- Order management and tracking
+### 🎓 Academic Management
+- **Course Enrollment & Management:** Create robust courses with subjects and progressive chapters.
+- **Assignment Handling:** Assign tasks, accept multi-format submissions, and track statuses.
+- **Automated Grading System:** Provide structured feedback, remarks, and xp rewards.
+- **Announcements & Notifications:** Real-time push notifications using Supabase and socket integrations for global or college-specific announcements.
+- **Student Performance Tracking:** Analytics dashboard summarizing attendance, grades, and xp progress.
 
-### Digital Wallet
-- Virtual currency system
-- PIN-protected transactions
-- Peer-to-peer transfers
-- Transaction history
+### 🎮 Gamification System
+- **XP and Leveling System:** Students earn experience points (XP) for completing assignments, which translates into leveling up.
+- **Achievement Badges:** Unlock visual badges (e.g., Code, Math, Science) for reaching milestones.
+- **Leaderboards:** Competitive weekly, monthly, and all-time leaderboards querying optimized database views.
+- **Streak Tracking:** Encourage daily logins through a reward-based streak mechanism.
 
-### Administration
-- Multi-role user management (Student, Teacher, Admin, Staff)
-- Role-based access control (RBAC)
-- Comprehensive audit logging
-- College/institution management
+### 🛒 Marketplace & Digital Wallet
+- **Product Catalog:** A fully featured digital library for purchasing academic resources.
+- **Shopping Cart & Checkout:** Secure and transactional checkout flow utilizing Prisma for data consistency.
+- **Razorpay Integration:** Complete fee and marketplace payment processing securely.
+- **Digital Wallet System:** In-app virtual currency for peer-to-peer transfers, protected by a secure PIN system.
+- **Transaction History:** Comprehensive ledger and audit logging for all credit and debit movements.
 
-## Technology Stack
+### 🏢 Administration & Security
+- **Multi-Role RBAC:** Distinct permission levels for Students, Teachers, Staff, Managers, Admins, and Superadmins.
+- **Comprehensive Audit Logging:** Track every significant action in the system for administrative review.
+- **College/Institution Management:** Multi-tenant architecture allowing different colleges to operate independently on the same platform.
 
-- **Runtime:** Node.js 18+
+---
+
+## 🛠️ Technology Stack
+
+### Frontend Client
+- **Framework:** Next.js (App Router)
+- **Library:** React 19
+- **Styling:** Tailwind CSS & Radix UI primitives
+- **State Management:** React Hooks & Context API
+- **Data Fetching:** Axios
+
+### Backend Server
+- **Runtime:** Node.js (v18+)
 - **Framework:** Express.js 5.2
-- **Database:** PostgreSQL 14+
-- **ORM:** Prisma 7.3
-- **Authentication:** JWT with HTTP-only cookies
+- **Database:** PostgreSQL (v14+)
+- **ORM:** Prisma 7.6.0 (with advanced features like `createMany` and Views)
 - **Validation:** Zod
-- **Security:** bcrypt for password hashing
-- **Language:** JavaScript
+- **Authentication:** Dual strategy using custom JWTs (HTTP-only cookies) and Supabase Auth integration
+- **Real-time:** Supabase Realtime Channels & Socket.io
 
-## Quick Start
+---
+
+## 🚀 Quick Start Guide
 
 ### Prerequisites
-
 - Node.js 18.0.0 or higher
 - PostgreSQL 14.0 or higher
 - npm or yarn
+- Git
 
-### Installation
+### Installation & Setup
 
 1. **Clone the repository**
    ```bash
    git clone https://github.com/harshhhh1/Bbrains.git
-   cd Bbrains/Backend
+   cd Bbrains
    ```
 
-2. **Install dependencies**
+2. **Setup the Backend Server**
    ```bash
+   cd server
    npm install
    ```
+   *Create a `.env` file in the `server` directory. Reference the [Developer Guide](Developer_Guide.md) for a complete list of required environment variables including `DATABASE_URL` and `JWT_SECRET`.*
 
-3. **Set up environment variables**
+3. **Database Initialization**
+   Apply migrations and seed initial dummy data (admin accounts, colleges, etc.):
    ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` and configure:
-   ```env
-   DATABASE_URL="postgresql://username:password@localhost:5432/Bbrains"
-   JWT_SECRET="your-secret-key-min-32-characters"
-   PORT=3000
-   NODE_ENV=development
-   ```
-
-4. **Set up the database**
-   ```bash
-   # Run migrations
-   npx prisma migrate dev
-   
-   # Generate Prisma Client
    npx prisma generate
-   
-   # (Optional) Seed database with sample data
+   npx prisma migrate dev
    npm run db:seed
    ```
 
-5. **Start the server**
+4. **Run the Backend Development Server**
    ```bash
-   npm start
+   npm run dev &
    ```
+   The backend API will run on `http://localhost:3000` (or your configured `PORT`).
 
-The API will be available at `http://localhost:3000`
+5. **Setup the Frontend Client**
+   Open a new terminal window:
+   ```bash
+   cd client
+   npm install
+   ```
+   *Configure the `.env.local` file with `NEXT_PUBLIC_API_URL` pointing to your backend.*
 
-## Project Structure
+6. **Run the Frontend Development Server**
+   ```bash
+   npm run dev &
+   ```
+   Access the web app at `http://localhost:3001` (or whichever port Next.js assigns).
 
-```
-📁Backend/
-├── 📁controllers/        # Request handlers
-├── 📁routes/            # API route definitions
-├── 📁middleware/        # Express middleware (auth, validation, etc.)
-├── 📁services/          # Business logic layer
-├── 📁utils/             # Helper functions and utilities
-├── 📁prisma/            # Database schema and migrations
-├── server.js          # Application entry point
-└── package.json       # Dependencies and scripts
-```
+---
 
-## Documentation
+## 📚 Documentation Resources
 
-Comprehensive documentation is available:
+We maintain comprehensive documentation for our developers and API consumers:
+- [**API Documentation**](API_Documentation.md): Detailed schemas, authentication flows, and endpoint references.
+- [**Developer Guide**](Developer_Guide.md): Architecture overview, contribution guidelines, and local environment setup.
 
-- **[API Documentation](https://github.com/harshhhh1/Bbrains/wiki/API-DOCUMENTATION)** - Complete API reference with all endpoints
-- **[Technical Documentation](https://github.com/harshhhh1/Bbrains/wiki)** - Architecture, database schema, deployment
-- **[Developer Guide](http://github.com/harshhhh1/Bbrains/wiki/Developer-Guide)** - Setup, coding standards, contribution guide
+---
 
-## API Endpoints
+## 🤝 Contributing
 
-### Authentication
-- `POST /register` - Create new user account
-- `POST /login` - Authenticate user
-- `POST /logout` - End user session
-
-### Users
-- `GET /user/me` - Get current user profile
-- `GET /user/students` - List all students
-- `GET /user/teachers` - List all teachers
-- `POST /user/claim-daily` - Claim daily rewards
-
-### Academic
-- `GET /academic/assignments` - List assignments
-- `POST /academic/assignments` - Create assignment
-- `POST /academic/submissions` - Submit assignment
-- `GET /academic/announcements` - View announcements
-
-### Marketplace
-- `GET /market/products` - Browse products
-- `POST /market/cart` - Add to cart
-- `POST /market/checkout` - Purchase items
-
-### Wallet
-- `GET /wallet/me` - Get wallet balance
-- `POST /wallet/transfer` - Transfer funds
-- `GET /wallet/history` - Transaction history
-
-### More Endpoints
-See [API_DOCUMENTATION.md](https://github.com/harshhhh1/Bbrains/wiki/API-DOCUMENTATION) for the complete list of 100+ endpoints.
-
-## Database Schema
-
-The system uses PostgreSQL with 24 main tables:
-
-- **Core:** User, UserDetails, College, Address
-- **Academic:** Course, Assignment, Submission, Grade, Enrollment
-- **Gamification:** Xp, Level, Achievement, Leaderboard
-- **Commerce:** Product, Cart, Order, OrderItem, Wallet, TransactionHistory
-- **System:** Role, AuditLog, Announcement
-
-See [TECHNICAL_DOCUMENTATION.md](https://github.com/harshhhh1/Bbrains/wiki) for detailed schema information.
-
-## Security Features
-
-- JWT-based authentication with HTTP-only cookies
-- Password hashing with bcrypt (10 salt rounds)
-- Role-based access control (RBAC)
-- PIN protection for wallet transactions
-- Input validation with Zod schemas
-- SQL injection prevention via Prisma ORM
-- Comprehensive audit logging
-
-## Testing
-
-```bash
-# Run tests (coming soon)
-npm test
-
-# View database in Prisma Studio
-npx prisma studio
-```
-
-## Default User Roles
-
-- **Student** - Access courses, submit assignments, use marketplace
-- **Teacher** - Create assignments, grade submissions, manage courses
-- **Admin** - Full system access, user management, system configuration
-- **Staff** - Limited administrative capabilities
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'feat: Add AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-See [DEVELOPER_GUIDE.md](http://github.com/harshhhh1/Bbrains/wiki/Developer-Guide) for detailed contribution guidelines.
-
-## Scripts
-
-```bash
-npm start          # Start development server with nodemon
-npm run db:seed    # Seed database with sample data
-npx prisma studio  # Open Prisma Studio (database GUI)
-npx prisma migrate dev  # Create and run new migration
-```
-
-## Troubleshooting
-
-**Port already in use:**
-```bash
-lsof -i :3000
-kill -9 <PID>
-```
-
-**Database connection issues:**
-- Verify PostgreSQL is running: `pg_isready`
-- Check DATABASE_URL in `.env`
-- Ensure database exists
-
-**Prisma Client errors:**
-```bash
-npx prisma generate
-```
-
-See [DEVELOPER_GUIDE.md](http://github.com/harshhhh1/Bbrains/wiki/Developer-Guide) for more troubleshooting tips.
-
-## License
-
-This project is licensed under the ISC License.
-
-## Author
-
-**Harsh**
-- GitHub: [@harshhhh1](https://github.com/harshhhh1)
-- Discord: [golem.uwu](https://discord.com/users/967437862888960020)
-
-## Acknowledgments
-
-- Express.js team for the excellent web framework
-- Prisma team for the amazing ORM
-- All contributors and supporters of this project
+We welcome contributions to Bbrains! Please read our contribution guidelines in the [Developer Guide](Developer_Guide.md) before submitting a Pull Request. Make sure to follow conventional commits and branch naming standards.
 
 ---
 
