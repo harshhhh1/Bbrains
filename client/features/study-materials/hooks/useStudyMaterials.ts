@@ -45,7 +45,7 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
         setCurrentPrefix(res.data.prefix)
         updateBreadcrumbs(res.data.prefix, res.data.breadcrumbNames)
       } else {
-        setError(res.message || 'Failed to load materials')
+        setError('Failed to load materials')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load materials')

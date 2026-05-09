@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Paperclip, X as CloseIcon, Loader2 } from "lucide-react";
 import type { ApiCourse } from "@/lib/types/api";
 
-interface AssignmentFormValues {
+export interface AssignmentFormValues {
   title: string;
   description: string;
   courseId: string;
