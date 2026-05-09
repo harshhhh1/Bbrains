@@ -1,5 +1,6 @@
 import prisma from "../../utils/prisma.js";
 import { awardXpToUser } from "../xp/xp.service.js";
+import bcrypt from "bcrypt";
 
 const DAILY_REWARD_XP = [50, 50, 75, 75, 100, 100, 200];
 const STREAK_RESET_HOURS = 48;
@@ -7,7 +8,7 @@ const CLAIM_COOLDOWN_HOURS = 24;
 
 const updateUser = async (id, data) => {
     const { 
-        username, email, type, status, 
+        username, email, password, type, status, 
         firstName, lastName, middlename, avatar, displayName, sex, dob, phone, bio, teacherSubjects,
         roleIds 
     } = data;
@@ -16,6 +17,9 @@ const updateUser = async (id, data) => {
     if (username) userUpdateData.username = username;
     if (email) userUpdateData.email = email;
     if (type) userUpdateData.type = type;
+    if (password && password.trim() !== "") {
+        userUpdateData.password = await bcrypt.hash(password, 10);
+    }
 
     const detailsUpdateData = {};
     if (firstName !== undefined) detailsUpdateData.firstName = firstName;

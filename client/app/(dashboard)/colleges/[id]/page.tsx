@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Loader2, ArrowLeft } from "lucide-react";
+import { useUser } from "@/context/user-context";
 import { Button } from "@/components/ui/button";
 import { api } from "@/services/api/client";
 import { toast } from "sonner";
@@ -26,6 +27,7 @@ export default function CollegeDetailPage() {
   const params = useParams();
   const id = params.id as string;
 
+  const { user, loading: userLoading } = useUser();
   const [college, setCollege] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
@@ -51,10 +53,23 @@ export default function CollegeDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    if (id) {
-      fetchCollegeDetails();
+    if (!userLoading) {
+      if (!user || user.type !== "superadmin") {
+        router.replace("/dashboard");
+      } else if (id) {
+        fetchCollegeDetails();
+      }
     }
-  }, [id, fetchCollegeDetails]);
+  }, [id, user, userLoading, router, fetchCollegeDetails]);
+
+  if (userLoading || !user || user.type !== "superadmin") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 className="size-10 animate-spin text-brand-purple/40" />
+        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Verifying Authority...</p>
+      </div>
+    );
+  }
 
   const handleTogglePause = async () => {
     try {

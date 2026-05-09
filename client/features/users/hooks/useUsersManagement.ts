@@ -161,6 +161,8 @@ export function useUsersManagement(pageCollegeId: string | null) {
         : user.type === "teacher"
           ? String(user.classTeacherCourse?.id || "")
           : "",
+      phone: user.userDetails?.phone || "",
+      dob: user.userDetails?.dob ? new Date(user.userDetails.dob).toISOString().split('T')[0] : "",
       teacherSubjects: (user.userDetails?.teacherSubjects || []).join(", "),
       roleIds: (user.roles || []).map(r => r.role?.id).filter(Boolean) as number[],
     });
@@ -179,13 +181,13 @@ export function useUsersManagement(pageCollegeId: string | null) {
       return;
     }
     
-    if (!editingUser) {
-      if (form.password.length < 8) {
-        toast.error("Temporary password must be at least 8 characters");
-        return;
-      }
+    if (form.password && form.password.trim() !== "") {
       if (form.password !== form.confirmPassword) {
         toast.error("Passwords do not match");
+        return;
+      }
+      if (form.password.length < 8) {
+        toast.error("Password must be at least 8 characters");
         return;
       }
     }
@@ -198,13 +200,18 @@ export function useUsersManagement(pageCollegeId: string | null) {
         firstName: form.firstName,
         lastName: form.lastName,
         sex: form.sex,
-        dob: form.dob || "1995-01-01",
-        phone: form.phone || undefined,
+        dob: form.dob || undefined,
+        phone: form.phone,
         roleIds: form.roleIds,
+        bio: form.bio,
         ...(pageCollegeId ? { collegeId: Number(pageCollegeId) } : {}),
       };
 
-      if (!editingUser) payload.password = form.password;
+      if (!editingUser) {
+        payload.password = form.password;
+      } else if (form.password && form.password.trim() !== "") {
+        payload.password = form.password;
+      }
 
       if (form.type === "student" || form.type === "teacher") {
         payload.classId = form.classId ? Number(form.classId) : undefined;
@@ -212,8 +219,6 @@ export function useUsersManagement(pageCollegeId: string | null) {
       
       if (form.type === "teacher") {
         payload.teacherSubjects = form.teacherSubjects.split(",").map(s => s.trim()).filter(Boolean);
-      } else if (form.type === "manager" || form.type === "admin" || form.type === "staff") {
-        payload.bio = form.bio || undefined;
       }
 
       let response;

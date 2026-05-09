@@ -129,7 +129,7 @@ export default function UsersPageClient() {
         submitting={submitting}
         submitLabel={editingUser ? "Save Changes" : `Create ${form.type.charAt(0).toUpperCase() + form.type.slice(1)}`}
       >
-        <ManagerForm form={form} onChange={setForm} disabled={submitting} roles={roles} courses={courses} />
+        <ManagerForm form={form} onChange={setForm} disabled={submitting} roles={roles} courses={courses} isEditing={!!editingUser} />
       </CrudDrawer>
 
       <UserRolesDialog
