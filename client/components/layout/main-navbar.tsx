@@ -104,9 +104,8 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
         }
     }, [pathname])
 
-    const isDark = themes.find(t => t.id === currentTheme)?.isDark || false
-    const logoSrc = isDark ? "/logo-white.png" : "/logo-dark.png"
 
+    const isDark = themes.find(t => t.id === currentTheme)?.isDark ?? true
     const breadcrumbLabels = useMemo(() => buildPathLabels(pathname), [pathname])
     const pageTitle = useMemo(() => getPrimaryTitle(pathname), [pathname])
 
@@ -138,35 +137,30 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
     };
 
     return (
-        <nav className="sticky top-0 z-(--z-nav) border-b border-border/60 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/65">
-            <div className="mx-auto flex h-19 items-center gap-3 px-4 md:px-6">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
+        <nav className="sticky top-0 z-(--z-nav) bg-dashboard-bg">
+            <div className="mx-auto flex h-16 items-center gap-3 px-4 md:px-6">
+                {/* Left: Logo + Sidebar trigger */}
+                <div className="flex items-center gap-3">
+                    <SidebarTrigger aria-label="Toggle Sidebar" className="hidden md:flex h-9 w-9 rounded-xl text-foreground transition hover:bg-muted" />
 
-                    <SidebarTrigger aria-label="Toggle Sidebar" className="hidden md:flex h-11 w-11 rounded-2xl border border-border/70 bg-card/80 text-foreground shadow-sm transition hover:bg-card" />
+                    <Link href="/" className="flex items-center gap-2">
+                        <img
+                            src={isDark ? "/brain-light.svg" : "/brain-dark.svg"}
+                            alt="Bbrains"
+                            width={28}
+                            height={28}
+                        />
+                        <span className="text-lg font-bold tracking-tight text-foreground hidden sm:inline">BBrains</span>
+                    </Link>
+                </div>
 
-                    <div className="flex min-w-0 items-center gap-3">
-
-                        <div className="min-w-0">
-                            <div className="hidden items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground md:flex">
-                                <span>
-                                    {(user?.appRole === "superadmin" || user?.appRole === "admin" || user?.type === "admin") && !user?.isImpersonating
-                                        ? "Admin Panel"
-                                        : (user?.collegeName || "Bbrains Academy")}
-                                </span>
-                                <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
-                                <span>{todayLabel}</span>
-                            </div>
-
-                            <div className="flex min-w-0 items-center gap-2">
-                                <h1 className="truncate text-lg font-bold tracking-tight text-foreground md:text-xl">
-                                    {dynamicProduct 
-                                        ? `${dynamicProduct.name} by ${dynamicProduct.creator?.userDetails?.firstName || dynamicProduct.creator?.username || "Scholar"}`
-                                        : pageTitle}
-                                </h1>
-
-                            </div>
-                        </div>
-                    </div>
+                {/* Center: College Name */}
+                <div className="hidden md:flex flex-1 items-center justify-center">
+                    <span className="text-sm font-semibold text-muted-foreground uppercase tracking-[0.15em]">
+                        {(user?.appRole === "superadmin" || user?.appRole === "admin" || user?.type === "admin") && !user?.isImpersonating
+                            ? "Admin Panel"
+                            : (user?.collegeName || "Bbrains Academy")}
+                    </span>
                 </div>
 
                 <div className="hidden items-center justify-end flex-1 xl:flex mr-4">

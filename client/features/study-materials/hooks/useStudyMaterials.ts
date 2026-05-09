@@ -31,24 +31,28 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
 
   // Load materials for current prefix
   const loadMaterials = useCallback(async (prefix: string, collegeId?: string, courseId?: string) => {
+    // Use initial IDs as fallbacks if not explicitly provided
+    const cid = collegeId || initialCollegeId
+    const crid = courseId || initialCourseId
+
     setIsLoading(true)
     setError(null)
     try {
-      const res = await listMaterials(prefix, collegeId, courseId)
+      const res = await listMaterials(prefix, cid, crid)
       if (res.success) {
         setFolders(res.data.folders as StudyMaterialFolder[])
         setFiles(res.data.files as StudyMaterialFile[])
         setCurrentPrefix(res.data.prefix)
         updateBreadcrumbs(res.data.prefix, res.data.breadcrumbNames)
       } else {
-        setError('Failed to load materials')
+        setError(res.message || 'Failed to load materials')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load materials')
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [initialCollegeId, initialCourseId])
 
   // Update breadcrumbs based on current prefix
   const updateBreadcrumbs = useCallback((prefix: string, breadcrumbNames?: { name: string; displayName: string }[]) => {
@@ -73,8 +77,8 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
 
   // Navigate into a folder
   const navigateToFolder = useCallback((folderPrefix: string) => {
-    loadMaterials(folderPrefix)
-  }, [loadMaterials])
+    loadMaterials(folderPrefix, initialCollegeId, initialCourseId)
+  }, [loadMaterials, initialCollegeId, initialCourseId])
 
   // Go back to parent folder
   const navigateBack = useCallback(() => {
@@ -82,15 +86,15 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
     const parts = currentPrefix.split('/').filter(Boolean)
     parts.pop() // Remove last part
     const parentPrefix = parts.length > 0 ? `${parts.join('/')}/` : ''
-    loadMaterials(parentPrefix)
-  }, [currentPrefix, loadMaterials])
+    loadMaterials(parentPrefix, initialCollegeId, initialCourseId)
+  }, [currentPrefix, loadMaterials, initialCollegeId, initialCourseId])
 
   // Upload file
   const uploadFile = useCallback(async (file: File, prefix?: string) => {
     try {
       const res = await uploadMaterial(prefix || currentPrefix, file)
       if (res.success) {
-        loadMaterials(currentPrefix) // Reload current folder
+        loadMaterials(currentPrefix, initialCollegeId, initialCourseId) // Reload current folder
         return true
       }
       return false
@@ -98,14 +102,14 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
       setError(err instanceof Error ? err.message : 'Upload failed')
       return false
     }
-  }, [currentPrefix, loadMaterials])
+  }, [currentPrefix, loadMaterials, initialCollegeId, initialCourseId])
 
   // Delete file or folder
   const deleteItem = useCallback(async (path: string) => {
     try {
       const res = await deleteMaterial(path)
       if (res.success) {
-        loadMaterials(currentPrefix) // Reload current folder
+        loadMaterials(currentPrefix, initialCollegeId, initialCourseId) // Reload current folder
         return true
       }
       return false
@@ -113,14 +117,14 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
       setError(err instanceof Error ? err.message : 'Delete failed')
       return false
     }
-  }, [currentPrefix, loadMaterials])
+  }, [currentPrefix, loadMaterials, initialCollegeId, initialCourseId])
 
   // Rename file or folder
   const renameItem = useCallback(async (oldPath: string, newPath: string) => {
     try {
       const res = await renameMaterial(oldPath, newPath)
       if (res.success) {
-        loadMaterials(currentPrefix) // Reload current folder
+        loadMaterials(currentPrefix, initialCollegeId, initialCourseId) // Reload current folder
         return true
       }
       return false
@@ -128,7 +132,7 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
       setError(err instanceof Error ? err.message : 'Rename failed')
       return false
     }
-  }, [currentPrefix, loadMaterials])
+  }, [currentPrefix, loadMaterials, initialCollegeId, initialCourseId])
 
   // Get signed URL for download
   const getDownloadUrl = useCallback(async (path: string) => {
@@ -141,7 +145,7 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
     }
   }, [])
 
-  // Initialize with college/course ID - use refs to avoid dependency issues
+  // Initialize with college/course ID
   useEffect(() => {
     if (!user || !initialCollegeId) return
     
@@ -153,9 +157,9 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
     const prefix = initialCourseId 
       ? `${initialCollegeId}/${initialCourseId}/` 
       : `${initialCollegeId}/`
+      
     loadMaterials(prefix, initialCollegeId, initialCourseId)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialCollegeId, initialCourseId])
+  }, [user, initialCollegeId, initialCourseId, loadMaterials])
 
   return {
     folders,
@@ -171,6 +175,6 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
     deleteItem,
     renameItem,
     getDownloadUrl,
-    reload: () => loadMaterials(currentPrefix)
+    reload: () => loadMaterials(currentPrefix, initialCollegeId, initialCourseId)
   }
 }
