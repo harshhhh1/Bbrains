@@ -161,4 +161,10 @@ export const sidebarItems = [
     icon: "Trophy",
     access: ["bbrains_official"],
   },
+  {
+    title: "Leaderboard Rewards",
+    url: "/admin/leaderboard-rewards",
+    icon: "Gift",
+    access: ["admin"],
+  },
 ];

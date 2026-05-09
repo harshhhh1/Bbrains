@@ -11,6 +11,7 @@ router.get('/public', getPublicConfigs);
 // Admin-only routes
 router.get('/', verifyToken, authorize('admin'), getConfigs);
 router.post('/', verifyToken, authorize('admin'), updateConfig);
+router.put('/', verifyToken, authorize('admin'), updateConfig);
 router.delete('/:key', verifyToken, authorize('admin'), removeConfig);
 
 export default router;

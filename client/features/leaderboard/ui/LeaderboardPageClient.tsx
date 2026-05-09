@@ -1,10 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LeaderboardEntryRow, TopThreePodium } from "@/features/leaderboard/ui/LeaderboardEntry"
 import { useLeaderboard } from "@/features/leaderboard/model/use-leaderboard"
-import type { LeaderboardCategory, LeaderboardSort } from "@/lib/types/api"
+import { LeaderboardRewardsBanner, LeaderboardRewardsBannerSkeleton } from "@/features/leaderboard/ui/LeaderboardRewardsBanner"
+import { api } from "@/services/api/base"
+import { useUser } from "@/hooks/use-user"
+import type { LeaderboardCategory, LeaderboardSort, RewardTier, LeaderboardEntry, LeaderboardRewardPreview } from "@/lib/types/api"
 
 const CATEGORIES: { value: LeaderboardCategory; label: string }[] = [
   { value: "weekly", label: "Weekly" },
@@ -13,11 +16,83 @@ const CATEGORIES: { value: LeaderboardCategory; label: string }[] = [
   { value: "course", label: "Course" },
 ]
 
+const DEFAULT_WEEKLY_REWARDS: RewardTier[] = [
+  { rank: 1, xp: 500, coins: 300 },
+  { rank: 2, xp: 300, coins: 200 },
+  { rank: 3, xp: 200, coins: 100 },
+]
+
+const DEFAULT_MONTHLY_REWARDS: RewardTier[] = [
+  { rank: 1, xp: 2000, coins: 1500 },
+  { rank: 2, xp: 1200, coins: 900 },
+  { rank: 3, xp: 800, coins: 500 },
+]
+
 export default function LeaderboardPage() {
   const [category, setCategory] = useState<LeaderboardCategory>("allTime")
   const [sortBy, setSortBy] = useState<LeaderboardSort>("xp")
+  const [rewardPreview, setRewardPreview] = useState<LeaderboardRewardPreview | null>(null)
+  const [loadingRewards, setLoadingRewards] = useState(false)
   
   const { entries, myPosition, loading, currentUserId } = useLeaderboard({ category, sortBy })
+  const { user } = useUser()
+
+  useEffect(() => {
+    if (category === "weekly" || category === "monthly") {
+      fetchRewardPreview(category)
+    } else {
+      setRewardPreview(null)
+    }
+  }, [category])
+
+  const fetchRewardPreview = async (cat: LeaderboardCategory) => {
+    setLoadingRewards(true)
+    try {
+      const configKey = cat === "weekly" ? "leaderboard_weekly_rewards" : "leaderboard_monthly_rewards"
+      const response = await api.get<any>(`/config/${configKey}`)
+      
+      if (response.success && response.data) {
+        let rewards: RewardTier[]
+        try {
+          rewards = JSON.parse(response.data.value)
+        } catch {
+          rewards = cat === "weekly" ? DEFAULT_WEEKLY_REWARDS : DEFAULT_MONTHLY_REWARDS
+        }
+
+        setRewardPreview({
+          category: cat,
+          rewards,
+          topUsers: entries.slice(0, 3),
+          periodEndsAt: getPeriodEndDate(cat),
+        })
+      }
+    } catch (error) {
+      console.error("Failed to fetch reward preview:", error)
+      setRewardPreview({
+        category: cat,
+        rewards: cat === "weekly" ? DEFAULT_WEEKLY_REWARDS : DEFAULT_MONTHLY_REWARDS,
+        topUsers: entries.slice(0, 3),
+        periodEndsAt: getPeriodEndDate(cat),
+      })
+    } finally {
+      setLoadingRewards(false)
+    }
+  }
+
+  const getPeriodEndDate = (cat: LeaderboardCategory): string => {
+    const now = new Date()
+    if (cat === "weekly") {
+      const daysUntilSunday = 7 - now.getDay()
+      const periodEnd = new Date(now)
+      periodEnd.setDate(now.getDate() + (daysUntilSunday === 7 ? 0 : daysUntilSunday))
+      periodEnd.setHours(23, 59, 59, 999)
+      return periodEnd.toISOString()
+    } else {
+      const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      lastDayOfMonth.setHours(23, 59, 59, 999)
+      return lastDayOfMonth.toISOString()
+    }
+  }
 
   return (
     <div className="mx-auto w-full max-w-3xl md:p-8">
@@ -62,6 +137,18 @@ export default function LeaderboardPage() {
           </button>
         </div>
       </div>
+
+      {loadingRewards ? (
+        <LeaderboardRewardsBannerSkeleton />
+      ) : rewardPreview && (category === "weekly" || category === "monthly") ? (
+        <LeaderboardRewardsBanner
+          category={category}
+          rewards={rewardPreview.rewards}
+          topUsers={entries.slice(0, 3)}
+          periodEndsAt={rewardPreview.periodEndsAt}
+          currentUserId={user?.id}
+        />
+      ) : null}
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12">
