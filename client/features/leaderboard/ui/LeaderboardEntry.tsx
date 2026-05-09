@@ -18,10 +18,10 @@ export function LeaderboardEntryRow({ entry, isCurrentUser, sortBy }: Leaderboar
     return <span className="text-lg font-bold text-muted-foreground">{rank}</span>
   }
 
-  const initials = `${entry.firstName?.[0] || ""}${entry.lastName?.[0] || ""}`.toUpperCase()
-  const displayName = entry.firstName && entry.lastName 
+  const initials = entry.displayName?.[0] || `${entry.firstName?.[0] || ""}${entry.lastName?.[0] || ""}`.toUpperCase() || entry.username[0].toUpperCase()
+  const displayName = entry.displayName || (entry.firstName && entry.lastName 
     ? `${entry.firstName} ${entry.lastName}` 
-    : entry.username
+    : entry.username)
 
   const value = sortBy === "xp" ? entry.totalXp : entry.totalPoints
   const valueLabel = sortBy === "xp" ? "XP" : "Points"
@@ -82,10 +82,10 @@ export function TopThreePodium({ entries, sortBy, currentUserId }: TopThreeProps
     <div className="mb-8 flex justify-center gap-2 px-4">
       {ranks.map((item, idx) => {
         const e = item.entry
-        const initials = `${e.firstName?.[0] || ""}${e.lastName?.[0] || ""}`.toUpperCase()
-        const displayName = e.firstName && e.lastName 
+        const initials = e.displayName?.[0] || `${e.firstName?.[0] || ""}${e.lastName?.[0] || ""}`.toUpperCase() || e.username[0].toUpperCase()
+        const displayName = e.displayName || (e.firstName && e.lastName 
           ? `${e.firstName} ${e.lastName}` 
-          : e.username
+          : e.username)
         const value = sortBy === "xp" ? e.totalXp : e.totalPoints
         
         return (

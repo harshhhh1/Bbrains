@@ -66,6 +66,7 @@ const userSummarySelect = {
         select: {
             firstName: true,
             lastName: true,
+            displayName: true,
             avatar: true,
             sex: true,
             dob: true,
@@ -147,6 +148,7 @@ const getUserDetailsByID = async (id) => {
                     avatar: true,
                     firstName: true,
                     lastName: true,
+                    displayName: true,
                     sex: true,
                     dob: true,
                     phone: true,

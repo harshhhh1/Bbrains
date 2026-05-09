@@ -18,6 +18,7 @@ const INITIAL_FORM: ProfileFormState = {
   username: "",
   firstName: "",
   lastName: "",
+  displayName: "",
   bio: "",
   phone: "",
   sex: "other",
@@ -39,7 +40,6 @@ export function useSettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [oldPin, setOldPin] = useState("");
   const [newPin, setNewPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
 
@@ -56,6 +56,7 @@ export function useSettingsPage() {
           username: nextUser.username || "",
           firstName: readUserField(nextUser, "firstName"),
           lastName: readUserField(nextUser, "lastName"),
+          displayName: readUserField(nextUser, "displayName"),
           bio: readUserField(nextUser, "bio"),
           phone: readUserField(nextUser, "phone"),
           sex: readUserField(nextUser, "sex") || "other",
@@ -126,9 +127,8 @@ export function useSettingsPage() {
   }, [form.username, user?.username]);
 
   const displayName = useMemo(() => {
-    const fullName = `${form.firstName} ${form.lastName}`.trim();
-    return fullName || form.username || user?.username || "User";
-  }, [form.firstName, form.lastName, form.username, user?.username]);
+    return form.displayName.trim() || `${form.firstName} ${form.lastName}`.trim() || form.username || user?.username || "User";
+  }, [form.displayName, form.firstName, form.lastName, form.username, user?.username]);
 
   const roleLabel = getRoleLabel(user?.type);
   const completion = profileCompletion(form);
@@ -136,7 +136,7 @@ export function useSettingsPage() {
   const level = Number(user?.xp?.level || 1);
   const gradeLabel = getGradeLabel(user);
   const canSubmitPin =
-    /^\d{6}$/.test(newPin) && /^\d{6}$/.test(confirmPin) && (!isPinSet || /^\d{6}$/.test(oldPin));
+    /^\d{6}$/.test(newPin) && (!isPinSet || /^\d{6}$/.test(oldPin));
   const canSaveProfile = !usernameError && !isCheckingUsername;
 
   const handleProfileSave = useCallback(async () => {
@@ -161,6 +161,7 @@ export function useSettingsPage() {
       const detailsRes = await userApi.updateDetails({
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
+        displayName: form.displayName.trim(),
         bio: form.bio.trim(),
         phone: form.phone.trim(),
         sex: form.sex,
@@ -268,11 +269,6 @@ export function useSettingsPage() {
       return;
     }
 
-    if (newPin !== confirmPin) {
-      toast.error("PIN values do not match");
-      return;
-    }
-
     setSaving("pin");
     try {
       const response = isPinSet ? await walletApi.changePin(oldPin, newPin) : await walletApi.setupPin(newPin);
@@ -285,7 +281,6 @@ export function useSettingsPage() {
       toast.success(isPinSet ? "Wallet PIN updated" : "Wallet PIN created");
       setOldPin("");
       setNewPin("");
-      setConfirmPin("");
       setIsPinSet(true);
     } catch (error) {
       console.error("PIN update failed:", error);
@@ -293,7 +288,7 @@ export function useSettingsPage() {
     } finally {
       setSaving(null);
     }
-  }, [confirmPin, isPinSet, newPin, oldPin]);
+  }, [isPinSet, newPin, oldPin]);
 
   return {
     loading,
@@ -307,7 +302,6 @@ export function useSettingsPage() {
     confirmPassword,
     oldPin,
     newPin,
-    confirmPin,
     usernameError,
     isCheckingUsername,
     displayName,
@@ -324,7 +318,6 @@ export function useSettingsPage() {
     setConfirmPassword,
     setOldPin,
     setNewPin,
-    setConfirmPin,
     handleProfileSave,
     handleAvatarUpload,
     handlePasswordUpdate,

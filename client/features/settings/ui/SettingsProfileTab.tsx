@@ -1,8 +1,7 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { AlertCircle, BadgeCheck, Loader2, Mail, Phone, Save, ShieldCheck, User } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AlertCircle, BadgeCheck, Loader2, Pencil, Save, Trophy, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { formatCurrency, getInitials } from "@/features/settings/model/settings";
 import type { ProfileFormState, SavingState, SettingsUser } from "@/features/settings/types/settings";
-import { FieldBlock, MetricCard, SectionCard } from "@/features/settings/ui/settings-ui";
+import type { UserAchievement } from "@/services/api/client";
 
 type SettingsProfileTabProps = {
   form: ProfileFormState;
@@ -30,6 +29,56 @@ type SettingsProfileTabProps = {
   onSave: () => Promise<void>;
 };
 
+/* ─── Editable field row ─── */
+function EditableRow({
+  label,
+  children,
+  editable = true,
+}: {
+  label: string;
+  children: React.ReactNode;
+  editable?: boolean;
+}) {
+  return (
+    <div className="group relative grid grid-cols-[130px_1fr] items-start gap-4 rounded-xl px-3 py-3.5 transition-colors hover:bg-muted/30">
+      <p className="pt-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+        {label}
+      </p>
+      <div className="flex items-start gap-2">
+        <div className="flex-1">{children}</div>
+        {editable && (
+          <Pencil className="mt-3 h-3.5 w-3.5 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity group-hover:opacity-100" />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Mini achievement badge ─── */
+function AchievementBadge({ item }: { item: UserAchievement }) {
+  return (
+    <div className="group/badge flex flex-col items-center gap-2 rounded-2xl border border-border/40 bg-muted/20 p-4 text-center transition-all hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform group-hover/badge:scale-110">
+        {item.achievement.icon ? (
+          <img
+            src={item.achievement.icon}
+            alt={item.achievement.name}
+            className="h-6 w-6 object-contain"
+          />
+        ) : (
+          <Trophy className="h-6 w-6" />
+        )}
+      </div>
+      <p className="line-clamp-1 text-xs font-semibold text-foreground">{item.achievement.name}</p>
+      <div className="flex items-center gap-2 text-[10px] font-medium">
+        <span className="text-emerald-500">+{item.achievement.rewardXP} XP</span>
+        <span className="text-amber-500">+{item.achievement.rewardCoins} 🪙</span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main component ─── */
 export function SettingsProfileTab({
   form,
   setForm,
@@ -47,28 +96,34 @@ export function SettingsProfileTab({
   walletBalance,
   onSave,
 }: SettingsProfileTabProps) {
+  const achievements = (user?.userAchievements as UserAchievement[] | undefined) || [];
+
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-      <SectionCard
-        icon={<User className="h-5 w-5" />}
-        title="Profile details"
-        description="Keep your profile complete and easy to recognize across Bbrains."
-      >
-        <div className="grid gap-5 md:grid-cols-2">
-          <FieldBlock label="Username" hint="Used in mentions and quick search.">
+    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      {/* ─── LEFT: Profile card ─── */}
+      <div className="rounded-3xl border border-border/40 bg-card p-6 md:p-8">
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <User className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold tracking-tight">Profile Details</h2>
+            <p className="text-xs text-muted-foreground/70">Update your personal information</p>
+          </div>
+        </div>
+
+        <div className="divide-y divide-border/30">
+          <EditableRow label="Username">
             <div className="relative">
               <Input
                 value={form.username}
-                onChange={(event) => setForm((current) => ({ ...current, username: event.target.value }))}
+                onChange={(e) => setForm((c) => ({ ...c, username: e.target.value }))}
                 className={cn(
-                  "h-12 pr-10",
-                  usernameError ? "border-destructive focus-visible:ring-destructive/20" : "",
-                  form.username.length >= 3 && form.username !== user?.username
-                    ? "border-emerald-500/50 focus-visible:ring-emerald-500/20"
-                    : ""
+                  "h-10 border-none bg-transparent px-0 shadow-none focus-visible:ring-0",
+                  usernameError && "text-destructive"
                 )}
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="absolute right-0 top-1/2 -translate-y-1/2">
                 {isCheckingUsername ? (
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 ) : usernameError ? (
@@ -78,49 +133,44 @@ export function SettingsProfileTab({
                 ) : null}
               </div>
             </div>
-            {usernameError ? (
-              <p className="px-1 text-[12px] font-medium text-destructive transition-all">{usernameError}</p>
-            ) : null}
-          </FieldBlock>
+            {usernameError && (
+              <p className="mt-0.5 text-[11px] font-medium text-destructive">{usernameError}</p>
+            )}
+          </EditableRow>
 
-          <FieldBlock label="Email" hint="Primary account identity.">
-            <Input value={user?.email || ""} disabled className="h-12 bg-muted/60" />
-          </FieldBlock>
-
-          <FieldBlock label="First name">
-            <Input 
-              value={form.firstName} 
-              disabled={user?.type !== "superadmin"} 
-              onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))}
-              className={cn("h-12", user?.type !== "superadmin" ? "bg-muted/60" : "")} 
+          <EditableRow label="Email" editable={false}>
+            <Input
+              value={user?.email || ""}
+              disabled
+              className="h-10 border-none bg-transparent px-0 shadow-none focus-visible:ring-0 disabled:opacity-60"
             />
-          </FieldBlock>
+          </EditableRow>
 
-          <FieldBlock label="Last name">
-            <Input 
-              value={form.lastName} 
-              disabled={user?.type !== "superadmin"} 
-              onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))}
-              className={cn("h-12", user?.type !== "superadmin" ? "bg-muted/60" : "")} 
+          <EditableRow label="Display Name" editable={true}>
+            <Input
+              value={form.displayName}
+              onChange={(e) => setForm((c) => ({ ...c, displayName: e.target.value }))}
+              placeholder="Your public name"
+              className="h-10 border-none bg-transparent px-0 shadow-none focus-visible:ring-0"
             />
-          </FieldBlock>
+          </EditableRow>
 
-          <FieldBlock label="Phone number">
-            <Input 
-              value={form.phone} 
-              disabled={user?.type !== "superadmin"} 
-              onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
-              className={cn("h-12", user?.type !== "superadmin" ? "bg-muted/60" : "")} 
-              placeholder="+91 98765 43210" 
+          <EditableRow label="Phone" editable={user?.type === "superadmin"}>
+            <Input
+              value={form.phone}
+              disabled={user?.type !== "superadmin"}
+              onChange={(e) => setForm((c) => ({ ...c, phone: e.target.value }))}
+              placeholder="Not provided"
+              className="h-10 border-none bg-transparent px-0 shadow-none focus-visible:ring-0 disabled:opacity-60"
             />
-          </FieldBlock>
+          </EditableRow>
 
-          <FieldBlock label="Gender">
+          <EditableRow label="Gender" editable={user?.type === "superadmin"}>
             {user?.type === "superadmin" ? (
               <select
                 value={form.sex}
-                onChange={(event) => setForm((current) => ({ ...current, sex: event.target.value }))}
-                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                onChange={(e) => setForm((c) => ({ ...c, sex: e.target.value }))}
+                className="h-10 w-full bg-transparent text-sm text-foreground outline-none"
               >
                 <option value="male">Male</option>
                 <option value="female">Female</option>
@@ -130,117 +180,88 @@ export function SettingsProfileTab({
               <Input
                 value={form.sex?.charAt(0).toUpperCase() + form.sex?.slice(1)}
                 disabled
-                className="h-12 bg-muted/60"
+                className="h-10 border-none bg-transparent px-0 shadow-none focus-visible:ring-0 disabled:opacity-60"
               />
             )}
-          </FieldBlock>
+          </EditableRow>
 
-          <div className="md:col-span-2">
-            <FieldBlock label="Bio" hint="Short profile summary visible in account surfaces.">
-              <Textarea
-                value={form.bio}
-                onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))}
-                rows={5}
-                placeholder="Tell classmates and staff a little about you."
-                className="resize-none"
-              />
-            </FieldBlock>
-          </div>
+          <EditableRow label="Bio">
+            <Textarea
+              value={form.bio}
+              onChange={(e) => setForm((c) => ({ ...c, bio: e.target.value }))}
+              rows={3}
+              placeholder="Tell us about yourself..."
+              className="resize-none border-none bg-transparent px-0 shadow-none focus-visible:ring-0"
+            />
+          </EditableRow>
         </div>
 
         <div className="mt-6 flex justify-end">
           <Button
             onClick={() => void onSave()}
             disabled={(saving !== null && saving !== "profile") || !canSaveProfile}
-            className="h-11 w-full rounded-xl px-6 font-semibold sm:w-auto"
+            className="h-10 rounded-full px-6 font-semibold"
           >
             {saving === "profile" ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                Save profile changes
+                Save Changes
               </>
             )}
           </Button>
         </div>
-      </SectionCard>
+      </div>
 
+      {/* ─── RIGHT: Achievements ─── */}
       <div className="space-y-6">
-        <SectionCard
-          icon={<BadgeCheck className="h-5 w-5" />}
-          title="Profile preview"
-          description="Quick view of how your account details currently read."
-        >
-          <div className="space-y-5">
-            <div className="flex flex-col gap-4 rounded-[1.25rem] border border-border/60 bg-background/75 p-4 sm:flex-row sm:items-start">
-              <Avatar className="h-20 w-20 rounded-[1.5rem] border border-border">
-                <AvatarImage src={form.avatar || undefined} className="object-cover" />
-                <AvatarFallback
-                  name={user?.username}
-                  className="rounded-[1.35rem] bg-primary text-xl font-bold text-primary-foreground"
-                >
-                  {getInitials(user)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1 space-y-2">
-                <p className="text-xl font-bold tracking-tight text-foreground">{displayName}</p>
-                <p className="text-sm text-muted-foreground">@{form.username || user?.username}</p>
-                <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary">{roleLabel}</Badge>
-                  <Badge variant="outline">{gradeLabel}</Badge>
-                  <Badge variant="outline">{isPinSet ? "Wallet PIN active" : "Wallet PIN missing"}</Badge>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <MetricCard label="Level" value={`Lv ${level}`} note="Current account level" />
-              <MetricCard label="Grade" value={gradeLabel} note="Assigned class level" />
-              <MetricCard label="Achievements" value={String(achievementCount)} note="Unlocked milestones" />
-              <MetricCard label="Wallet" value={formatCurrency(walletBalance)} note="Current balance" />
-            </div>
+        {/* Stats row */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="rounded-2xl border border-border/40 bg-card p-4 text-center">
+            <p className="text-2xl font-black tracking-tight text-foreground">Lv {level}</p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Level</p>
           </div>
-        </SectionCard>
+          <div className="rounded-2xl border border-border/40 bg-card p-4 text-center">
+            <p className="text-2xl font-black tracking-tight text-foreground">{achievementCount}</p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Badges</p>
+          </div>
+          <div className="rounded-2xl border border-border/40 bg-card p-4 text-center">
+            <p className="text-2xl font-black tracking-tight text-foreground">{formatCurrency(walletBalance)}</p>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Wallet</p>
+          </div>
+        </div>
 
-        <SectionCard
-          icon={<Mail className="h-5 w-5" />}
-          title="Account summary"
-          description="Read-only account context helpful while updating profile details."
-        >
-          <div className="space-y-4">
-            <div className="flex items-start gap-3 rounded-[1.1rem] border border-border/60 bg-background/70 p-4">
-              <Mail className="mt-0.5 h-4 w-4 text-primary" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Email address</p>
-                <p className="text-sm text-muted-foreground">{user?.email}</p>
+        {/* Achievements grid */}
+        <div className="rounded-3xl border border-border/40 bg-card p-6 md:p-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+                <Trophy className="h-5 w-5" />
               </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-[1.1rem] border border-border/60 bg-background/70 p-4">
-              <Phone className="mt-0.5 h-4 w-4 text-primary" />
               <div>
-                <p className="text-sm font-medium text-foreground">Phone</p>
-                <p className="text-sm text-muted-foreground">{form.phone || "Not provided yet"}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-[1.1rem] border border-border/60 bg-background/70 p-4">
-              <ShieldCheck className="mt-0.5 h-4 w-4 text-primary" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Security state</p>
-                <p className="text-sm text-muted-foreground">
-                  {isPinSet ? "Wallet PIN already enabled." : "Add wallet PIN for payment safety."}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 rounded-[1.1rem] border border-border/60 bg-background/70 p-4">
-              <BadgeCheck className="mt-0.5 h-4 w-4 text-primary" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Current grade</p>
-                <p className="text-sm text-muted-foreground">{gradeLabel}</p>
+                <h2 className="text-lg font-bold tracking-tight">Achievements</h2>
+                <p className="text-xs text-muted-foreground/70">{achievements.length} badges earned</p>
               </div>
             </div>
           </div>
-        </SectionCard>
+
+          {achievements.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/50 bg-muted/10 py-12 text-center">
+              <Trophy className="mb-3 h-10 w-10 text-muted-foreground/30" />
+              <p className="text-sm font-medium text-muted-foreground/60">No achievements yet</p>
+              <p className="mt-1 text-xs text-muted-foreground/40">
+                Keep exploring to unlock your first badge!
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {achievements.map((item) => (
+                <AchievementBadge key={item.achievement.id} item={item} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
