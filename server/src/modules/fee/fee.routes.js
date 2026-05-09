@@ -11,6 +11,9 @@ const router = express.Router();
 // Get fee summary for current student
 router.get('/summary', verifyToken, getStudentFeeSummaryHandler);
 
+// Get fee summary for specific student (admin/manager only)
+router.get('/summary/:userId', verifyToken, authorize('admin', 'manager'), getStudentFeeSummaryHandler);
+
 // Get all fee transactions (admin/manager only)
 router.get('/all-transactions', verifyToken, authorize('admin', 'manager'), getAllFeeTransactionsHandler);
 

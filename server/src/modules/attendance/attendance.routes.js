@@ -6,7 +6,7 @@ import authorize from '../../middleware/authorize.js';
 const router = express.Router();
 
 router.get('/', verifyToken, getAttendance);
-router.get('/by-date', verifyToken, authorize('teacher', 'admin'), getAttendanceByDate);
+router.get('/by-date', verifyToken, authorize('teacher', 'admin', 'student'), getAttendanceByDate);
 // Teacher/Admin: get attendance for a specific student
 router.get('/student/:studentId', verifyToken, authorize('teacher', 'admin'), getStudentAttendance);
 // Mark attendance for a student

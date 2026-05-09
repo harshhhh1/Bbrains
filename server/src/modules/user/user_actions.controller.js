@@ -5,8 +5,9 @@ import { createAuditLog } from "../../utils/auditLog.js";
 const editUser = async (req, res) => {
     try {
         const { id } = req.params;
-        // Only allow self-edit or admin
-        if (req.user.id !== id && req.user.type !== 'admin') {
+        // Only allow self-edit or administrative roles
+        const isAdmin = ['admin', 'superadmin', 'manager'].includes(req.user.type);
+        if (req.user.id !== id && !isAdmin) {
             return sendError(res, 'Not authorized to update this user', 403);
         }
 
