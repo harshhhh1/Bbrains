@@ -11,7 +11,7 @@ export default function ChatPage() {
   const { state, refs, actions } = useChatPage();
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-card md:rounded-xl md:border md:shadow-sm">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-card">
       <ChannelHeader
         channelName="Global Chat"
         showMembers={state.membersPanelOpen}

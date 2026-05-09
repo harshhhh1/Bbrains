@@ -44,14 +44,16 @@ export const builtInThemes: ThemeDefinition[] = [
       '--chart-3': 'oklch(0.603 0.118 184.704)',
       '--chart-4': 'oklch(0.828 0.189 84.429)',
       '--chart-5': 'oklch(0.769 0.188 70.08)',
-      '--sidebar': 'oklch(0.985 0 0)',
+      '--sidebar': 'oklch(0.967 0.001 286.375)',
       '--sidebar-foreground': 'oklch(0.141 0.005 285.823)',
       '--sidebar-primary': 'oklch(0.546 0.245 262.881)',
       '--sidebar-primary-foreground': 'oklch(0.97 0.014 254.604)',
       '--sidebar-accent': 'oklch(0.488 0.243 264.376)',
       '--sidebar-accent-foreground': 'oklch(0.97 0.014 254.604)',
-      '--sidebar-border': 'oklch(0.92 0.004 286.32)',
-      '--sidebar-ring': 'oklch(0.705 0.015 286.067)'
+      '--sidebar-border': 'transparent',
+      '--sidebar-ring': 'oklch(0.705 0.015 286.067)',
+      '--dashboard-bg': 'oklch(0.967 0.001 286.375)',
+      '--dashboard-surface': 'oklch(1 0 0)'
     }
   },
   {
@@ -84,14 +86,16 @@ export const builtInThemes: ThemeDefinition[] = [
       '--chart-3': 'oklch(0.482 0.15 178.653)',
       '--chart-4': 'oklch(0.74 0.16 85)',
       '--chart-5': 'oklch(0.68 0.12 65)',
-      '--sidebar': 'oklch(0.21 0.006 285.885)',
+      '--sidebar': 'oklch(0.141 0.005 285.823)',
       '--sidebar-foreground': 'oklch(0.985 0 0)',
       '--sidebar-primary': 'oklch(0.623 0.214 259.815)',
       '--sidebar-primary-foreground': 'oklch(0.97 0.014 254.604)',
       '--sidebar-accent': 'oklch(0.42 0.18 266)',
       '--sidebar-accent-foreground': 'oklch(0.97 0.014 254.604)',
-      '--sidebar-border': 'oklch(1 0 0 / 10%)',
-      '--sidebar-ring': 'oklch(0.552 0.016 285.938)'
+      '--sidebar-border': 'transparent',
+      '--sidebar-ring': 'oklch(0.552 0.016 285.938)',
+      '--dashboard-bg': 'oklch(0.141 0.005 285.823)',
+      '--dashboard-surface': 'oklch(0.21 0.006 285.885)'
     }
   }
 ];

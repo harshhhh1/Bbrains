@@ -6,11 +6,9 @@ import {
     SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarRail,
     useSidebar,
 } from "@/components/ui/sidebar"
-import Link from "next/link";
-import Image from "next/image";
 import { Settings, BarChart3 } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "@/context/theme";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getSidebarGroups, resolveRole } from "@/components/layout/sidebarData"
 import type { Role } from "@/components/layout/sidebarData"
@@ -44,7 +42,6 @@ interface AppSidebarProps {
 export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
     const pathname = usePathname()
     const { state } = useSidebar()
-    const { currentTheme, themes } = useTheme()
     const [mounted, setMounted] = useState(false)
     const isCollapsed = state === "collapsed"
     const { chatUnreadTotal, assignmentUnreadTotal, productUnreadTotal } = useNotifications()
@@ -53,9 +50,6 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
         setMounted(true)
     }, [])
 
-    const isDark = themes.find(t => t.id === currentTheme)?.isDark || false
-    const logoSrc = isDark ? "/logo-white.png" : "/logo-dark.png"
-
     const [showProfileCard, setShowProfileCard] = useState(false)
 
     const userRoles = user?.roles || [user?.type || "student"]
@@ -63,33 +57,9 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
     const groups = React.useMemo(() => getSidebarGroups(resolvedRoles, sidebarAccessOverride), [resolvedRoles, sidebarAccessOverride])
 
     return (
-        <Sidebar collapsible="icon" className="border-r border-sidebar-border">
-            <SidebarHeader className="bg-sidebar pt-2  ">
-                <div className="flex items-center justify-center w-full text-sidebar-foreground">
-                    <Link href="/" className="flex items-center justify-center">
-                        <div className="relative w-[150px] h-[80px] flex items-center justify-center">
-                            {/* Use standard img for LCP to avoid next/image lazy-loading magic */}
-                            <img
-                                src="/logo-dark.png"
-                                alt="Bbrains Logo"
-                                width={130}
-                                height={40}
-                                fetchPriority="high"
-                                loading="eager"
-                                className="dark:hidden object-contain"
-                            />
-                            <img
-                                src="/logo-white.png"
-                                alt="Bbrains Logo"
-                                width={130}
-                                height={40}
-                                fetchPriority="high"
-                                loading="eager"
-                                className="hidden dark:block object-contain"
-                            />
-                        </div>
-                    </Link>
-                </div>
+        <Sidebar collapsible="icon" className="border-none">
+            <SidebarHeader className="bg-sidebar pt-4">
+                <div className="h-2" />
             </SidebarHeader>
 
             <SidebarContent className={`bg-sidebar ${isCollapsed ? "px-1.5" : "px-3"}`}>
