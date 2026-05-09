@@ -8,6 +8,7 @@ import { createAuditLog } from "../../utils/auditLog.js";
 import { isDatabaseUnavailableError } from "../../utils/prisma-errors.js";
 import crypto from "crypto";
 import prisma from "../../utils/prisma.js";
+import { awardAchievement } from "../achievement/achievement.service.js";
 
 dotenv.config();
 
@@ -54,6 +55,10 @@ const register = async (req, res) => {
     );
 
     await createAuditLog(newUser.id, 'AUTH', 'REGISTER', 'User', newUser.id);
+    
+    // Award "First Steps" achievement
+    await awardAchievement(newUser.id, 'First Steps');
+
     return sendCreated(res, { id: newUser.id, username: newUser.username }, "User registered successfully.");
   } catch (error) { return handleControllerError(res, error, "Registration"); }
 };
@@ -71,6 +76,10 @@ const login = async (req, res) => {
     res.cookie("token", token, { httpOnly: true, secure: true, sameSite: "none" });
 
     await createAuditLog(user.id, 'AUTH', 'LOGIN', 'User', user.id);
+
+    // Award "First Steps" achievement (handles bulk-created users on first login)
+    await awardAchievement(user.id, 'First Steps');
+
     return sendSuccess(res, { user: await getUserDetailsByID(user.id), token }, "Login successful");
   } catch (error) { return handleControllerError(res, error, "Login"); }
 };

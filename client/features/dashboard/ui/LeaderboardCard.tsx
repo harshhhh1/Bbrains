@@ -21,7 +21,7 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
   const [myPosition, setMyPosition] = useState<TransformedLeaderboardEntry | null>(initialMyPosition || null);
   const [loading, setLoading] = useState(!initialLeaderboard);
   const [error, setError] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState<'xp' | 'points'>('xp');
+  const [sortBy, setSortBy] = useState<'xp' | 'Coins'>('xp');
 
   const fetchLeaderboard = useCallback(async () => {
     // Skip if we already have data for the default sort on mount
@@ -144,12 +144,12 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
             XP
           </Button>
           <Button 
-            variant={sortBy === 'points' ? "secondary" : "ghost"} 
+            variant={sortBy === 'Coins' ? "secondary" : "ghost"} 
             size="sm" 
-            className={`h-7 px-3 text-xs ${sortBy === 'points' ? "bg-background shadow-sm" : ""}`}
-            onClick={() => setSortBy('points')}
+            className={`h-7 px-3 text-xs ${sortBy === 'Coins' ? "bg-background shadow-sm" : ""}`}
+            onClick={() => setSortBy('Coins')}
           >
-            Points
+            Coins
           </Button>
         </div>
       </CardHeader>

@@ -56,6 +56,12 @@ function EditableRow({
 
 /* ─── Mini achievement badge ─── */
 function AchievementBadge({ item }: { item: UserAchievement }) {
+  const date = new Date(item.unlockedAt).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
   return (
     <div className="group/badge flex flex-col items-center gap-2 rounded-2xl border border-border/40 bg-muted/20 p-4 text-center transition-all hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm">
       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-transform group-hover/badge:scale-110">
@@ -74,6 +80,7 @@ function AchievementBadge({ item }: { item: UserAchievement }) {
         <span className="text-emerald-500">+{item.achievement.rewardXP} XP</span>
         <span className="text-amber-500">+{item.achievement.rewardCoins} 🪙</span>
       </div>
+      <p className="text-[9px] font-medium text-muted-foreground/60 uppercase tracking-wider">{date}</p>
     </div>
   );
 }
