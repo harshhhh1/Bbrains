@@ -13,6 +13,7 @@ export interface ApiUser {
     userDetails?: {
         firstName: string
         lastName: string
+        displayName?: string
         avatar?: string
         sex?: string
         dob?: string
@@ -52,6 +53,7 @@ export interface ApiAssignment {
         userDetails?: {
             firstName?: string
             lastName?: string
+            displayName?: string
         }
     } | null
     submission?: ApiSubmission
@@ -86,6 +88,7 @@ export interface ApiExamResult {
         userDetails?: {
             firstName: string
             lastName: string
+            displayName?: string
         }
     }
 }
@@ -150,6 +153,7 @@ export interface ApiAnnouncement {
         userDetails?: {
             firstName: string;
             lastName: string;
+            displayName?: string;
             avatar?: string;
         }
     }
@@ -171,6 +175,7 @@ export interface ApiProduct {
         userDetails?: {
             firstName: string;
             lastName: string;
+            displayName?: string;
             avatar?: string;
         }
     }
@@ -302,6 +307,7 @@ export interface Review {
         userDetails?: {
             firstName: string
             lastName?: string
+            displayName?: string
         }
     }
 }
@@ -344,6 +350,7 @@ export interface Suggestion {
         userDetails?: {
             firstName: string
             lastName: string
+            displayName?: string
         }
     }
 }
@@ -467,6 +474,7 @@ export interface StudentAssessmentResult {
             userDetails?: {
                 firstName: string
                 lastName?: string
+                displayName?: string
             }
         }
     }
@@ -496,6 +504,7 @@ export interface AssessmentStudent {
     userDetails?: {
         firstName: string
         lastName: string
+        displayName?: string
     }
 }
 
@@ -589,6 +598,7 @@ export interface ApiCourse {
         userDetails?: {
             firstName?: string
             lastName?: string
+            displayName?: string
         }
     } | null
     semesters?: Array<{
@@ -627,6 +637,7 @@ export interface ApiSubmission {
         userDetails?: {
             firstName?: string
             lastName?: string
+            displayName?: string
             avatar?: string | null
         }
     }
@@ -636,6 +647,7 @@ export interface ApiSubmission {
         userDetails?: {
             firstName?: string
             lastName?: string
+            displayName?: string
         }
     } | null
     assignment?: {
@@ -714,6 +726,7 @@ export interface LeaderboardEntry {
   username: string;
   firstName?: string;
   lastName?: string;
+  displayName?: string;
   avatar?: string;
   totalXp: number;
   totalPoints: number;

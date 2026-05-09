@@ -12,6 +12,7 @@ import { deleteFromCloudinary } from '../../utils/cloudinary.js';
 const createDetailsSchema = z.object({
     firstName: z.string().min(2).max(25),
     lastName: z.string().min(2).max(25),
+    displayName: z.string().min(2).max(50).optional(),
     middlename: z.string().optional(),
     sex: z.enum(['male', 'female', 'other']),
     dob: z.string().refine(val => {

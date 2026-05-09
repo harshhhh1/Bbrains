@@ -7,12 +7,13 @@ export const getLeaderboard = async (category = 'allTime', sortBy = 'xp', limit 
         const rankCol = sortBy === 'points' ? '"pointsRank"' : '"xpRank"';
         const valueCol = sortBy === 'points' ? '"totalPoints"' : '"totalXp"';
 
-        let query = `SELECT "userId", "username", "firstName", "lastName", "avatar",
-                    COALESCE("totalXp", 0)::int AS "totalXp",
-                    COALESCE("totalPoints", 0)::int AS "totalPoints",
-                    COALESCE(${rankCol}, 0)::int AS rank,
-                    COALESCE(${valueCol}, 0)::int AS value
-             FROM "leaderboard_view"`;
+        let query = `SELECT lv."userId", lv."username", lv."firstName", lv."lastName", lv."avatar", ud."display_name" AS "displayName",
+                    COALESCE(lv."totalXp", 0)::int AS "totalXp",
+                    COALESCE(lv."totalPoints", 0)::int AS "totalPoints",
+                    COALESCE(lv.${rankCol}, 0)::int AS rank,
+                    COALESCE(lv.${valueCol}, 0)::int AS value
+             FROM "leaderboard_view" lv
+             LEFT JOIN "user_details" ud ON ud."user_id" = lv."userId"`;
         
         const params = [limit, offset];
         if (collegeId) {
@@ -61,6 +62,7 @@ export const getLeaderboard = async (category = 'allTime', sortBy = 'xp', limit 
                         select: {
                             firstName: true,
                             lastName: true,
+                            displayName: true,
                             avatar: true
                         }
                     }
@@ -80,6 +82,7 @@ export const getLeaderboard = async (category = 'allTime', sortBy = 'xp', limit 
         username: entry.user?.username,
         firstName: entry.user?.userDetails?.firstName,
         lastName: entry.user?.userDetails?.lastName,
+        displayName: entry.user?.userDetails?.displayName,
         avatar: entry.user?.userDetails?.avatar,
         totalXp: 0,
         totalPoints: 0,
@@ -95,13 +98,14 @@ export const getMyPosition = async (userId, category = 'allTime', sortBy = 'xp',
         const rankCol = sortBy === 'points' ? '"pointsRank"' : '"xpRank"';
         const valueCol = sortBy === 'points' ? '"totalPoints"' : '"totalXp"';
 
-        let query = `SELECT "userId", "username", "firstName", "lastName", "avatar",
-                    COALESCE("totalXp", 0)::int AS "totalXp",
-                    COALESCE("totalPoints", 0)::int AS "totalPoints",
-                    COALESCE(${rankCol}, 0)::int AS rank,
-                    COALESCE(${valueCol}, 0)::int AS value
-             FROM "leaderboard_view"
-             WHERE "userId" = $1`;
+        let query = `SELECT lv."userId", lv."username", lv."firstName", lv."lastName", lv."avatar", ud."display_name" AS "displayName",
+                    COALESCE(lv."totalXp", 0)::int AS "totalXp",
+                    COALESCE(lv."totalPoints", 0)::int AS "totalPoints",
+                    COALESCE(lv.${rankCol}, 0)::int AS rank,
+                    COALESCE(lv.${valueCol}, 0)::int AS value
+             FROM "leaderboard_view" lv
+             LEFT JOIN "user_details" ud ON ud."user_id" = lv."userId"
+             WHERE lv."userId" = $1`;
         
         const params = [userId];
         if (collegeId) {
@@ -144,6 +148,7 @@ export const getMyPosition = async (userId, category = 'allTime', sortBy = 'xp',
                         select: {
                             firstName: true,
                             lastName: true,
+                            displayName: true,
                             avatar: true
                         }
                     }
@@ -176,6 +181,7 @@ export const getMyPosition = async (userId, category = 'allTime', sortBy = 'xp',
         username: entry.user?.username,
         firstName: entry.user?.userDetails?.firstName,
         lastName: entry.user?.userDetails?.lastName,
+        displayName: entry.user?.userDetails?.displayName,
         avatar: entry.user?.userDetails?.avatar,
         totalXp: 0,
         totalPoints: 0,

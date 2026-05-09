@@ -80,7 +80,7 @@ const normalizeProfile = (user) => {
     const detail = user.userDetails || {};
     const firstName = detail.firstName || "";
     const lastName = detail.lastName || "";
-    const displayName = `${firstName} ${lastName}`.trim() || user.username;
+    const displayName = detail.displayName || `${firstName} ${lastName}`.trim() || user.username;
     const grade = user.enrollments?.find((item) => item.grade)?.grade || "N/A";
     const customRoles = (user.roles || []).map((item) => item.role?.name).filter(Boolean);
     const roles = customRoles.length ? customRoles : [user.type];
@@ -102,7 +102,7 @@ const normalizeMessageRecord = (msg) => {
     const details = user?.userDetails || {};
     const firstName = details.firstName || "";
     const lastName = details.lastName || "";
-    const liveDisplayName = `${firstName} ${lastName}`.trim() || user?.username;
+    const liveDisplayName = details.displayName || `${firstName} ${lastName}`.trim() || user?.username;
 
     return {
         id: msg.id,
@@ -231,7 +231,8 @@ export const getChatMessages = async (req, res) => {
                             select: {
                                 avatar: true,
                                 firstName: true,
-                                lastName: true
+                                lastName: true,
+                                displayName: true
                             }
                         }
                     }
@@ -292,7 +293,8 @@ export const searchChatMessages = async (req, res) => {
                             select: {
                                 avatar: true,
                                 firstName: true,
-                                lastName: true
+                                lastName: true,
+                                displayName: true
                             }
                         }
                     }
@@ -341,6 +343,7 @@ export const getChatMembers = async (req, res) => {
                         avatar: true,
                         firstName: true,
                         lastName: true,
+                        displayName: true,
                         sex: true
                     }
                 },
@@ -565,6 +568,7 @@ export const searchChatUsers = async (req, res) => {
                         avatar: true,
                         firstName: true,
                         lastName: true,
+                        displayName: true,
                     }
                 }
             },
@@ -576,7 +580,7 @@ export const searchChatUsers = async (req, res) => {
             id: user.id,
             username: user.username,
             avatar: user.userDetails?.avatar || "",
-            displayName: `${user.userDetails?.firstName || ""} ${user.userDetails?.lastName || ""}`.trim() || user.username,
+            displayName: user.userDetails?.displayName || `${user.userDetails?.firstName || ""} ${user.userDetails?.lastName || ""}`.trim() || user.username,
         }));
 
         return sendSuccess(res, results);
@@ -602,6 +606,7 @@ export const getMyChatProfile = async (req, res) => {
                         avatar: true,
                         firstName: true,
                         lastName: true,
+                        displayName: true,
                         sex: true
                     }
                 },

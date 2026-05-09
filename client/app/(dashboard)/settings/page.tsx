@@ -1,22 +1,20 @@
 "use client";
 
-import { Loader2, Lock, User, Wallet } from "lucide-react";
+import { Loader2, User, ShieldCheck } from "lucide-react";
 import { DashboardContent } from "@/components/dashboard-content";
-import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs";
-import { formatCurrency } from "@/features/settings/model/settings";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SettingsHero } from "@/features/settings/ui/SettingsHero";
 import { SettingsProfileTab } from "@/features/settings/ui/SettingsProfileTab";
 import { SettingsSecurityTab } from "@/features/settings/ui/SettingsSecurityTab";
-import { SettingsWalletTab } from "@/features/settings/ui/SettingsWalletTab";
-import { TabButton } from "@/features/settings/ui/settings-ui";
 import { useSettingsPage } from "@/features/settings/model/use-settings-page";
+import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
   const settings = useSettingsPage();
 
   if (settings.loading) {
     return (
-      <DashboardContent maxWidth="max-w-7xl">
+      <DashboardContent maxWidth="max-w-6xl">
         <div className="flex min-h-[70vh] flex-col items-center justify-center gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Loading settings workspace...</p>
@@ -26,43 +24,44 @@ export default function SettingsPage() {
   }
 
   return (
-    <DashboardContent maxWidth="max-w-7xl" className="space-y-6">
+    <DashboardContent maxWidth="max-w-6xl" className="space-y-8">
       <SettingsHero
         user={settings.user}
         form={settings.form}
         saving={settings.saving}
-        roleLabel={settings.roleLabel}
         displayName={settings.displayName}
-        completion={settings.completion}
-        walletBalanceLabel={formatCurrency(settings.walletBalance)}
-        isPinSet={settings.isPinSet}
+        roleLabel={settings.roleLabel}
         gradeLabel={settings.gradeLabel}
         onAvatarUpload={settings.handleAvatarUpload}
       />
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid !h-auto w-full grid-cols-1 gap-5 rounded-[2.5rem] border border-border/60 bg-card p-5 md:grid-cols-3">
-          <TabButton
+        <TabsList className="inline-flex h-12 items-center gap-1 rounded-full bg-muted/60 p-1.5 ring-1 ring-border/30">
+          <TabsTrigger
             value="profile"
-            icon={<User className="h-5 w-5" />}
-            label="Profile"
-            note="Avatar, username, bio, account details"
-          />
-          <TabButton
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200",
+              "data-[state=active]:bg-dashboard-surface data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+              "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground/80"
+            )}
+          >
+            <User className="h-4 w-4" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger
             value="security"
-            icon={<Lock className="h-5 w-5" />}
-            label="Security"
-            note="Password controls and account safety checks"
-          />
-          <TabButton
-            value="wallet"
-            icon={<Wallet className="h-5 w-5" />}
-            label="Wallet PIN"
-            note="Protect payments and wallet confirmations"
-          />
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all duration-200",
+              "data-[state=active]:bg-dashboard-surface data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+              "data-[state=inactive]:text-muted-foreground data-[state=inactive]:hover:text-foreground/80"
+            )}
+          >
+            <ShieldCheck className="h-4 w-4" />
+            Security
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile" className="mt-0 space-y-6">
+        <TabsContent value="profile" className="mt-0">
           <SettingsProfileTab
             form={settings.form}
             setForm={settings.setForm}
@@ -82,7 +81,7 @@ export default function SettingsPage() {
           />
         </TabsContent>
 
-        <TabsContent value="security" className="mt-0 space-y-6">
+        <TabsContent value="security" className="mt-0">
           <SettingsSecurityTab
             displayName={settings.displayName}
             username={settings.form.username || settings.user?.username || ""}
@@ -94,23 +93,14 @@ export default function SettingsPage() {
             setCurrentPassword={settings.setCurrentPassword}
             setNewPassword={settings.setNewPassword}
             setConfirmPassword={settings.setConfirmPassword}
-            onSave={settings.handlePasswordUpdate}
-          />
-        </TabsContent>
-
-        <TabsContent value="wallet" className="mt-0 space-y-6">
-          <SettingsWalletTab
-            saving={settings.saving}
-            isPinSet={settings.isPinSet}
+            onPasswordSave={settings.handlePasswordUpdate}
             oldPin={settings.oldPin}
             newPin={settings.newPin}
-            confirmPin={settings.confirmPin}
-            walletBalance={settings.walletBalance}
             canSubmitPin={settings.canSubmitPin}
+            walletBalance={settings.walletBalance}
             setOldPin={settings.setOldPin}
             setNewPin={settings.setNewPin}
-            setConfirmPin={settings.setConfirmPin}
-            onSave={settings.handlePinUpdate}
+            onPinSave={settings.handlePinUpdate}
           />
         </TabsContent>
       </Tabs>

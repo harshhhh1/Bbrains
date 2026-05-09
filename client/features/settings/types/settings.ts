@@ -4,6 +4,7 @@ export type SettingsUser = ApiUser & {
   userDetails?: {
     firstName?: string;
     lastName?: string;
+    displayName?: string;
     bio?: string;
     phone?: string;
     sex?: string;
@@ -15,6 +16,7 @@ export type ProfileFormState = {
   username: string;
   firstName: string;
   lastName: string;
+  displayName: string;
   bio: string;
   phone: string;
   sex: string;

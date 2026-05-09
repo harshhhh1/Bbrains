@@ -2,7 +2,7 @@ import type { ProfileFormState, SettingsUser } from "@/features/settings/types/s
 
 export function readUserField(
   user: SettingsUser | null,
-  key: "firstName" | "lastName" | "bio" | "phone" | "sex" | "avatar"
+  key: "firstName" | "lastName" | "displayName" | "bio" | "phone" | "sex" | "avatar"
 ) {
   if (!user) return "";
   return String(user.userDetails?.[key] ?? (user as any)[key] ?? "");

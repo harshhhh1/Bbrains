@@ -18,7 +18,8 @@ interface UserCardProps {
 export function UserCard({ user, onEdit, onDelete, onManageRoles, onView }: UserCardProps) {
   const firstName = user.userDetails?.firstName || "";
   const lastName = user.userDetails?.lastName || "";
-  const initials = (firstName.charAt(0) || user.username.charAt(0)) + (lastName.charAt(0) || "");
+  const displayName = user.userDetails?.displayName || `${firstName} ${lastName}`.trim() || user.username;
+  const initials = (displayName.charAt(0) || user.username.charAt(0)) + (lastName.charAt(0) || "");
 
   return (
     <Card className="group relative overflow-hidden transition-all hover:shadow-md border-border/50 bg-card/50 backdrop-blur-sm">
@@ -26,14 +27,14 @@ export function UserCard({ user, onEdit, onDelete, onManageRoles, onView }: User
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
-              <AvatarImage src={user.userDetails?.avatar} alt={`${firstName} ${lastName}`} />
+              <AvatarImage src={user.userDetails?.avatar} alt={displayName} />
               <AvatarFallback className="bg-primary/10 text-primary font-bold">
                 {initials.toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-0.5">
               <h3 className="font-bold leading-none tracking-tight">
-                {firstName} {lastName}
+                {displayName}
               </h3>
               <p className="text-xs text-muted-foreground">@{user.username}</p>
             </div>

@@ -86,6 +86,7 @@ const loadChatIdentity = async (userId, dbUser = null) => {
                     avatar: true,
                     firstName: true,
                     lastName: true,
+                    displayName: true,
                     sex: true
                 }
             },
@@ -107,7 +108,7 @@ const loadChatIdentity = async (userId, dbUser = null) => {
 
     const firstName = user.userDetails?.firstName || "";
     const lastName = user.userDetails?.lastName || "";
-    const displayName = `${firstName} ${lastName}`.trim() || user.username;
+    const displayName = user.userDetails?.displayName || `${firstName} ${lastName}`.trim() || user.username;
     const grade = user.enrollments?.find((item) => item.grade)?.grade || "N/A";
     const customRoles = (user.roles || []).map((item) => item.role?.name).filter(Boolean);
     const roles = customRoles.length ? customRoles : [user.type];
@@ -144,6 +145,7 @@ const authenticateSocketUser = async (socket) => {
                     avatar: true,
                     firstName: true,
                     lastName: true,
+                    displayName: true,
                     sex: true
                 }
             },
