@@ -143,6 +143,12 @@ export const getAttendanceForDate = async (date, currentUser = null) => {
         where.userId = {
             in: scope.studentIds,
         };
+    } else if (currentUser?.type === 'student') {
+        // Students can only see their own attendance
+        where.userId = currentUser.id;
+    } else if (!hasManagerPrivileges(currentUser)) {
+        // If not a manager/admin and not a teacher with scope, allow nothing
+        return [];
     }
 
     return await prisma.attendance.findMany({

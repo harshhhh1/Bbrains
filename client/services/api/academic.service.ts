@@ -44,6 +44,7 @@ export const academicApi = {
   
   getAttendance: (date: string) => api.get<any[]>(`/attendance/by-date?date=${date}`),
   getAttendanceByDate: (date: string) => api.get<any[]>(`/attendance/by-date?date=${date}`),
+  getMyAttendance: (params?: any) => api.get<any[]>("/attendance", { params }),
   markAttendance: (data: any) => api.post<any>("/attendance", data),
   markAttendanceBulk: (data: any) => api.post<any>("/attendance/bulk", data),
   getStudentAttendanceHistory: (studentId: string) => api.get<any[]>(`/attendance/student/${studentId}`),

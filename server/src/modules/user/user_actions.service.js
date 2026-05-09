@@ -6,9 +6,71 @@ const STREAK_RESET_HOURS = 48;
 const CLAIM_COOLDOWN_HOURS = 24;
 
 const updateUser = async (id, data) => {
-    return await prisma.user.update({
-        where: { id: id },
-        data: data
+    const { 
+        username, email, type, status, 
+        firstName, lastName, middlename, avatar, displayName, sex, dob, phone, bio, teacherSubjects,
+        roleIds 
+    } = data;
+
+    const userUpdateData = {};
+    if (username) userUpdateData.username = username;
+    if (email) userUpdateData.email = email;
+    if (type) userUpdateData.type = type;
+
+    const detailsUpdateData = {};
+    if (firstName !== undefined) detailsUpdateData.firstName = firstName;
+    if (lastName !== undefined) detailsUpdateData.lastName = lastName;
+    if (middlename !== undefined) detailsUpdateData.middlename = middlename;
+    if (avatar !== undefined) detailsUpdateData.avatar = avatar;
+    if (displayName !== undefined) detailsUpdateData.displayName = displayName;
+    if (sex !== undefined) detailsUpdateData.sex = sex;
+    if (dob !== undefined && dob !== null) detailsUpdateData.dob = new Date(dob);
+    if (phone !== undefined) detailsUpdateData.phone = phone;
+    if (bio !== undefined) detailsUpdateData.bio = bio;
+    if (teacherSubjects !== undefined) detailsUpdateData.teacherSubjects = teacherSubjects;
+
+    return await prisma.$transaction(async (tx) => {
+        // 1. Update Core User
+        const user = await tx.user.update({
+            where: { id },
+            data: userUpdateData
+        });
+
+        // 2. Update User Details (Upsert since it might not exist)
+        if (Object.keys(detailsUpdateData).length > 0) {
+            await tx.userDetails.upsert({
+                where: { userId: id },
+                update: detailsUpdateData,
+                create: {
+                    userId: id,
+                    firstName: detailsUpdateData.firstName || "",
+                    lastName: detailsUpdateData.lastName || "",
+                    dob: detailsUpdateData.dob || new Date(),
+                    sex: detailsUpdateData.sex || "other",
+                    ...detailsUpdateData
+                }
+            });
+        }
+
+        // 3. Update Roles if roleIds provided
+        if (roleIds && Array.isArray(roleIds)) {
+            // Remove existing roles
+            await tx.userRoles.deleteMany({
+                where: { userId: id }
+            });
+
+            // Add new roles
+            if (roleIds.length > 0) {
+                await tx.userRoles.createMany({
+                    data: roleIds.map(roleId => ({
+                        userId: id,
+                        roleId: Number(roleId)
+                    }))
+                });
+            }
+        }
+
+        return user;
     });
 };
 

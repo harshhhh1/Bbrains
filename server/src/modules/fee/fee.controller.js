@@ -24,8 +24,8 @@ export const getStudentFeeSummaryHandler = async (req, res) => {
     // Validate request (though no specific params)
     // feeSummarySchema.parse(req.query); // Not needed as we're getting from auth
     
-    // Get student ID from authenticated user
-    const studentId = req.user.id;
+    // Get student ID from authenticated user or from params (if admin/manager)
+    const studentId = req.params.userId || req.user.id;
     
     // Get fee summary
     const feeSummary = await getStudentFeeSummary(studentId);
