@@ -35,8 +35,8 @@ export function UsersGrid({ users, loading, onEdit, onDelete, onManageRoles, onV
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {users.map((user) => (
+    <div className="flex flex-col rounded-2xl border border-border/50 bg-muted/20 overflow-hidden">
+      {users.map((user, index) => (
         <UserCard
           key={user.id}
           user={user}
@@ -44,6 +44,7 @@ export function UsersGrid({ users, loading, onEdit, onDelete, onManageRoles, onV
           onDelete={onDelete}
           onManageRoles={onManageRoles}
           onView={onView}
+          isLast={index === users.length - 1}
         />
       ))}
     </div>
