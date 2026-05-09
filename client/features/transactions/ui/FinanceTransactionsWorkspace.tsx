@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from "react"
-import { Loader2, ReceiptText, WalletCards } from "lucide-react"
+import { ArrowRight, ChevronLeft, ChevronRight, Loader2, ReceiptText, Search, WalletCards } from "lucide-react"
 import { toast } from "sonner"
 import { transactionApi, userApi, type ManualTransactionInput, type Transaction, type User } from "@/services/api/client"
 import { SectionHeader } from "@/features/admin/ui/SectionHeader"
@@ -9,6 +9,10 @@ import { CrudModal } from "@/features/admin/ui/CrudModal"
 import { DataTable } from "@/features/admin/ui/DataTable"
 import { RoleBadge } from "@/features/admin/ui/RoleBadge"
 import { ManualTransactionForm } from "@/features/transactions/ui/ManualTransactionForm"
+import { cn } from "@/lib/utils"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 type WorkspaceMode = "admin" | "manager"
 
@@ -101,6 +105,27 @@ export function FinanceTransactionsWorkspace({ mode }: FinanceTransactionsWorksp
     note: "",
     paymentDate: new Date().toISOString().split("T")[0],
   })
+
+  // Pagination & Search
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const pageSize = 8
+
+  const filteredTransactions = useMemo(() => {
+    if (!search.trim()) return recordedTransactions
+    const query = search.toLowerCase()
+    return recordedTransactions.filter(t => 
+      t.note?.toLowerCase().includes(query) ||
+      t.category?.toLowerCase().includes(query) ||
+      t.paymentMode?.toLowerCase().includes(query) ||
+      t.referenceId?.toLowerCase().includes(query) ||
+      getCompactUser(t.relatedUser).toLowerCase().includes(query) ||
+      getCompactUser(t.recordedByUser).toLowerCase().includes(query)
+    )
+  }, [recordedTransactions, search])
+
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / pageSize))
+  const pagedTransactions = filteredTransactions.slice((page - 1) * pageSize, page * pageSize)
 
   const loadRecordedTransactions = async () => {
     try {
@@ -241,65 +266,138 @@ export function FinanceTransactionsWorkspace({ mode }: FinanceTransactionsWorksp
         </div>
       </div>
 
-      <div className="rounded-[2.5rem] border border-border/60 bg-card p-4 sm:p-8 shadow-xl">
-        <div className="mb-8 flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-xl">
-            <WalletCards className="size-6 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-xl font-black tracking-tight text-foreground">Verified Ledger</h3>
-            <p className="text-sm font-medium text-muted-foreground">Historical records of verified institutional finance events.</p>
-          </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-8">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-black tracking-tight">Verified Ledger</h2>
+          <p className="text-sm font-medium text-muted-foreground">Historical records of verified institutional finance events.</p>
         </div>
-        <DataTable<Transaction>
-          data={recordedTransactions}
-          loading={loadingRecorded}
-          searchKeys={["note", "category", "paymentMode", "referenceId"]}
-          columns={[
-            {
-              key: "category",
-              label: "Category",
-              render: (row) => <RoleBadge value={row.category || "other"} />,
-            },
-            {
-              key: "recordedById",
-              label: "Recorded By",
-              render: (row) => (
-                <div>
-                  <p className="font-bold text-foreground text-xs">{getCompactUser(row.recordedByUser)}</p>
-                  <p className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">{row.recordedByUser?.type || "System"}</p>
-                </div>
-              ),
-            },
-            {
-              key: "relatedUserId",
-              label: "Counterparty",
-              render: (row) => (
-                <div>
-                  <p className="font-bold text-foreground text-xs">{getCompactUser(row.relatedUser)}</p>
-                  <p className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest">{row.relatedUser?.type || "External"}</p>
-                </div>
-              ),
-            },
-            {
-              key: "paymentMode",
-              label: "Mode",
-              render: (row) => <span className="text-[10px] font-black uppercase text-foreground/70 tracking-widest">{row.paymentMode ? formatCategory(row.paymentMode) : "N/A"}</span>,
-            },
-            {
-              key: "amount",
-              label: "Amount",
-              render: (row) => <span className="font-black text-foreground text-sm tabular-nums">{formatCurrency(row.amount)}</span>,
-            },
-            {
-              key: "transactionDate",
-              label: "Settlement Day",
-              render: (row) => <span className="text-xs font-bold text-muted-foreground">{formatDate(row.transactionDate)}</span>,
-            },
-          ]}
-          emptyText="No financial records found in registry."
-        />
+
+        <div className="relative w-full md:max-w-xs group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
+          <Input 
+            placeholder="Search ledger..." 
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1) }}
+            className="pl-10 h-11 rounded-xl bg-card border-border/40 focus:ring-2 focus:ring-primary/20 shadow-sm"
+          />
+        </div>
       </div>
+
+        {loadingRecorded ? (
+          <div className="py-20 flex flex-col items-center justify-center gap-3">
+            <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground animate-pulse">Syncing Ledger...</p>
+          </div>
+        ) : pagedTransactions.length === 0 ? (
+          <div className="py-24 rounded-[3rem] border-2 border-dashed border-border/40 bg-muted/5 flex flex-col items-center justify-center text-center">
+            <ReceiptText className="size-16 mb-4 text-muted-foreground/20" />
+            <h3 className="text-lg font-bold">No Records Found</h3>
+            <p className="text-sm text-muted-foreground max-w-xs">No transactions match your current search or filters.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {pagedTransactions.map((tx) => (
+              <div key={tx.id} className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg border border-border/40 bg-card rounded-[2rem]">
+                <div className="p-0">
+                  <div className="flex flex-col lg:flex-row lg:items-center p-6 gap-6">
+                    {/* Left: Category & Date */}
+                    <div className="flex items-center gap-4 lg:w-48 shrink-0">
+                      <div className="flex flex-col items-center justify-center size-14 rounded-2xl bg-muted/30 border border-border/40 shrink-0">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground leading-none mb-1">
+                          {new Date(tx.transactionDate).toLocaleDateString("en-IN", { month: "short" })}
+                        </span>
+                        <span className="text-xl font-black text-foreground leading-none">
+                          {new Date(tx.transactionDate).toLocaleDateString("en-IN", { day: "2-digit" })}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <RoleBadge value={tx.category || "other"} />
+                        <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                          {new Date(tx.transactionDate).getFullYear()}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Middle: Counterparties */}
+                    <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 flex-grow">
+                      <div className="text-center sm:text-left min-w-0">
+                        <p className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-[0.2em] mb-1">Recorded By</p>
+                        <p className="font-bold text-xs truncate max-w-[180px]">{getCompactUser(tx.recordedByUser)}</p>
+                        <p className="text-[9px] font-black uppercase text-primary/60 tracking-widest mt-0.5">{tx.recordedByUser?.type || "System"}</p>
+                      </div>
+
+                      <ArrowRight className="hidden sm:block size-4 text-muted-foreground/20 shrink-0" />
+
+                      <div className="text-center sm:text-left min-w-0">
+                        <p className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-[0.2em] mb-1">Counterparty</p>
+                        <p className="font-bold text-xs truncate max-w-[180px]">{getCompactUser(tx.relatedUser)}</p>
+                        <p className="text-[9px] font-black uppercase text-muted-foreground/60 tracking-widest mt-0.5">{tx.relatedUser?.type || "External"}</p>
+                      </div>
+                    </div>
+
+                    {/* Right: Amount & Mode */}
+                    <div className="flex items-center justify-between lg:justify-end gap-6 lg:w-64 shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-border/40">
+                      <div className="text-left lg:text-right">
+                        <p className="text-[9px] font-black uppercase text-muted-foreground/40 tracking-[0.2em] mb-1">Method</p>
+                        <p className="text-[10px] font-black uppercase text-foreground/70 tracking-widest">
+                          {tx.paymentMode ? formatCategory(tx.paymentMode) : "Manual Entry"}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] font-black uppercase text-primary/40 tracking-[0.2em] mb-1">Net Amount</p>
+                        <p className="text-xl sm:text-2xl font-black text-foreground tabular-nums tracking-tighter">
+                          {formatCurrency(tx.amount)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Note footer if exists */}
+                  {tx.note && (
+                    <div className="px-6 py-3 bg-muted/10 border-t border-border/20">
+                      <p className="text-[10px] font-medium text-muted-foreground/70 leading-relaxed italic truncate">
+                        &quot;{tx.note}&quot;
+                        {tx.referenceId && <span className="ml-2 font-black not-italic opacity-40 uppercase tracking-tighter">— REF: {tx.referenceId}</span>}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-6">
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+              Showing {pagedTransactions.length} of {filteredTransactions.length} records
+            </p>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="size-10 rounded-xl border-border/40"
+                disabled={page <= 1}
+                onClick={() => setPage(p => p - 1)}
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <div className="flex items-center justify-center px-4 h-10 rounded-xl bg-muted/40 border border-border/40 text-[10px] font-black">
+                PAGE {page} OF {totalPages}
+              </div>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="size-10 rounded-xl border-border/40"
+                disabled={page >= totalPages}
+                onClick={() => setPage(p => p + 1)}
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+          </div>
+        )}
 
       <CrudModal
         open={modalOpen}

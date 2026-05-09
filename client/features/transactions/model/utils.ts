@@ -33,7 +33,7 @@ export function hasManagerRole(user: Pick<User, "roles"> | null | undefined) {
 export function resolvePersonalTransactionKind(user: User | null): PersonalTransactionKind | null {
   if (!user) return null
   if (user.type === "student") return "fees"
-  if (user.type === "teacher" || user.type === "staff" || hasManagerRole(user)) return "salary"
+  if (["teacher", "staff", "admin", "superadmin"].includes(user.type || "") || hasManagerRole(user)) return "salary"
   return null
 }
 
