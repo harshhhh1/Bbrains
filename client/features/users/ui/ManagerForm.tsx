@@ -12,9 +12,10 @@ interface ManagerFormProps {
   disabled?: boolean;
   roles?: any[];
   courses?: any[];
+  isEditing?: boolean;
 }
 
-export function ManagerForm({ form, onChange, disabled, roles = [], courses = [] }: ManagerFormProps) {
+export function ManagerForm({ form, onChange, disabled, roles = [], courses = [], isEditing }: ManagerFormProps) {
   const updateField = (field: keyof ManagerFormType, value: any) => {
     onChange({ ...form, [field]: value });
   };
@@ -101,17 +102,17 @@ export function ManagerForm({ form, onChange, disabled, roles = [], courses = []
         <SectionHeader title="Security" />
         <div className="grid grid-cols-2 gap-4">
           <FormInput
-            label="Temporary Password"
-            required
+            label={isEditing ? "Reset Password (Optional)" : "Temporary Password"}
+            required={!isEditing}
             type="password"
             value={form.password}
             onChange={(e) => updateField("password", e.target.value)}
-            placeholder="Minimum 8 characters"
+            placeholder={isEditing ? "Leave blank to keep current" : "Minimum 8 characters"}
             disabled={disabled}
           />
           <FormInput
             label="Confirm Password"
-            required
+            required={!isEditing && !!form.password}
             type="password"
             value={form.confirmPassword}
             onChange={(e) => updateField("confirmPassword", e.target.value)}

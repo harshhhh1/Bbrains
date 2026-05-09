@@ -9,10 +9,23 @@ import { api } from "@/services/api/client";
 import { AddCollegeModal } from "@/features/colleges/ui/AddCollegeModal";
 import { CollegeCard } from "@/features/colleges/ui/CollegeCard";
 
+import { useRouter } from "next/navigation";
+import { useUser } from "@/context/user-context";
+
 export default function CollegesPage() {
+  const { user, loading: userLoading } = useUser();
+  const router = useRouter();
   const [colleges, setColleges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!userLoading) {
+      if (!user || user.type !== "superadmin") {
+        router.replace("/dashboard");
+      }
+    }
+  }, [user, userLoading, router]);
 
   const fetchColleges = async () => {
     try {
@@ -28,8 +41,23 @@ export default function CollegesPage() {
   };
 
   useEffect(() => {
-    fetchColleges();
-  }, []);
+    if (!userLoading) {
+      if (!user || user.type !== "superadmin") {
+        router.replace("/dashboard");
+      } else {
+        fetchColleges();
+      }
+    }
+  }, [user, userLoading, router]);
+
+  if (userLoading || !user || user.type !== "superadmin") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 className="size-10 animate-spin text-brand-purple/40" />
+        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Verifying Authority...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-10">
