@@ -25,7 +25,7 @@ export const createRole = async (req, res) => {
         await createAuditLog(req.user.id, 'SYSTEM', 'CREATE', 'Role', role.id);
         return sendCreated(res, role, 'Role created successfully');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         if (error.code === 'P2002') return sendError(res, 'Role name already exists', 409);
         return sendError(res, 'Failed to create role', 500);
     }

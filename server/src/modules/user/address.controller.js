@@ -31,7 +31,7 @@ export const createAddress = async (req, res) => {
         return sendCreated(res, address, 'Address created successfully');
     } catch (error) {
         if (error.name === 'ZodError') {
-            return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+            return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         }
         console.error(error);
         return sendError(res, 'Failed to create address', 500);
@@ -69,7 +69,7 @@ export const updateAddress = async (req, res) => {
         return sendSuccess(res, updated, 'Address updated successfully');
     } catch (error) {
         if (error.name === 'ZodError') {
-            return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+            return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         }
         if (error.code === 'P2025') return sendError(res, 'Address not found', 404);
         console.error(error);

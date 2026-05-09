@@ -19,7 +19,7 @@ const changePinSchema = z.object({
 });
 
 const transferSchema = z.object({
-    recipientWalletId: z.string().min(1, "Recipient is required"),
+    toUserId: z.string().min(1, "Recipient is required"),
     amount: z.number().positive(),
     note: z.string().max(255).optional(),
     pin: z.string().length(6)
@@ -82,7 +82,7 @@ export const setupPin = async (req, res) => {
 
         return sendError(res, 'PIN already set. Use change PIN endpoint.', 400);
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         return sendError(res, 'Failed to setup PIN', 500);
     }
 };
@@ -115,7 +115,7 @@ export const changePin = async (req, res) => {
         return sendSuccess(res, null, 'PIN changed successfully');
     } catch (error) {
         console.error(error)
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         return sendError(res, 'Failed to change PIN', 500);
     }
 };
@@ -147,16 +147,16 @@ export const verifyPin = async (req, res) => {
 export const transferHandler = async (req, res) => {
     try {
         const validated = transferSchema.parse(req.body);
-        const result = await transferFunds(req.user.id, validated.recipientWalletId, validated.amount, validated.note, validated.pin);
+        const result = await transferFunds(req.user.id, validated.toUserId, validated.amount, validated.note, validated.pin);
 
         await createAuditLog(req.user.id, 'FINANCE', 'TRANSFER', 'Wallet', req.user.id, {
             amount: validated.amount,
-            recipientWalletId: validated.recipientWalletId
+            recipientWalletId: validated.toUserId
         });
 
         return sendSuccess(res, result, 'Transfer successful');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         return sendError(res, error.message, 400);
     }
 };

@@ -7,7 +7,6 @@ import {
     markChannelNotificationsRead,
 } from "./notification.service.js";
 import { sendSuccess, sendError } from "../../utils/response.js";
-import prisma from "../../utils/prisma.js";
 
 const getStatusCode = (error, fallbackStatus = 500) => {
     if (typeof error?.statusCode === "number") {
@@ -16,18 +15,6 @@ const getStatusCode = (error, fallbackStatus = 500) => {
 
     return fallbackStatus;
 };
-
-function parseSubscription(payload = {}) {
-    const endpoint = String(payload?.endpoint || "").trim();
-    const p256dh = String(payload?.keys?.p256dh || "").trim();
-    const auth = String(payload?.keys?.auth || "").trim();
-
-    if (!endpoint || !p256dh || !auth) {
-        return null;
-    }
-
-    return { endpoint, p256dh, auth };
-}
 
 export const getNotifications = async (req, res) => {
     try {
@@ -46,66 +33,6 @@ export const getNotifications = async (req, res) => {
     } catch (error) {
         console.error("Get notifications error:", error);
         return sendError(res, error?.message || "Failed to fetch notifications", getStatusCode(error));
-    }
-};
-
-export const subscribeToPushNotifications = async (req, res) => {
-    try {
-        const userId = req.user?.id;
-        if (!userId) {
-            return sendError(res, "Unauthorized", 401);
-        }
-
-        const subscription = parseSubscription(req.body);
-        if (!subscription) {
-            return sendError(res, "Invalid push subscription payload", 400);
-        }
-
-        await prisma.pushSubscription.upsert({
-            where: { endpoint: subscription.endpoint },
-            update: {
-                userId,
-                p256dh: subscription.p256dh,
-                auth: subscription.auth,
-            },
-            create: {
-                userId,
-                endpoint: subscription.endpoint,
-                p256dh: subscription.p256dh,
-                auth: subscription.auth,
-            },
-        });
-
-        return sendSuccess(res, { endpoint: subscription.endpoint }, "Push subscription saved", 201);
-    } catch (error) {
-        console.error("Subscribe push error:", error);
-        return sendError(res, error?.message || "Failed to save push subscription", getStatusCode(error));
-    }
-};
-
-export const unsubscribeFromPushNotifications = async (req, res) => {
-    try {
-        const userId = req.user?.id;
-        if (!userId) {
-            return sendError(res, "Unauthorized", 401);
-        }
-
-        const endpoint = String(req.body?.endpoint || "").trim();
-        if (!endpoint) {
-            return sendError(res, "Subscription endpoint is required", 400);
-        }
-
-        await prisma.pushSubscription.deleteMany({
-            where: {
-                endpoint,
-                userId,
-            },
-        });
-
-        return sendSuccess(res, null, "Push subscription removed");
-    } catch (error) {
-        console.error("Unsubscribe push error:", error);
-        return sendError(res, error?.message || "Failed to remove push subscription", getStatusCode(error));
     }
 };
 

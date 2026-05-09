@@ -435,7 +435,7 @@ export const addToCartHandler = async (req, res) => {
     const cartItem = await addToCart(req.user.id, validated.productId, validated.quantity);
     return sendCreated(res, cartItem, 'Added to cart');
   } catch (error) {
-    if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+    if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
     return sendError(res, 'Failed to add to cart', 500);
   }
 };
@@ -506,7 +506,7 @@ export const buyNowHandler = async (req, res) => {
     });
     return sendSuccess(res, result, 'Purchase successful');
   } catch (error) {
-    if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+    if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
     return sendError(res, error.message || 'Failed to purchase', 400);
   }
 };

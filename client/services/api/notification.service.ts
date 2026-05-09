@@ -10,6 +10,4 @@ export const notificationApi = {
   markAllRead: () => api.post<any>("/notifications/mark-all-read"),
   deleteNotification: (id: string | number) => api.delete<any>(`/notifications/${id}`),
   markChannelRead: (channelId: string) => api.post<any>(`/notifications/channel/${channelId}/read`),
-  subscribePush: (subscription: any) => api.post<any>("/notifications/push/subscribe", subscription),
-  unsubscribePush: (subscription: any) => api.post<any>("/notifications/push/unsubscribe", subscription),
 };

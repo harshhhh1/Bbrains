@@ -18,14 +18,11 @@ import { formatDistanceToNow } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import { useNotifications } from "@/components/providers/notification-provider"
-import { usePushNotifications } from "@/hooks/usePushNotifications"
-import { toast } from "sonner"
 import type { Notification } from "@/services/api/client"
 
 export function NotificationsBell() {
     const [mounted, setMounted] = React.useState(false)
     const { notifications, unreadCount, markRead, markAllRead } = useNotifications()
-    const { isSupported, isSubscribed, subscribe, unsubscribe, permissionState } = usePushNotifications()
     const router = useRouter()
 
     React.useEffect(() => {
@@ -87,22 +84,6 @@ export function NotificationsBell() {
         }
     }
 
-    const handlePushToggle = async () => {
-        try {
-            if (isSubscribed) {
-                await unsubscribe()
-                toast.success("Browser notifications disabled")
-            } else {
-                const didSubscribe = await subscribe()
-                if (didSubscribe) {
-                    toast.success("Browser notifications enabled")
-                }
-            }
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to update notification permissions")
-        }
-    }
-
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -122,22 +103,10 @@ export function NotificationsBell() {
                     <div>
                         <h3 className="font-bold text-sm">Notifications</h3>
                         <p className="text-[11px] text-muted-foreground">
-                            {isSupported
-                                ? (isSubscribed ? "Browser alerts enabled" : `Browser alerts ${permissionState === "denied" ? "blocked" : "disabled"}`)
-                                : "Push not supported on this browser"}
+                            Notifications
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        {isSupported && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-[10px] uppercase font-bold tracking-wider"
-                                onClick={handlePushToggle}
-                            >
-                                {isSubscribed ? "Disable" : "Enable"}
-                            </Button>
-                        )}
                         {unreadCount > 0 && (
                             <Button 
                                 variant="ghost" 

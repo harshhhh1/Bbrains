@@ -89,6 +89,7 @@ export function AssignmentSubmitDrawer({
       )
 
       onClose()
+      window.dispatchEvent(new Event("user-xp-updated"));
       await onSuccess()
     } catch (error) {
       console.error(error)

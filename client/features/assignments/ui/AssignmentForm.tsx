@@ -55,10 +55,13 @@ export function AssignmentForm({
         required
         value={form.courseId}
         onChange={(val) => updateField("courseId", val)}
-        options={courses.map((c) => ({
-          value: String(c.id),
-          label: `${c.standard ? `${c.standard} - ` : ""}${c.name}`,
-        }))}
+        options={[
+          { value: "", label: "Select a class" },
+          ...courses.map((c) => ({
+            value: String(c.id),
+            label: `${c.standard ? `${c.standard} - ` : ""}${c.name}`,
+          }))
+        ]}
         disabled={disabled}
       />
 

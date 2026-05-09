@@ -2,7 +2,6 @@ import prisma from "../../utils/prisma.js";
 import { sendError, sendSuccess } from "../../utils/response.js";
 import { z } from "zod";
 import { createNotification, createNotifications } from "../notification/notification.service.js";
-import { sendPushNotification } from "../../lib/push.js";
 
 const DEFAULT_CHAT_ROOM = "default";
 const MAX_CHAT_ID_LENGTH = 120;
@@ -166,7 +165,7 @@ async function resolveMentionTargets({ chatId, collegeId, mentions = [], mention
         }));
 }
 
-async function dispatchMentionNotifications({
+export async function dispatchMentionNotifications({
     actor,
     chatId,
     message,
@@ -190,17 +189,6 @@ async function dispatchMentionNotifications({
         }));
 
         await createNotifications(payloads);
-
-        await Promise.all(
-            mentionTargets.map((target) =>
-                sendPushNotification(target.id, {
-                    title: `@${actor.username} mentioned you`,
-                    body: previewText,
-                    url: baseUrl,
-                    tag: `mention-${message.id}`,
-                })
-            )
-        );
     }
 
     if (replyTargetUserId && replyTargetUserId !== actor.id && !mentionTargets.some((target) => target.id === replyTargetUserId)) {

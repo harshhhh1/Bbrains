@@ -24,7 +24,7 @@ export const createAchievement = async (req, res) => {
         await createAuditLog(req.user.id, 'SYSTEM', 'CREATE', 'Achievement', achievement.id);
         return sendCreated(res, achievement, 'Achievement created');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         return sendError(res, 'Failed to create achievement', 500);
     }
 };

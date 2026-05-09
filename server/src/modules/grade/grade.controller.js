@@ -28,7 +28,7 @@ export const gradeSubmission = async (req, res) => {
         await createAuditLog(req.user.id, 'ACADEMIC', 'CREATE', 'Grade', grade.id, { grade: validated.grade });
         return sendCreated(res, grade, 'Graded successfully');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         console.error(error);
         return sendError(res, 'Failed to grade', 500);
     }
@@ -74,7 +74,7 @@ export const updateGrade = async (req, res) => {
         await createAuditLog(req.user.id, 'ACADEMIC', 'UPDATE', 'Grade', id, { before: existing.grade, after: validated.grade });
         return sendSuccess(res, grade, 'Grade updated successfully');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         return sendError(res, 'Failed to update grade', 500);
     }
 };

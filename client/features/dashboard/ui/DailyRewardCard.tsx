@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { dashboardApi, streakApi, StreakData } from "@/services/api/client";
 import { useRouter } from "next/navigation";
 import { TOTAL_DAYS, XP_REWARDS } from "@/features/dashboard/config/rewards";
+import { useUser } from "@/context/user-context";
 
 interface DailyRewardCardProps {
   initialStreak?: StreakData | null;
@@ -15,6 +16,7 @@ interface DailyRewardCardProps {
 
 export function DailyRewardCard({ initialStreak }: DailyRewardCardProps) {
   const router = useRouter();
+  const { refreshUser } = useUser();
   const [streak, setStreak] = useState<StreakData | null>(initialStreak || null);
   const [loading, setLoading] = useState(!initialStreak);
   const [claiming, setClaiming] = useState(false);
@@ -89,7 +91,7 @@ export function DailyRewardCard({ initialStreak }: DailyRewardCardProps) {
           setLastLocalUpdate(Date.now());
         }
         window.dispatchEvent(new Event("user-xp-updated"));
-        router.refresh();
+        await refreshUser();
       } else {
         setError(response.message || "Failed to claim reward");
       }

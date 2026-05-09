@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { walletApi, WalletData } from "@/services/api/client";
 
 interface WalletMiniCardProps {
@@ -69,7 +70,10 @@ export function WalletMiniCard({ initialWallet, initialBalance }: WalletMiniCard
           </div>
         ) : (
           <div className="space-y-1">
-            <p className="text-2xl font-bold">${balance.toLocaleString()}</p>
+            <div className="flex items-center gap-1.5">
+              <Image src="/bcoin.svg" alt="BCoin" width={24} height={24} className="shrink-0" />
+              <p className="text-2xl font-bold">{balance.toLocaleString()}</p>
+            </div>
             <p className="text-xs text-muted-foreground">Total balance</p>
             <Button variant="outline" size="sm" asChild className="w-full mt-2">
               <Link href="/wallet">

@@ -37,7 +37,7 @@ export const createCollege = async (req, res) => {
     } catch (error) {
         if (error.name === 'ZodError') {
       const validationErrors = Array.isArray(error.errors)
-        ? error.errors.map(e => ({ field: e.path.join('.'), message: e.message }))
+        ? (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message }))
         : [{ message: 'Unknown validation error format' }];
       return sendError(res, 'Validation failed', 400, validationErrors);
         }
@@ -91,7 +91,7 @@ export const updateCollege = async (req, res) => {
         return sendSuccess(res, college, 'College updated successfully');
     } catch (error) {
         if (error.name === 'ZodError') {
-            return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+            return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         }
         if (error.code === 'P2025') return sendError(res, 'College not found', 404);
         console.error(error);

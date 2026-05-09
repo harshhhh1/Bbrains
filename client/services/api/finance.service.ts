@@ -17,7 +17,7 @@ export const financeApi = {
   getIncomingRequests: () => api.get<any[]>("/wallet/requests/incoming"),
   createRequest: (toUserId: string, amount: number, reason: string) => api.post<any>("/wallet/requests", { toUserId, amount, reason }),
   respondToRequest: (requestId: string, accept: boolean, pin?: string) => api.post<any>(`/wallet/requests/${requestId}/respond`, { accept, pin }),
-  transfer: (toUserId: string, amount: number, pin: string) => api.post<any>("/wallet/transfer", { toUserId, amount, pin }),
+  transfer: (toUserId: string, amount: number, pin: string, note?: string) => api.post<any>("/wallet/transfer", { toUserId, amount, pin, note }),
   setupPin: (pin: string) => api.post<any>("/wallet/setup-pin", { pin }),
   changePin: (oldPin: string, newPin: string) => api.post<any>("/wallet/change-pin", { oldPin, newPin }),
 };

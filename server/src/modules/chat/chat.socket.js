@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import prisma from "../../utils/prisma.js";
+import { dispatchMentionNotifications } from "./chat.controller.js";
 
 let activeUsers = {};
 const mentionPattern = /@([a-zA-Z0-9_]+)/g;
@@ -306,6 +307,25 @@ export const initChatSocket = (server) => {
                     data: payloadToStore,
                 });
                 if (message) {
+                    // Fetch reply target if any
+                    let replyTargetUserId = null;
+                    if (payloadToStore.replyTo) {
+                        const original = await prisma.chatMessage.findUnique({
+                            where: { id: payloadToStore.replyTo },
+                            select: { userId: true }
+                        });
+                        replyTargetUserId = original?.userId;
+                    }
+
+                    // Dispatch notifications
+                    await dispatchMentionNotifications({
+                        actor: identity,
+                        chatId: roomName,
+                        message,
+                        mentionTargets,
+                        replyTargetUserId
+                    });
+
                     const norm = toSocketMessage(message);
                     if (message.replyTo) {
                         const parent = await prisma.chatMessage.findUnique({

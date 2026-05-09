@@ -3,9 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip as RechartsTooltip, Defs, LinearGradient, Stop } from "recharts";
+import Image from "next/image";
 import { Transaction } from "@/services/api/client";
-import { format, subMonths, startOfMonth, isWithinInterval, endOfMonth } from "date-fns";
+import { format, subMonths, subDays, startOfMonth, endOfMonth, startOfDay, endOfDay, isWithinInterval } from "date-fns";
 
 interface SpendingsChartProps {
   transactions: Transaction[];
@@ -22,37 +23,78 @@ export function SpendingsChart({ transactions }: SpendingsChartProps) {
   const chartData = useMemo(() => {
     if (!mounted) return [];
 
-    // Generate last 6 months list
-    const months = Array.from({ length: 6 }).map((_, i) => {
-      const d = subMonths(new Date(), 5 - i);
-      return {
-        month: format(d, "MMM"),
-        start: startOfMonth(d),
-        end: endOfMonth(d),
-        sent: 0,
-        received: 0,
-      };
-    });
+    const now = new Date();
+    let dataBuckets: { label: string; start: Date; end: Date; sent: number; received: number }[] = [];
 
-    // Aggregate transactions into months
+    if (chartFilter === "this-week") {
+      // Last 7 days
+      dataBuckets = Array.from({ length: 7 }).map((_, i) => {
+        const d = subDays(now, 6 - i);
+        return {
+          label: format(d, "EEE"),
+          start: startOfDay(d),
+          end: endOfDay(d),
+          sent: 0,
+          received: 0,
+        };
+      });
+    } else if (chartFilter === "this-month") {
+      // Last 30 days
+      dataBuckets = Array.from({ length: 30 }).map((_, i) => {
+        const d = subDays(now, 29 - i);
+        return {
+          label: format(d, "MMM dd"),
+          start: startOfDay(d),
+          end: endOfDay(d),
+          sent: 0,
+          received: 0,
+        };
+      });
+    } else if (chartFilter === "3-months") {
+      // Last 3 months
+      dataBuckets = Array.from({ length: 3 }).map((_, i) => {
+        const d = subMonths(now, 2 - i);
+        return {
+          label: format(d, "MMM"),
+          start: startOfMonth(d),
+          end: endOfMonth(d),
+          sent: 0,
+          received: 0,
+        };
+      });
+    } else {
+      // Fallback: Last 6 months (default logic)
+      dataBuckets = Array.from({ length: 6 }).map((_, i) => {
+        const d = subMonths(now, 5 - i);
+        return {
+          label: format(d, "MMM"),
+          start: startOfMonth(d),
+          end: endOfMonth(d),
+          sent: 0,
+          received: 0,
+        };
+      });
+    }
+
+    // Aggregate transactions into buckets
     transactions.forEach((txn) => {
       const date = new Date(txn.transactionDate || (txn as any).createdAt || new Date());
       const amount = Number(txn.amount || 0);
-      const isCredit = txn.type.toLowerCase() === "credit" || txn.type.toLowerCase() === "received" || txn.type.toLowerCase() === "deposit";
+      const isCredit = ["credit", "received", "deposit"].includes(txn.type?.toLowerCase() || "");
 
-      months.forEach((m) => {
-        if (isWithinInterval(date, { start: m.start, end: m.end })) {
+      dataBuckets.forEach((bucket) => {
+        if (isWithinInterval(date, { start: bucket.start, end: bucket.end })) {
           if (isCredit) {
-            m.received += amount;
+            bucket.received += amount;
           } else {
-            m.sent += amount;
+            bucket.sent += amount;
           }
         }
       });
     });
 
-    return months;
-  }, [transactions, mounted]);
+    return dataBuckets;
+  }, [transactions, mounted, chartFilter]);
 
   if (!mounted) {
     return (
@@ -71,52 +113,67 @@ export function SpendingsChart({ transactions }: SpendingsChartProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg">Spending Overview</CardTitle>
+        <CardTitle className="text-lg font-bold">Spending Overview</CardTitle>
         <Tabs value={chartFilter} onValueChange={setChartFilter}>
-          <TabsList className="h-8">
-            <TabsTrigger value="this-week" className="text-xs px-2">This Week</TabsTrigger>
-            <TabsTrigger value="this-month" className="text-xs px-2">This Month</TabsTrigger>
-            <TabsTrigger value="3-months" className="text-xs px-2">3 Months</TabsTrigger>
+          <TabsList className="h-8 bg-muted/50 rounded-xl p-1">
+            <TabsTrigger value="this-week" className="text-[10px] uppercase tracking-widest font-black px-3 rounded-lg">Week</TabsTrigger>
+            <TabsTrigger value="this-month" className="text-[10px] uppercase tracking-widest font-black px-3 rounded-lg">Month</TabsTrigger>
+            <TabsTrigger value="3-months" className="text-[10px] uppercase tracking-widest font-black px-3 rounded-lg">3M</TabsTrigger>
           </TabsList>
         </Tabs>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px] w-full mt-4">
+        <div className="h-[320px] w-full mt-4">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="colorSent" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorReceived" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" vertical={false} />
               <XAxis 
-                dataKey="month" 
-                fontSize={12}
-                tick={{ fill: "#94a3b8" }} 
+                dataKey="label" 
+                fontSize={10}
+                tick={{ fill: "#94a3b8", fontWeight: 700 }} 
                 axisLine={false} 
                 tickLine={false} 
                 dy={10}
+                minTickGap={30}
               />
               <YAxis 
-                fontSize={12}
-                tick={{ fill: "#94a3b8" }} 
+                fontSize={10}
+                tick={{ fill: "#94a3b8", fontWeight: 700 }} 
                 axisLine={false} 
                 tickLine={false} 
                 dx={-10}
+                tickFormatter={(value) => `${value}`}
               />
               <RechartsTooltip 
-                cursor={{ fill: "hsl(var(--primary))", opacity: 0.05 }}
+                cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "4 4" }}
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="rounded-xl border border-border bg-card/95 p-3 shadow-xl backdrop-blur-md">
-                        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
-                        <div className="space-y-1.5">
+                      <div className="rounded-2xl border border-border/60 bg-card/95 p-4 shadow-2xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-200">
+                        <p className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">{label} Activity</p>
+                        <div className="space-y-2">
                           {payload.map((entry: any) => (
-                            <div key={entry.name} className="flex items-center gap-3 justify-between min-w-[120px]">
-                              <div className="flex items-center gap-2 text-sm font-medium">
-                                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
-                                <span className="text-foreground/70">{entry.name}:</span>
+                            <div key={entry.name} className="flex items-center gap-4 justify-between min-w-[140px]">
+                              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider">
+                                <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                                <span className="text-foreground/60">{entry.name}</span>
                               </div>
-                              <span className="text-sm font-bold text-foreground">
-                                {entry.value?.toLocaleString()}
-                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <Image src="/bcoin.svg" alt="BC" width={14} height={14} className="opacity-70" />
+                                <span className="text-sm font-black text-foreground tabular-nums">
+                                  {entry.value?.toLocaleString()}
+                                </span>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -126,9 +183,27 @@ export function SpendingsChart({ transactions }: SpendingsChartProps) {
                   return null;
                 }}
               />
-              <Bar dataKey="sent" fill="#ef4444" radius={[4, 4, 0, 0]} name="Sent" />
-              <Bar dataKey="received" fill="#22c55e" radius={[4, 4, 0, 0]} name="Received" />
-            </BarChart>
+              <Area 
+                type="monotone" 
+                dataKey="sent" 
+                stroke="#ef4444" 
+                strokeWidth={3}
+                fillOpacity={1} 
+                fill="url(#colorSent)" 
+                name="Sent"
+                animationDuration={1500}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="received" 
+                stroke="#22c55e" 
+                strokeWidth={3}
+                fillOpacity={1} 
+                fill="url(#colorReceived)" 
+                name="Received"
+                animationDuration={2000}
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

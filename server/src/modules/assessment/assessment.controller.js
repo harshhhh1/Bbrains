@@ -67,7 +67,7 @@ export const createAssessmentHandler = async (req, res) => {
                 res,
                 'Validation failed',
                 400,
-                error.errors.map((entry) => ({
+                (error.issues || []).map((entry) => ({
                     field: entry.path.join('.'),
                     message: entry.message,
                 }))
@@ -102,7 +102,7 @@ export const updateAssessmentHandler = async (req, res) => {
                 res,
                 'Validation failed',
                 400,
-                error.errors.map((entry) => ({
+                (error.issues || []).map((entry) => ({
                     field: entry.path.join('.'),
                     message: entry.message,
                 }))

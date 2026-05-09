@@ -125,7 +125,7 @@ export const updateGrade = async (req, res) => {
         await createAuditLog(req.user.id, 'ACADEMIC', 'UPDATE', 'Enrollment', `${userId}-${courseId}`, { grade: validated.grade });
         return sendSuccess(res, enrollment, 'Grade updated successfully');
     } catch (error) {
-        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+        if (error.name === 'ZodError') return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         if (error.code === 'P2025') return sendError(res, 'Enrollment not found', 404);
         return sendError(res, 'Failed to update grade', 500);
     }

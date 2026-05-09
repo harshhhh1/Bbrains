@@ -80,7 +80,7 @@ export const createExamHandler = async (req, res) => {
                 res,
                 'Validation failed',
                 400,
-                error.errors.map((entry) => ({
+                (error.issues || []).map((entry) => ({
                     field: entry.path.join('.'),
                     message: entry.message,
                 }))
@@ -114,7 +114,7 @@ export const updateExamHandler = async (req, res) => {
                 res,
                 'Validation failed',
                 400,
-                error.errors.map((entry) => ({
+                (error.issues || []).map((entry) => ({
                     field: entry.path.join('.'),
                     message: entry.message,
                 }))
@@ -183,7 +183,7 @@ export const createExamResultHandler = async (req, res) => {
                 res,
                 'Validation failed',
                 400,
-                error.errors.map((entry) => ({
+                (error.issues || []).map((entry) => ({
                     field: entry.path.join('.'),
                     message: entry.message,
                 }))
@@ -268,7 +268,7 @@ export const saveStudentExamResultsHandler = async (req, res) => {
                 res,
                 'Validation failed',
                 400,
-                error.errors.map((entry) => ({
+                (error.issues || []).map((entry) => ({
                     field: entry.path.join('.'),
                     message: entry.message,
                 }))

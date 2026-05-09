@@ -41,7 +41,7 @@ export const createDetails = async (req, res) => {
         return sendCreated(res, details, 'User details created successfully');
     } catch (error) {
         if (error.name === 'ZodError') {
-            return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+            return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         }
         console.error(error);
         return sendError(res, 'Failed to create user details', 500);
@@ -82,7 +82,7 @@ export const updateMyDetails = async (req, res) => {
         return sendSuccess(res, details, 'User details updated successfully');
     } catch (error) {
         if (error.name === 'ZodError') {
-            return sendError(res, 'Validation failed', 400, error.errors.map(e => ({ field: e.path.join('.'), message: e.message })));
+            return sendError(res, 'Validation failed', 400, (error.issues || []).map(e => ({ field: e.path.join('.'), message: e.message })));
         }
         if (error.code === 'P2025') return sendError(res, 'User details not found. Create them first.', 404);
         console.error(error);
