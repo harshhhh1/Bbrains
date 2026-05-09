@@ -42,8 +42,8 @@ export const academicApi = {
   saveExamResult: (examId: number, data: { studentId: string; marksObtained: number; remark?: string }) =>
     api.post<any>(`/academic/exams/${examId}/results/bulk`, data),
   
-  getAttendance: (date: string) => api.get<any[]>(`/attendance?date=${date}`),
-  getAttendanceByDate: (date: string) => api.get<any[]>(`/attendance?date=${date}`),
+  getAttendance: (date: string) => api.get<any[]>(`/attendance/by-date?date=${date}`),
+  getAttendanceByDate: (date: string) => api.get<any[]>(`/attendance/by-date?date=${date}`),
   markAttendance: (data: any) => api.post<any>("/attendance", data),
   markAttendanceBulk: (data: any) => api.post<any>("/attendance/bulk", data),
   getStudentAttendanceHistory: (studentId: string) => api.get<any[]>(`/attendance/student/${studentId}`),

@@ -221,6 +221,40 @@ const respondToMoneyRequest = async (userId, requestId, accept, pin) => {
     return { status: 'accepted', transfer };
 };
 
+const awardCoinsToUser = async (userId, amount, reason = "System Reward") => {
+    return await prisma.$transaction(async (tx) => {
+        const wallet = await tx.wallet.upsert({
+            where: { userId },
+            update: { balance: { increment: Number(amount) } },
+            create: { userId, balance: Number(amount) }
+        });
+
+        const transaction = await tx.transactionHistory.create({
+            data: {
+                userId,
+                recordedById: null,
+                amount: Number(amount),
+                type: 'credit',
+                category: 'reward',
+                status: 'success',
+                paymentMode: 'wallet',
+                primaryRecord: true,
+                note: reason
+            }
+        });
+
+        await createNotification(
+            userId,
+            'Coins Awarded! 🪙',
+            `You received ${amount} coins for: ${reason}`,
+            'finance',
+            transaction.id.toString()
+        );
+
+        return { wallet, transaction };
+    });
+};
+
 export { 
     transferFunds, 
     getTransactionHistory, 
@@ -228,5 +262,6 @@ export {
     createMoneyRequest, 
     getSentRequests, 
     getIncomingRequestsList, 
-    respondToMoneyRequest 
+    respondToMoneyRequest,
+    awardCoinsToUser
 };

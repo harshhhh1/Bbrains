@@ -4,8 +4,7 @@ import { ForbiddenError } from '../../utils/errors.js';
 
 const normalizeDate = (value) => {
     const dt = new Date(value);
-    dt.setHours(0, 0, 0, 0);
-    return dt;
+    return new Date(Date.UTC(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()));
 };
 
 const hasManagerPrivileges = (currentUser) => {
