@@ -9,38 +9,7 @@ import { z } from 'zod';
 import prisma from "../../utils/prisma.js";
 import { getCourseById } from "../course/course.service.js";
 import { deleteFromCloudinary } from "../../utils/cloudinary.js";
-
-const assignmentSchema = z.object({
-    title: z.string().min(1).max(255),
-    description: z.string().optional(),
-    courseId: z.number().int().positive(),
-    dueDate: z.string().optional(),
-    file: z.string().url().optional(),
-    rewardPoints: z.number().int().min(0).optional(),
-    rewardCoins: z.number().int().min(0).optional(),
-});
-
-const submissionSchema = z.object({
-    assignmentId: z.number().int().positive(),
-    content: z.string().optional(),
-    fileUrl: z.string().url(),
-}).refine((value) => Boolean(value.fileUrl), {
-    message: "A file upload is required",
-    path: ["fileUrl"],
-});
-
-const submissionReviewSchema = z.object({
-    reviewStatus: z.enum(["completed", "incomplete", "rework"]),
-    reviewRemark: z.string().max(255).optional().nullable(),
-});
-
-const announcementSchema = z.object({
-    title: z.string().min(1).max(255),
-    description: z.string().optional(),
-    image: z.string().url().optional(),
-    isGlobal: z.boolean().optional(),
-    courseId: z.number().int().positive().optional()
-});
+import { assignmentSchema, submissionSchema, submissionReviewSchema, announcementSchema, updateSchema } from "./schemas.js";
 
 const getStatusCode = (error, fallbackStatus = 500) => {
     if (typeof error?.statusCode === 'number') {
@@ -183,16 +152,6 @@ export const updateAssignmentHandler = async (req, res) => {
             }
             await getCourseById(existing.courseId, req.user);
         }
-
-        const updateSchema = z.object({
-            title: z.string().min(1).max(100).optional(),
-            description: z.string().max(255).optional().nullable(),
-            courseId: z.number().int().positive().optional(),
-            dueDate: z.string().optional().nullable(),
-            file: z.string().url().optional().nullable(),
-            rewardPoints: z.number().int().min(0).optional(),
-            rewardCoins: z.number().int().min(0).optional(),
-        });
 
         const validated = updateSchema.parse(req.body);
         const data = { ...validated };

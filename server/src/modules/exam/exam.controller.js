@@ -13,23 +13,7 @@ import {
 } from './exam.service.js';
 import { createAuditLog } from '../../utils/auditLog.js';
 import { sendCreated, sendError, sendSuccess } from '../../utils/response.js';
-
-const examResultSchema = z.object({
-    studentId: z.string().uuid(),
-    marksObtained: z.coerce.number().min(0),
-    remark: z.string().trim().max(255).optional().or(z.literal('')),
-});
-
-const examSchema = z.object({
-    courseId: z.coerce.number().int().positive(),
-    semesterNumber: z.coerce.number().int().min(1),
-    subjectCode: z.string().trim().min(1).max(50),
-    topic: z.string().trim().min(1).max(150),
-    examDate: z.string().min(1),
-    studentId: z.string().uuid().optional(),
-    marksObtained: z.coerce.number().min(0).optional(),
-    remark: z.string().trim().max(255).optional().or(z.literal('')),
-});
+import { examResultSchema, examSchema } from './schemas.js';
 
 const getStatusCode = (error) => {
     if (typeof error?.statusCode === 'number') return error.statusCode;
@@ -253,13 +237,7 @@ export const saveStudentExamResultsHandler = async (req, res) => {
             return sendError(res, 'Invalid exam ID', 400);
         }
 
-        const schema = z.object({
-            studentId: z.string().uuid(),
-            marksObtained: z.coerce.number().min(0),
-            remark: z.string().trim().max(255).optional().or(z.literal('')),
-        });
-
-        const validated = schema.parse(req.body);
+        const validated = examResultSchema.parse(req.body);
         const result = await createExamResult(examId, req.user.id, validated);
         return sendSuccess(res, result, 'Result saved');
     } catch (error) {

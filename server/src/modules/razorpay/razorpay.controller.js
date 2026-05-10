@@ -1,31 +1,6 @@
 import { createOrder, verifyPayment, recordFeePayment, recordPaymentFailure } from './razorpay.service.js';
 import { sendSuccess, sendError } from '../../utils/response.js';
-import { z } from 'zod';
-
-// Schema for creating a Razorpay order
-const createOrderSchema = z.object({
-  amount: z.number().positive('Amount must be positive'),
-  currency: z.string().default('INR'),
-  receipt: z.string().optional(),
-  notes: z.object({
-    studentId: z.string(),
-    studentName: z.string().optional(),
-    feeDescription: z.string().optional(),
-    dueDate: z.string().optional(),
-  }).optional(),
-});
-
-// Schema for verifying Razorpay payment
-const verifyPaymentSchema = z.object({
-  razorpayOrderId: z.string(),
-  razorpayPaymentId: z.string(),
-  razorpaySignature: z.string(),
-  feeDetails: z.object({
-    studentId: z.string(),
-    amount: z.number().positive(),
-    description: z.string().optional(),
-  }),
-});
+import { createOrderSchema, verifyPaymentSchema } from './schemas.js';
 
 /**
  * POST /api/razorpay/create-order

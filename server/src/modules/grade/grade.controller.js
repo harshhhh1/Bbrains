@@ -5,16 +5,7 @@ import {
 } from './grade.service.js';
 import { sendSuccess, sendCreated, sendError } from '../../utils/response.js';
 import { createAuditLog } from '../../utils/auditLog.js';
-
-const gradeSchema = z.object({
-    userId: z.string().uuid(),
-    assignmentId: z.number().int().positive(),
-    grade: z.string().max(5)
-});
-
-const updateGradeSchema = z.object({
-    grade: z.string().max(5)
-});
+import { gradeSchema, updateGradeSchema } from './schemas.js';
 
 // POST /grades
 export const gradeSubmission = async (req, res) => {

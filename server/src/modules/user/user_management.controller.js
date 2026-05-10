@@ -20,168 +20,19 @@ import prisma from "../../utils/prisma.js";
 import { z } from "zod";
 import crypto from "crypto";
 import fs from "fs";
-
-// Zod Schemas
-const addTeacherSchema = z.object({
-    username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_]+$/),
-    email: z.string().email().max(50),
-    password: z.string().min(8),
-    collegeId: z.number().int().positive().optional(),
-    firstName: z.string().min(2).max(25),
-    lastName: z.string().min(2).max(25),
-    sex: z.enum(['male', 'female', 'other']),
-    dob: z.string(),
-    phone: z.string().max(15).optional(),
-    teacherSubjects: z.array(z.string().min(1).max(100)).min(1),
-    classTeacherCourseId: z.number().int().positive().optional().nullable(),
-    roleIds: z.array(z.number()).optional(),
-});
-
-const createStudentSchema = z.object({
-    username: z.string().min(3).max(32).regex(/^[a-zA-Z0-9_]+$/),
-    email: z.string().email().max(50),
-    password: z.string().min(8),
-    collegeId: z.number().int().positive().optional(),
-    firstName: z.string().min(2).max(25),
-    lastName: z.string().min(2).max(25),
-    sex: z.enum(['male', 'female', 'other']),
-    dob: z.string(),
-    phone: z.string().max(15).optional(),
-    classId: z.number().int().positive(),
-    roleIds: z.array(z.number()).optional(),
-});
-
-const createManagerSchema = createStudentSchema.omit({
-    classId: true,
-}).extend({
-    bio: z.string().max(500).optional(),
-    roleIds: z.array(z.number()).optional(),
-});
-
-const createAdminSchema = createStudentSchema.omit({
-    classId: true,
-}).extend({
-    bio: z.string().max(500).optional(),
-    roleIds: z.array(z.number()).optional(),
-});
-
-const formatZodErrors = (error) => {
-    const issues = Array.isArray(error?.issues)
-        ? error.issues
-        : Array.isArray(error?.errors)
-            ? error.errors
-            : [];
-
-    return issues.map((entry) => ({
-        field: Array.isArray(entry?.path) ? entry.path.join('.') : '',
-        message: entry?.message || 'Invalid value',
-    }));
-};
-
-
-const findCourseInCollege = async (tx, courseId, collegeId, notFoundMessage) => {
-    const course = await tx.course.findUnique({
-        where: { id: Number(courseId) },
-        select: {
-            id: true,
-            collegeId: true,
-            classTeacherId: true,
-        }
-    });
-
-    if (!course || Number(course.collegeId ?? 0) !== Number(collegeId)) {
-        throw new Error(notFoundMessage);
-    }
-
-    return course;
-};
-
-/**
- * Ensures a role exists by name, checking system roles first, then college roles.
- * Creates a new role for the college if not found.
- */
-const ensureRoleByNameInternal = async (tx, roleName, description, collegeId) => {
-    // Try to find a system role (null collegeId) or a college-specific role
-    const role = await tx.role.findFirst({
-        where: {
-            name: { equals: roleName, mode: 'insensitive' },
-            OR: [
-                { collegeId: collegeId },
-                { collegeId: null }
-            ]
-        },
-        orderBy: { collegeId: 'asc' } // Prefer system roles (null) if both exist
-    });
-
-    if (role) return { role, isNew: false };
-
-    // Create new role for the college
-    const newRole = await tx.role.create({
-        data: {
-            name: roleName,
-            description: description || `${roleName} role`,
-            collegeId: collegeId,
-            isSystem: false,
-            isDefault: false
-        }
-    });
-
-    return { role: newRole, isNew: true };
-};
-
-/**
- * Copies enabled permissions from the default 'Student' system role to a target role.
- */
-const grantStudentPermissionsToRole = async (tx, roleId) => {
-    const studentRole = await tx.role.findFirst({
-        where: { name: { equals: 'Student', mode: 'insensitive' }, collegeId: null }
-    });
-
-    if (!studentRole) return;
-
-    const studentPerms = await tx.rolePermission.findMany({
-        where: { roleId: studentRole.id, enabled: true }
-    });
-
-    for (const sp of studentPerms) {
-        await tx.rolePermission.upsert({
-            where: {
-                roleId_permissionId: {
-                    roleId: roleId,
-                    permissionId: sp.permissionId
-                }
-            },
-            create: {
-                roleId: roleId,
-                permissionId: sp.permissionId,
-                enabled: true
-            },
-            update: { enabled: true }
-        });
-    }
-};
-
-const syncTeacherClassTeacherAssignment = async (tx, teacherId, nextCourseId, collegeId) => {
-    await tx.course.updateMany({
-        where: { classTeacherId: teacherId },
-        data: { classTeacherId: null }
-    });
-
-    if (!nextCourseId) return;
-
-    const course = await findCourseInCollege(tx, nextCourseId, collegeId, 'Selected class was not found for this college');
-
-    if (course.classTeacherId && course.classTeacherId !== teacherId) {
-        throw new Error('This class already has a class teacher assigned');
-    }
-
-    await tx.course.update({
-        where: { id: course.id },
-        data: {
-            classTeacherId: teacherId,
-        }
-    });
-};
+import {
+    addTeacherSchema,
+    createStudentSchema,
+    createManagerSchema,
+    createAdminSchema,
+    formatZodErrors
+} from "./schemas.js";
+import {
+    findCourseInCollege,
+    ensureRoleByNameInternal,
+    grantStudentPermissionsToRole,
+    syncTeacherClassTeacherAssignment
+} from "./helpers.js";
 
 // GET /users/me - Get own profile
 export const getMe = async (req, res) => {

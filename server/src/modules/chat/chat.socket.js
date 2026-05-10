@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import prisma from "../../utils/prisma.js";
-import { dispatchMentionNotifications } from "./chat.controller.js";
+import { dispatchMentionNotifications } from "./normalizers.js";
 
 let activeUsers = {};
 const mentionPattern = /@([a-zA-Z0-9_]+)/g;

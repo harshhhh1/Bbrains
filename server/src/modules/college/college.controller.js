@@ -8,23 +8,7 @@ import {
 } from './college.service.js';
 import { sendSuccess, sendCreated, sendPaginated, sendError } from '../../utils/response.js';
 import { createAuditLog } from '../../utils/auditLog.js';
-
-// Zod Schemas
-const createCollegeSchema = z.object({
-    name: z.string().min(1).max(50),
-    email: z.string().email().max(50),
-    regNo: z.string().min(1).max(50),
-    address: z.object({
-        addressLine1: z.string().min(1).max(255),
-        addressLine2: z.string().max(255).optional().nullable(),
-        city: z.string().min(1).max(50),
-        state: z.string().max(100).optional().nullable(),
-        postalCode: z.string().max(10).optional().nullable(),
-        country: z.string().min(1).max(100)
-    }).optional()
-});
-
-const updateCollegeSchema = createCollegeSchema.partial();
+import { createCollegeSchema, updateCollegeSchema } from './schemas.js';
 
 // POST /colleges
 export const createCollege = async (req, res) => {

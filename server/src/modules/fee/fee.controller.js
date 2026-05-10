@@ -1,19 +1,6 @@
 import { getStudentFeeSummary, getAllFeeTransactions } from './fee.service.js';
 import { sendSuccess, sendError } from '../../utils/response.js';
-import { z } from 'zod';
-
-// Schema for fee summary request (no params needed for now)
-const feeSummarySchema = z.object({
-  // No specific params needed, we'll get student ID from auth
-});
-
-// Schema for getting all fee transactions (admin/manager only)
-const getAllFeeTransactionsSchema = z.object({
-  page: z.number().int().positive().default(1),
-  limit: z.number().int().positive().max(100).default(20),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-});
+import { feeSummarySchema, getAllFeeTransactionsSchema } from './schemas.js';
 
 /**
  * GET /api/fee/summary

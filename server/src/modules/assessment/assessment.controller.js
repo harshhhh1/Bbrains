@@ -9,22 +9,7 @@ import {
 } from './assessment.service.js';
 import { createAuditLog } from '../../utils/auditLog.js';
 import { sendCreated, sendError, sendSuccess } from '../../utils/response.js';
-
-const assessmentResultSchema = z.object({
-    studentId: z.string().uuid(),
-    marksObtained: z.coerce.number().min(0),
-    remark: z.string().trim().max(255).optional().or(z.literal('')),
-});
-
-const assessmentSchema = z.object({
-    courseId: z.coerce.number().int().positive(),
-    subject: z.string().trim().min(1).max(100),
-    topic: z.string().trim().min(1).max(150),
-    assessmentType: z.enum(['test', 'exam']),
-    assessmentDate: z.string().min(1),
-    totalMarks: z.coerce.number().positive(),
-    results: z.array(assessmentResultSchema).min(1),
-});
+import { assessmentSchema } from './schemas.js';
 
 const getStatusCode = (error) => {
     if (typeof error?.statusCode === 'number') return error.statusCode;

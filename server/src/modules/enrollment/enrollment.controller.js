@@ -6,21 +6,7 @@ import {
 
 import { sendSuccess, sendCreated, sendError } from '../../utils/response.js';
 import { createAuditLog } from '../../utils/auditLog.js';
-
-const enrollSchema = z.object({
-    userId: z.string().optional(),
-    courseId: z.number().int().positive()
-});
-
-
-const gradeSchema = z.object({
-    grade: z.string().max(5)
-});
-
-const enrollBulkSchema = z.object({
-    userIds: z.array(z.string()),
-    courseId: z.number().int().positive()
-});
+import { enrollSchema, gradeEnrollmentSchema, enrollBulkSchema } from './schemas.js';
 
 
 
@@ -119,7 +105,7 @@ export const unenroll = async (req, res) => {
 export const updateGrade = async (req, res) => {
     try {
         const { userId, courseId } = req.params;
-        const validated = gradeSchema.parse(req.body);
+        const validated = gradeEnrollmentSchema.parse(req.body);
 
         const enrollment = await updateEnrollmentGrade(userId, parseInt(courseId), validated.grade);
         await createAuditLog(req.user.id, 'ACADEMIC', 'UPDATE', 'Enrollment', `${userId}-${courseId}`, { grade: validated.grade });
