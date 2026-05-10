@@ -89,12 +89,12 @@ export const sidebarItems = [
     icon: "MessageSquarePlus",
     access: ["student", "teacher", "admin", "staff", "manager"],
   },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: "Settings",
-    access: ["student", "teacher", "admin", "staff", "manager"],
-  },
+  // {
+  //   title: "Settings",
+  //   url: "/settings",
+  //   icon: "Settings",
+  //   access: ["student", "teacher", "admin", "staff", "manager"],
+  // },
   {
     title: "Manage Users",
     url: "/users",

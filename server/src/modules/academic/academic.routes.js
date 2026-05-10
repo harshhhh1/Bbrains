@@ -1,8 +1,8 @@
 import express from 'express';
 import {
-    createAssignmentHandler, getAssignmentsHandler, getAssignmentHandler,
+    createAssignmentHandler, getAssignmentsHandler, getMySubmissionsHandler, getAssignmentHandler,
     updateAssignmentHandler, deleteAssignmentHandler,
-    submitAssignmentHandler, getSubmissionsHandler, getMySubmissionsHandler, reviewSubmissionHandler,
+    submitAssignmentHandler, getSubmissionsHandler, reviewSubmissionHandler,
     createAnnouncementHandler, getAnnouncementsHandler, deleteAnnouncementHandler
 } from './academic.controller.js';
 import verifyToken from '../../middleware/auth.middleware.js';
@@ -18,8 +18,8 @@ router.put('/assignments/:id', verifyToken, authorize('teacher', 'admin', 'manag
 router.delete('/assignments/:id', verifyToken, authorize('teacher', 'admin', 'manager'), deleteAssignmentHandler);
 
 // Submissions
-router.post('/assignments/submit', verifyToken, submitAssignmentHandler);
 router.get('/assignments/submissions/my', verifyToken, getMySubmissionsHandler);
+router.post('/assignments/submit', verifyToken, submitAssignmentHandler);
 router.get('/assignments/:assignmentId/submissions', verifyToken, authorize('teacher', 'admin', 'manager'), getSubmissionsHandler);
 router.post('/assignments/submissions/:submissionId/review', verifyToken, authorize('teacher', 'admin', 'manager'), reviewSubmissionHandler);
 

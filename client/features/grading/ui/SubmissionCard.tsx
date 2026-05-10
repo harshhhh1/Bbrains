@@ -112,7 +112,12 @@ export function SubmissionCard({
               )}
               {submission?.reviewStatus === "completed" && (assignment.rewardPoints ?? 0) > 0 && (
                 <Badge className="bg-green-600 text-white">
-                  +{assignment.rewardPoints} points
+                  +{assignment.rewardPoints} XP
+                </Badge>
+              )}
+              {submission?.reviewStatus === "completed" && Number(assignment.rewardCoins ?? 0) > 0 && (
+                <Badge className="bg-yellow-600 text-white">
+                  +{assignment.rewardCoins} Coins
                 </Badge>
               )}
             </div>

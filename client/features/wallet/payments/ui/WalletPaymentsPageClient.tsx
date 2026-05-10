@@ -37,8 +37,6 @@ import {
   TrendingUp,
   TrendingDown,
   Receipt,
-  Share2,
-  Download,
   Building2,
   X,
 } from "lucide-react";
@@ -51,6 +49,7 @@ interface Payment {
   status: "completed" | "pending" | "cancelled" | "failed";
   description: string;
   createdAt: string;
+  relatedUser?: any;
 }
 
 function mapTransactionStatus(status: Transaction["status"]): Payment["status"] {
@@ -77,14 +76,40 @@ export default function PaymentHistoryPage() {
       let walletPayments: Payment[] = [];
       if (txnRes.success && txnRes.data) {
         const txns = (txnRes.data as any)?.data || (Array.isArray(txnRes.data) ? txnRes.data : []);
-        walletPayments = txns.map((t: Transaction) => ({
-          id: String(t.id),
-          type: "wallet" as const,
-          amount: t.type === "credit" ? Math.abs(Number(t.amount)) : -Math.abs(Number(t.amount)),
-          status: mapTransactionStatus(t.status),
-          description: t.note || "Wallet Transaction",
-          createdAt: t.transactionDate,
-        }));
+        
+        // Filter: only show virtual wallet transactions (B-Coins)
+        // Excludes direct external payments like Razorpay (card) or manual cash entries.
+        walletPayments = txns
+          .filter((t: Transaction) => t.paymentMode === "wallet")
+          .map((t: Transaction) => {
+            const isCredit = t.type === "credit";
+            let desc = t.note || (isCredit ? "B-Coins Received" : "B-Coins Spent");
+            
+            if (t.relatedUser) {
+              const name = t.relatedUser.userDetails?.firstName 
+                ? `${t.relatedUser.userDetails.firstName} ${t.relatedUser.userDetails.lastName || ""}`.trim()
+                : t.relatedUser.username;
+              
+              if (t.category === "transfer") {
+                desc = isCredit ? `Received from ${name}` : `Sent to ${name}`;
+              } else {
+                // For fees or other types with related user
+                desc = `${t.note || (isCredit ? "Received" : "Paid")} - ${name}`;
+              }
+              
+              if (t.note && t.category === "transfer") desc = `${desc} (${t.note})`;
+            }
+
+            return {
+              id: String(t.id),
+              type: "wallet" as const,
+              amount: isCredit ? Math.abs(Number(t.amount)) : -Math.abs(Number(t.amount)),
+              status: mapTransactionStatus(t.status),
+              description: desc,
+              createdAt: t.transactionDate,
+              relatedUser: t.relatedUser,
+            };
+          });
       }
 
       setPayments(walletPayments.sort((a, b) => 
@@ -155,6 +180,8 @@ export default function PaymentHistoryPage() {
   const totalReceived = filteredPayments
     .filter(p => p.amount > 0)
     .reduce((sum, p) => sum + p.amount, 0);
+  
+
 
   const handleViewDetails = (payment: Payment) => {
     setSelectedPayment(payment);
@@ -169,8 +196,8 @@ export default function PaymentHistoryPage() {
               <CreditCard className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Payment History</h1>
-              <p className="text-sm text-muted-foreground">View all your wallet transactions</p>
+              <h1 className="text-2xl font-bold text-foreground">B-Coins History</h1>
+              <p className="text-sm text-muted-foreground">View your virtual wallet transactions</p>
             </div>
           </div>
         </div>
@@ -389,6 +416,20 @@ export default function PaymentHistoryPage() {
                     <span className="font-bold text-sm text-foreground">{selectedPayment && formatShortDate(selectedPayment.createdAt)}</span>
                   </div>
 
+                  {selectedPayment?.relatedUser && (
+                    <div className="flex justify-between items-center pt-2 border-t border-border/40">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <Building2 className="w-3.5 h-3.5" />
+                        {selectedPayment.amount > 0 ? "Sender" : "Recipient"}
+                      </span>
+                      <span className="font-bold text-sm text-foreground">
+                        {selectedPayment.relatedUser.userDetails?.firstName 
+                          ? `${selectedPayment.relatedUser.userDetails.firstName} ${selectedPayment.relatedUser.userDetails.lastName || ""}`
+                          : selectedPayment.relatedUser.username}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-center pt-2 border-t border-border/40">
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                       <Wallet className="w-3.5 h-3.5" />
@@ -401,16 +442,7 @@ export default function PaymentHistoryPage() {
                 </div>
               </div>
 
-              <DrawerFooter className="border-t border-border/60 p-6 sm:flex-row sm:justify-end gap-3 bg-muted/5">
-                <Button variant="outline" className="flex-1 rounded-xl h-12 font-bold">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share Receipt
-                </Button>
-                <Button variant="outline" className="flex-1 rounded-xl h-12 font-bold">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download PDF
-                </Button>
-              </DrawerFooter>
+
             </div>
           </DrawerContent>
         </Drawer>

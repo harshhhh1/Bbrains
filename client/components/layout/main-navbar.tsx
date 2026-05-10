@@ -177,7 +177,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-2 md:gap-3">
+                <div className="flex flex-1 items-center justify-end gap-2 md:gap-3">
                     {user?.isImpersonating && (
                         <Button
                             variant="outline"

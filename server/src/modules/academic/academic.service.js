@@ -381,6 +381,7 @@ const getMySubmissions = async (userId) => {
                     dueDate: true,
                     file: true,
                     rewardPoints: true,
+                    rewardCoins: true,
                     courseId: true,
                     course: {
                         select: {

@@ -5,7 +5,6 @@ import {
   Calendar, 
   Plus, 
   Search, 
-  Filter, 
   Loader2, 
 } from "lucide-react";
 import { eventApi, Event } from "@/services/api/client";
@@ -89,9 +88,6 @@ export function EventsClient() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button variant="outline" size="icon" className="h-14 w-14 rounded-2xl shrink-0">
-          <Filter className="h-5 w-5" />
-        </Button>
       </div>
 
       {loading ? (

@@ -39,6 +39,7 @@ export function MyTasksCard() {
         const enrichedAssignments = assignmentResponse.data.map((assignment) => ({
           ...assignment,
           rewardPoints: assignment.rewardPoints ?? 0,
+          rewardCoins: assignment.rewardCoins ?? 0,
           submission: submissionsMap.get(assignment.id) || undefined,
         })).slice(0, 3);
 
@@ -136,6 +137,14 @@ export function MyTasksCard() {
                         <span className="text-[10px] font-bold text-brand-orange bg-brand-orange/10 px-1.5 py-0.5 rounded-md">
                           {getDueDateLabel(task.dueDate)}
                         </span>
+                        <span className="text-[10px] font-bold text-green-600 bg-green-500/10 px-1.5 py-0.5 rounded-md">
+                          {task.rewardPoints} XP
+                        </span>
+                        {Number(task.rewardCoins ?? 0) > 0 && (
+                          <span className="text-[10px] font-bold text-yellow-600 bg-yellow-500/10 px-1.5 py-0.5 rounded-md">
+                            {task.rewardCoins} Coins
+                          </span>
+                        )}
                         <span className="text-[10px] text-muted-foreground font-medium">
                           {task.course?.name || "General"}
                         </span>
