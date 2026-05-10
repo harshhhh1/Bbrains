@@ -1,0 +1,51 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import React from "react";
+import { UserCard } from "@/features/users/ui/UserCard";
+import { Loader2, Users } from "lucide-react";
+
+export function UsersGrid({
+  users,
+  loading,
+  onEdit,
+  onDelete,
+  onManageRoles,
+  onView,
+}) {
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+      </div>
+    );
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 rounded-2xl border border-dashed border-border/60 bg-muted/20">
+        <Users className="mb-4 h-12 w-12 text-muted-foreground/30" />
+        <h3 className="text-lg font-semibold">No users found</h3>
+        <p className="text-sm text-muted-foreground">
+          Try adjusting your filters or search query.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col rounded-2xl border border-border/50 bg-muted/20 overflow-hidden">
+      {users.map((user, index) => (
+        <UserCard
+          key={user.id}
+          user={user}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onManageRoles={onManageRoles}
+          onView={onView}
+          isLast={index === users.length - 1}
+        />
+      ))}
+    </div>
+  );
+}
