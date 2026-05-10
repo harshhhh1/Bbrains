@@ -20,7 +20,7 @@ function fmtDate(value: string) {
 }
 
 function assessmentLabel(type: "test" | "exam") {
-  return type === "exam" ? "Main Exam" : "Class Test";
+  return "Class Test";
 }
 
 function averagePercentage(assessment: Assessment) {

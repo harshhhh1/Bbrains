@@ -44,7 +44,6 @@ export function AssessmentCreationForm({
           </SelectTrigger>
           <SelectContent className="rounded-xl border-border/60">
             <SelectItem value="test">Class Test</SelectItem>
-            <SelectItem value="exam">Main Exam</SelectItem>
           </SelectContent>
         </Select>
       </div>

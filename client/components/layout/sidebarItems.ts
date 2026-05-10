@@ -25,7 +25,6 @@ export const sidebarItems = [
     icon: "Book",
     access: ["student", "teacher", "admin", "manager"],
   },
-  // { title: "Results", url: "/results", icon: "Trophy", access: ["student"] },
   {
     title: "Leaderboard",
     url: "/leaderboard",

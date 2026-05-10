@@ -6,7 +6,6 @@ import { AcademicsControls } from "@/features/academics/ui/AcademicsControls";
 import { AcademicsHeader } from "@/features/academics/ui/AcademicsHeader";
 import { AcademicsLoadingState } from "@/features/academics/ui/AcademicsLoadingState";
 import { CoursesTable } from "@/features/academics/ui/CoursesTable";
-import { TeacherAssessmentWorkspace } from "@/features/assignments/ui/TeacherAssessmentWorkspace";
 import { DeleteDialog } from "@/features/academics/ui/DeleteDialog";
 import { CourseFormModal } from "@/features/academics/course-form";
 import { useAcademics } from "@/features/academics/model/use-academics";
@@ -73,10 +72,6 @@ export default function AcademicsPage() {
 
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="assessments" className="mt-0">
-          <TeacherAssessmentWorkspace />
         </TabsContent>
       </Tabs>
 

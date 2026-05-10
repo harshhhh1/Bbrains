@@ -16,7 +16,6 @@ export function AcademicsControls({ tab, search, onSearchChange, onAddClick, can
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <TabsList>
         <TabsTrigger value="courses"><BookOpen className="w-4 h-4 mr-1" /> Courses</TabsTrigger>
-        <TabsTrigger value="assessments"><GraduationCap className="w-4 h-4 mr-1" /> Tests & Exams</TabsTrigger>
       </TabsList>
       {tab === "courses" && (
         <div className="flex gap-2">

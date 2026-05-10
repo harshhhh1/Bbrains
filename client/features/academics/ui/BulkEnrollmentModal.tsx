@@ -57,7 +57,9 @@ export function BulkEnrollmentModal({ open, onOpenChange, course, onSuccess }: B
                 setStudents(allStudentsRes.data || []);
             }
             if (enrolledStudentsRes.success) {
-                const enrolledIds = new Set((enrolledStudentsRes.data || []).map((s: any) => s.id));
+                const enrolledIds = new Set(
+                    (enrolledStudentsRes.data || []).map((s: any) => s.userId || s.user?.id || s.id)
+                );
                 setAlreadyEnrolledIds(enrolledIds);
             }
         } catch (error) {

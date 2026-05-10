@@ -73,12 +73,27 @@ export function AssessmentResultsTab({
     try {
       setLoading(true)
       const [studentsRes, examsRes] = await Promise.all([
-        examApi.getCourseStudents(courseId),
+        examApi.getExamCourseStudents(courseId),
         examApi.getTeacherExams(),
       ])
 
       if (studentsRes.success && studentsRes.data) {
-        setStudents(Array.isArray(studentsRes.data) ? studentsRes.data : [])
+        const studentList = (Array.isArray(studentsRes.data) ? studentsRes.data : [])
+          .map((student: any) => {
+            // Handle both flat user objects and nested enrollment objects
+            const user = student.user || student;
+            return {
+              ...user,
+              id: user.id || student.userId || student.id,
+              username: user.username || "",
+              userDetails: user.userDetails || {
+                firstName: user.firstName || "",
+                lastName: user.lastName || ""
+              }
+            };
+          })
+          .filter((s: any) => s.id);
+        setStudents(studentList);
       }
 
       if (examsRes.success && examsRes.data) {
