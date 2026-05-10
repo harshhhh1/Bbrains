@@ -41,7 +41,7 @@ export function GradingTable({
           </TableRow>
         </TableHeader>
         <TableBody className="divide-y divide-border/40">
-          {students.map((student) => {
+          {students.map((student, index) => {
             const row = rows.find((entry) => entry.studentId === student.id) || {
               studentId: student.id,
               marksObtained: "",
@@ -49,7 +49,7 @@ export function GradingTable({
             };
 
             return (
-              <TableRow key={student.id} className="group hover:bg-muted/10 transition-colors">
+              <TableRow key={student.id || index} className="group hover:bg-muted/10 transition-colors">
                 <TableCell>
                   <div>
                     <p className="font-bold text-foreground text-sm">{personName(student)}</p>

@@ -111,6 +111,28 @@ export const awardXpToUser = async (userId, amount) => {
     return xpRecord;
 };
 
+export const deductXpFromUser = async (userId, amount) => {
+    const xpRecord = await prisma.xp.findUnique({ where: { userId } });
+    
+    if (!xpRecord || xpRecord.xp < amount) {
+        return xpRecord || { xp: 0, level: 1 };
+    }
+    
+    const updated = await prisma.xp.update({
+        where: { userId },
+        data: { xp: { decrement: amount } }
+    });
+
+    await createNotification(
+        userId,
+        'XP Deducted',
+        `${amount} XP has been removed from your account.`,
+        'achievement'
+    );
+
+    return updated;
+};
+
 export const getAllLevels = async () => {
     return await prisma.level.findMany({ orderBy: { levelNumber: 'asc' } });
 };

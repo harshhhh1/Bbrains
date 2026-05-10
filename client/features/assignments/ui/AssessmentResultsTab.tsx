@@ -231,7 +231,7 @@ export function AssessmentResultsTab({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {students.map((student) => {
+            {students.map((student, index) => {
               // Count how many exams this student has results for
               const completedExams = exams.filter((exam) =>
                 exam.results?.some((r) => r.studentId === student.id)
@@ -239,7 +239,7 @@ export function AssessmentResultsTab({
 
               return (
                 <Card
-                  key={student.id}
+                  key={student.id || index}
                   className="rounded-2xl border-border/60 bg-card/50 shadow-sm hover:shadow-md hover:border-primary/20 transition-all group cursor-pointer"
                   onClick={() => openDrawer(student)}
                 >

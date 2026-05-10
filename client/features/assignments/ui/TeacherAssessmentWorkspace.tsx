@@ -313,8 +313,8 @@ export function TeacherAssessmentWorkspace() {
                         <SelectValue placeholder="Select class" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-border/60">
-                        {courses.map((c) => (
-                          <SelectItem key={c.id} value={String(c.id)}>
+                        {courses.map((c, index) => (
+                          <SelectItem key={c.id || index} value={String(c.id)}>
                             {c.name}
                             {c.standard ? ` (${c.standard})` : ""}
                           </SelectItem>
@@ -343,9 +343,9 @@ export function TeacherAssessmentWorkspace() {
                         />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-border/60">
-                        {semesters.map((s) => (
+                        {semesters.map((s, index) => (
                           <SelectItem
-                            key={s.semesterNumber}
+                            key={s.semesterNumber || index}
                             value={String(s.semesterNumber)}
                           >
                             Semester {s.semesterNumber} ({s.subjects.length}{" "}
@@ -376,8 +376,8 @@ export function TeacherAssessmentWorkspace() {
                         />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-border/60">
-                        {subjects.map((s) => (
-                          <SelectItem key={s.code} value={s.code}>
+                        {subjects.map((s, index) => (
+                          <SelectItem key={s.code || index} value={s.code}>
                             {s.name} ({s.code}) — Max: {s.examTotalMarks}
                           </SelectItem>
                         ))}
@@ -468,9 +468,9 @@ export function TeacherAssessmentWorkspace() {
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {exams.map((exam) => (
+                  {exams.map((exam, index) => (
                     <div
-                      key={exam.id}
+                      key={exam.id || index}
                       className="flex flex-col gap-4 rounded-[2rem] border border-border/60 bg-muted/10 p-6 lg:flex-row lg:items-center lg:justify-between hover:bg-muted/20 transition-colors group"
                     >
                       <div className="space-y-3">

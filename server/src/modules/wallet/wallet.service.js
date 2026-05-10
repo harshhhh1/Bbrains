@@ -255,6 +255,45 @@ const awardCoinsToUser = async (userId, amount, reason = "System Reward") => {
     });
 };
 
+const deductCoinsFromUser = async (userId, amount, reason = "System Deduction") => {
+    return await prisma.$transaction(async (tx) => {
+        const wallet = await tx.wallet.findUnique({ where: { userId } });
+        
+        if (!wallet || wallet.balance < Number(amount)) {
+            throw new Error("Insufficient balance");
+        }
+        
+        await tx.wallet.update({
+            where: { userId },
+            data: { balance: { decrement: Number(amount) } }
+        });
+
+        const transaction = await tx.transactionHistory.create({
+            data: {
+                userId,
+                recordedById: null,
+                amount: Number(amount),
+                type: 'debit',
+                category: 'reward',
+                status: 'success',
+                paymentMode: 'wallet',
+                primaryRecord: true,
+                note: reason
+            }
+        });
+
+        await createNotification(
+            userId,
+            'Coins Deducted',
+            `${amount} coins removed: ${reason}`,
+            'finance',
+            transaction.id.toString()
+        );
+
+        return transaction;
+    });
+};
+
 export { 
     transferFunds, 
     getTransactionHistory, 
@@ -263,5 +302,6 @@ export {
     getSentRequests, 
     getIncomingRequestsList, 
     respondToMoneyRequest,
-    awardCoinsToUser
+    awardCoinsToUser,
+    deductCoinsFromUser
 };

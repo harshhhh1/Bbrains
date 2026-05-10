@@ -215,8 +215,8 @@ export function ResultEntryDrawer({
                 <SelectValue placeholder="Choose an exam…" />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-border/60">
-                {exams.map((exam) => (
-                  <SelectItem key={exam.id} value={String(exam.id)}>
+                {exams.map((exam, index) => (
+                  <SelectItem key={exam.id || index} value={String(exam.id)}>
                     <span className="font-bold">{exam.subjectName}</span>
                     <span className="text-muted-foreground ml-2 text-xs">
                       ({exam.topic} • Sem {exam.semesterNumber})
@@ -238,9 +238,9 @@ export function ResultEntryDrawer({
               </div>
 
               <div className="space-y-3">
-                {subjectFields.map((field) => (
+                {subjectFields.map((field, index) => (
                   <div
-                    key={field.code}
+                    key={field.code || index}
                     className="flex items-center gap-3 p-4 rounded-xl border border-border/40 bg-background"
                   >
                     <div className="flex-1 min-w-0">

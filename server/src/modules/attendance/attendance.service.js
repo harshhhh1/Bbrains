@@ -1,6 +1,12 @@
 import prisma from '../../utils/prisma.js';
 import { createNotification } from '../notification/notification.service.js';
+import { awardXpToUser, deductXpFromUser } from '../xp/xp.service.js';
+import { awardCoinsToUser, deductCoinsFromUser } from '../wallet/wallet.service.js';
 import { ForbiddenError } from '../../utils/errors.js';
+
+const ATTENDANCE_REWARD_XP = 50;
+const ATTENDANCE_REWARD_COINS = 100;
+const ATTENDANCE_REWARD_REASON = 'Daily attendance reward';
 
 const normalizeDate = (value) => {
     const dt = new Date(value);
@@ -207,6 +213,43 @@ export const markAttendanceForStudent = async (studentId, date, status, markedBy
         result.id.toString()
     );
 
+    // Award XP and coins reward for present status
+    const wasPresent = existing?.status === 'present';
+    if (status === 'present' && !wasPresent) {
+        const existingReward = await prisma.transactionHistory.findFirst({
+            where: {
+                userId: studentId,
+                note: { contains: ATTENDANCE_REWARD_REASON },
+                createdAt: {
+                    gte: new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
+                }
+            }
+        });
+
+        if (!existingReward) {
+            await awardXpToUser(studentId, ATTENDANCE_REWARD_XP);
+            await awardCoinsToUser(studentId, ATTENDANCE_REWARD_COINS, ATTENDANCE_REWARD_REASON);
+        }
+    }
+
+    // Remove reward if marked absent after being present
+    if (wasPresent && status !== 'present') {
+        const existingReward = await prisma.transactionHistory.findFirst({
+            where: {
+                userId: studentId,
+                note: { contains: ATTENDANCE_REWARD_REASON },
+                createdAt: {
+                    gte: new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
+                }
+            }
+        });
+
+        if (existingReward) {
+            await deductXpFromUser(studentId, ATTENDANCE_REWARD_XP);
+            await deductCoinsFromUser(studentId, ATTENDANCE_REWARD_COINS, 'Attendance marked absent');
+        }
+    }
+
     return result;
 };
 
@@ -267,6 +310,52 @@ export const markAttendanceForStudents = async (studentIds, date, status, marked
             )
         )
     );
+
+    // Award XP and coins rewards for present status
+    if (status === 'present') {
+        for (const studentId of ids) {
+            const wasPresent = existingByUserId.get(studentId)?.status === 'present';
+            if (!wasPresent) {
+                const existingReward = await prisma.transactionHistory.findFirst({
+                    where: {
+                        userId: studentId,
+                        note: { contains: ATTENDANCE_REWARD_REASON },
+                        createdAt: {
+                            gte: new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
+                        }
+                    }
+                });
+
+                if (!existingReward) {
+                    await awardXpToUser(studentId, ATTENDANCE_REWARD_XP);
+                    await awardCoinsToUser(studentId, ATTENDANCE_REWARD_COINS, ATTENDANCE_REWARD_REASON);
+                }
+            }
+        }
+    }
+
+    // Remove rewards if marked absent after being present
+    if (status !== 'present') {
+        for (const studentId of ids) {
+            const wasPresent = existingByUserId.get(studentId)?.status === 'present';
+            if (wasPresent) {
+                const existingReward = await prisma.transactionHistory.findFirst({
+                    where: {
+                        userId: studentId,
+                        note: { contains: ATTENDANCE_REWARD_REASON },
+                        createdAt: {
+                            gte: new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
+                        }
+                    }
+                });
+
+                if (existingReward) {
+                    await deductXpFromUser(studentId, ATTENDANCE_REWARD_XP);
+                    await deductCoinsFromUser(studentId, ATTENDANCE_REWARD_COINS, 'Attendance marked absent');
+                }
+            }
+        }
+    }
 
     return results;
 };
