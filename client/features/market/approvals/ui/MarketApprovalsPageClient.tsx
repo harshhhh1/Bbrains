@@ -12,6 +12,7 @@ import type { Product } from "@/features/market/approvals/types"
 import { fetchPendingProducts, approveRejectProduct } from "@/features/market/approvals/api/data"
 import { dashboardApi, type User as ApiUser } from "@/services/api/client"
 import { useHasPermission } from "@/components/providers/permissions-provider"
+import { DashboardContent } from "@/components/dashboard-content"
 
 interface PendingProduct extends Product {
     creatorName: string
@@ -103,21 +104,22 @@ export default function ApprovalsPage() {
     }
 
     return (
-        <div className="flex h-full w-full flex-col overflow-hidden bg-background">
-            <div className="shrink-0 space-y-2 border-b border-border bg-background px-4 py-4">
-                <div className="flex items-center gap-3">
-                    <Link href="/market">
-                        <Button variant="ghost" size="icon" className="size-8">
-                            <ArrowLeft className="size-4" />
-                        </Button>
-                    </Link>
-                    <ShieldCheck className="size-5 text-muted-foreground" />
-                    <h1 className="text-base font-bold text-foreground">Product Approvals</h1>
-                    <Badge variant="secondary" className="text-[10px]">
-                        {products.length} pending
-                    </Badge>
+        <DashboardContent className="max-w-4xl mx-auto">
+            <div className="flex h-full w-full flex-col overflow-hidden">
+                <div className="shrink-0 space-y-2 border-b border-border px-4 py-4">
+                    <div className="flex items-center gap-3">
+                        <Link href="/market">
+                            <Button variant="ghost" size="icon" className="size-8">
+                                <ArrowLeft className="size-4" />
+                            </Button>
+                        </Link>
+                        <ShieldCheck className="size-5 text-muted-foreground" />
+                        <h1 className="text-base font-bold text-foreground">Product Approvals</h1>
+                        <Badge variant="secondary" className="text-[10px]">
+                            {products.length} pending
+                        </Badge>
+                    </div>
                 </div>
-            </div>
 
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted">
                 {products.length > 0 ? (
@@ -149,7 +151,7 @@ export default function ApprovalsPage() {
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                className="gap-1.5 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950"
+                                                className="gap-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-700 dark:hover:text-red-300"
                                                 disabled={isProcessing}
                                                 onClick={() => handleDecision(product.id, "rejected")}
                                             >
@@ -187,6 +189,6 @@ export default function ApprovalsPage() {
                     </div>
                 )}
             </div>
-        </div>
+        </DashboardContent>
     )
 }

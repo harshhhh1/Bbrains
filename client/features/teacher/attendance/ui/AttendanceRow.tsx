@@ -93,9 +93,9 @@ function AttendanceToggle({ status, active, onClick, disabled }: {
     disabled?: boolean
 }) {
     const config = {
-        present: { icon: Check, activeClass: "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/20", hoverClass: "hover:border-emerald-500/50 hover:bg-emerald-500/10" },
-        absent: { icon: X, activeClass: "bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/20", hoverClass: "hover:border-rose-500/50 hover:bg-rose-500/10" },
-        late: { icon: Clock, activeClass: "bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-500/20", hoverClass: "hover:border-amber-500/50 hover:bg-amber-500/10" }
+        present: { icon: Check, activeClass: "bg-green-500 text-white border-green-500 shadow-lg shadow-green-500/20 dark:bg-green-600", hoverClass: "hover:border-green-500/50 hover:bg-green-500/10" },
+        absent: { icon: X, activeClass: "bg-red-500 text-white border-red-500 shadow-lg shadow-red-500/20 dark:bg-red-600", hoverClass: "hover:border-red-500/50 hover:bg-red-500/10" },
+        late: { icon: Clock, activeClass: "bg-yellow-500 text-white border-yellow-500 shadow-lg shadow-yellow-500/20 dark:bg-yellow-600", hoverClass: "hover:border-yellow-500/50 hover:bg-yellow-500/10" }
     }
     
     const { icon: Icon, activeClass, hoverClass } = config[status]

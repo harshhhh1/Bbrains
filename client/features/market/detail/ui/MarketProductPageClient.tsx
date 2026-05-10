@@ -113,14 +113,14 @@ export default function MarketProductPageClient() {
       setSubmittingReview(true);
       const resp = await reviewApi.createReview(product.id, { rating: newRating, comment: newComment });
       if (resp.success) {
-        toast.success("Verdict posted");
+        toast.success("Review posted");
         setShowReviewForm(false);
         setNewRating(0);
         setNewComment("");
         fetchReviews(product.id);
       }
     } catch (e) {
-      toast.error("Failed to post verdict");
+      toast.error("Failed to post review");
     } finally {
       setSubmittingReview(false);
     }
@@ -162,7 +162,7 @@ export default function MarketProductPageClient() {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Directory...</p>
+        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Loading product details...</p>
       </div>
     );
   }
@@ -182,7 +182,7 @@ export default function MarketProductPageClient() {
   const isOutOfStock = product.stock <= 0;
   const isLowStock = product.stock > 0 && product.stock <= 5;
   const sellerDetails = product.creator?.userDetails;
-  const sellerName = sellerDetails?.firstName ? `${sellerDetails.firstName} ${sellerDetails.lastName || ""}` : product.creator?.username || "Verified Agent";
+  const sellerName = sellerDetails?.firstName ? `${sellerDetails.firstName} ${sellerDetails.lastName || ""}` : product.creator?.username || "Verified Buyer";
 
   return (
     <DashboardContent className="mx-auto w-full max-w-[1400px] p-6 md:p-12 space-y-12">
@@ -267,9 +267,6 @@ export default function MarketProductPageClient() {
               </Badge>
               <div className="hidden md:flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-card hover:bg-muted">
-                  <Heart className="w-5 h-5 text-muted-foreground" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-card hover:bg-muted">
                   <Share2 className="w-5 h-5 text-muted-foreground" />
                 </Button>
               </div>
@@ -283,25 +280,25 @@ export default function MarketProductPageClient() {
                   <span className="text-sm font-black text-foreground">{product.rating?.toFixed(1) || "0.0"}</span>
                 </div>
                 <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
-                <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{product.reviewCount || 0} Verifications</span>
+                <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">{product.reviewCount || 0} Reviews</span>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               {isOutOfStock ? (
-                <Badge variant="destructive" className="bg-red-500/10 text-red-500 border-red-500/20 text-[10px] font-black uppercase tracking-widest px-3 py-1 h-8 rounded-xl">Out of Stock</Badge>
+                <Badge variant="destructive" className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 text-[10px] font-black uppercase tracking-widest px-3 py-1 h-8 rounded-xl">Out of Stock</Badge>
               ) : (
-                <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 px-4 py-1.5 rounded-xl border border-emerald-500/20">
+                <div className="flex items-center gap-2 bg-green-500/10 text-green-600 dark:text-green-400 px-4 py-1.5 rounded-xl border border-green-500/20">
                   <CheckCircle2 className="w-4 h-4" />
                   <span className="text-[10px] font-black uppercase tracking-widest">Authenticated & In Stock</span>
                 </div>
               )}
-              {isLowStock && !isOutOfStock && <span className="text-xs font-bold text-amber-500 animate-pulse">Low Stock: {product.stock} available</span>}
+              {isLowStock && !isOutOfStock && <span className="text-xs font-bold text-yellow-600 dark:text-yellow-400 animate-pulse">Low Stock: {product.stock} available</span>}
             </div>
 
             <div className="p-10 rounded-[2.5rem] bg-card border border-border shadow-inner flex flex-col gap-1 relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl rounded-full translate-x-16 -translate-y-16 group-hover:bg-primary/10 transition-colors" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 ml-1">Item Value</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1 ml-1">Price</span>
               <div className="flex items-baseline gap-3">
                 <span className="text-7xl font-black text-foreground tracking-tighter tabular-nums leading-none">{product.price}</span>
                 <span className="text-xl font-black text-primary uppercase tracking-widest">B-Coins</span>
@@ -309,9 +306,9 @@ export default function MarketProductPageClient() {
             </div>
 
             {alreadyOwned && product.productType === 'digital' && (
-              <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-4">
-                 <ShieldCheck className="w-6 h-6 text-emerald-500" />
-                 <p className="text-xs font-bold text-emerald-500 leading-relaxed">This digital record is already assigned to your account and is accessible in your Inventory.</p>
+              <div className="p-5 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center gap-4">
+                 <ShieldCheck className="w-6 h-6 text-green-600 dark:text-green-400" />
+                 <p className="text-xs font-bold text-green-600 dark:text-green-400 leading-relaxed">This digital record is already assigned to your account and is accessible in your Inventory.</p>
               </div>
             )}
 
@@ -362,22 +359,7 @@ export default function MarketProductPageClient() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-               <div className="p-5 rounded-[2rem] bg-muted/20 border border-border/50 flex flex-col gap-3">
-                  <Truck className="w-6 h-6 text-primary" />
-                  <div>
-                    <p className="text-[10px] font-black text-foreground uppercase tracking-widest mb-1">Instant Fulfillment</p>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">Item delivery completes immediately after payment.</p>
-                  </div>
-               </div>
-               <div className="p-5 rounded-[2rem] bg-muted/20 border border-border/50 flex flex-col gap-3">
-                  <RefreshCcw className="w-6 h-6 text-emerald-500" />
-                  <div>
-                    <p className="text-[10px] font-black text-foreground uppercase tracking-widest mb-1">Secure Payment</p>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">Secured via end-to-end secure verification.</p>
-                  </div>
-               </div>
-            </div>
+
           </div>
         </div>
       </div>
@@ -386,10 +368,10 @@ export default function MarketProductPageClient() {
         <div className="space-y-6">
           <div className="flex items-center gap-4">
               <div className="h-8 w-2 rounded-full bg-primary" />
-              <h2 className="text-3xl font-black text-foreground tracking-tight">Technical Specifications</h2>
+              <h2 className="text-3xl font-black text-foreground tracking-tight">Product Description</h2>
           </div>
           <p className="text-xl text-muted-foreground leading-relaxed font-medium">
-             {product.description || "The provider has not supplied detailed technical specifications for this unit."}
+             {product.description || "No additional details provided for this item."}
           </p>
         </div>
 
@@ -397,11 +379,11 @@ export default function MarketProductPageClient() {
           <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                   <div className="h-8 w-2 rounded-full bg-primary" />
-                  <h2 className="text-3xl font-black text-foreground tracking-tight">Agent Verifications</h2>
+                  <h2 className="text-3xl font-black text-foreground tracking-tight">User Reviews</h2>
               </div>
               {canReview && !showReviewForm && (
                   <Button variant="outline" className="rounded-xl border-primary text-primary hover:bg-primary/5 font-black uppercase tracking-widest text-[10px] h-10 px-6" onClick={() => setShowReviewForm(true)}>
-                      Post Verdict
+                      Write a Review
                   </Button>
               )}
           </div>
@@ -413,7 +395,7 @@ export default function MarketProductPageClient() {
                         <div className="flex items-center justify-center md:justify-start gap-1.5 pb-2">
                           {[1, 2, 3, 4, 5].map(s => <Star key={s} className={cn("w-5 h-5", s <= Math.round(reviewStats.averageRating) ? "text-primary fill-primary" : "text-muted-foreground/30")} />)}
                         </div>
-                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{reviewStats.totalReviews} Total Verifications</p>
+                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{reviewStats.totalReviews} Total Reviews</p>
                   </div>
                   <div className="md:col-span-8 flex flex-col gap-3">
                       {[5, 4, 3, 2, 1].map((star) => {
@@ -436,7 +418,7 @@ export default function MarketProductPageClient() {
           {showReviewForm && (
               <div className="p-10 rounded-[2.5rem] bg-card border-2 border-primary/20 animate-in slide-in-from-top-4 duration-500 space-y-8 shadow-2xl">
                   <div className="flex items-center gap-6">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Assign Rating</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Your Rating</span>
                       <div className="flex gap-3">
                           {[1, 2, 3, 4, 5].map(s => (
                               <button key={s} onClick={() => setNewRating(s)} className="group transition-transform active:scale-90">
@@ -447,15 +429,15 @@ export default function MarketProductPageClient() {
                   </div>
                   <textarea
                       className="w-full h-40 p-8 rounded-[2rem] bg-muted/40 border border-border text-foreground placeholder:text-muted-foreground/40 text-lg font-medium outline-none focus:border-primary/50 transition-colors resize-none shadow-inner"
-                      placeholder="Post your detailed assessment of this item..."
+                      placeholder="Share your thoughts on this product..."
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                   />
                   <div className="flex gap-4">
                       <Button size="lg" onClick={handleSubmitReview} disabled={newRating === 0 || !newComment.trim() || submittingReview} className="rounded-2xl bg-primary px-10 h-14 font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20 active:scale-95">
-                          {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : "Post Verdict"}
+                          {submittingReview ? <Loader2 className="w-5 h-5 animate-spin" /> : "Submit Review"}
                       </Button>
-                      <Button variant="ghost" onClick={() => { setShowReviewForm(false); setNewRating(0); setNewComment(""); }} className="rounded-2xl px-8 h-14 font-bold text-muted-foreground uppercase text-xs tracking-widest">Abort</Button>
+                      <Button variant="ghost" onClick={() => { setShowReviewForm(false); setNewRating(0); setNewComment(""); }} className="rounded-2xl px-8 h-14 font-bold text-muted-foreground uppercase text-xs tracking-widest">Cancel</Button>
                   </div>
               </div>
           )}
@@ -464,7 +446,7 @@ export default function MarketProductPageClient() {
               {reviews.length === 0 ? (
                   <div className="py-24 text-center bg-muted/10 rounded-[3rem] border-2 border-dashed border-border/40">
                         <Star className="w-16 h-16 text-muted-foreground/10 mx-auto mb-4" />
-                        <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-xs">List Empty: No Verdicts Recorded</p>
+                        <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-xs">No reviews yet</p>
                   </div>
               ) : (
                   reviews.map((rev) => (
@@ -475,7 +457,7 @@ export default function MarketProductPageClient() {
                                       {rev.user?.userDetails?.firstName?.[0] || rev.user?.username?.[0] || "?"}
                                   </div>
                                   <div>
-                                      <p className="font-black text-foreground text-lg tracking-tight">{rev.user?.userDetails?.firstName ? `${rev.user.userDetails.firstName} ${rev.user.userDetails.lastName || ""}` : rev.user?.username || "Verified Agent"}</p>
+                                      <p className="font-black text-foreground text-lg tracking-tight">{rev.user?.userDetails?.firstName ? `${rev.user.userDetails.firstName} ${rev.user.userDetails.lastName || ""}` : rev.user?.username || "Verified Buyer"}</p>
                                       <div className="flex items-center gap-4 mt-1">
                                           <div className="flex gap-0.5">
                                               {[1,2,3,4,5].map(s => <Star key={s} className={cn("w-3.5 h-3.5", s <= rev.rating ? "text-primary fill-primary" : "text-muted-foreground/20")} />)}
@@ -485,7 +467,7 @@ export default function MarketProductPageClient() {
                                       </div>
                                   </div>
                               </div>
-                              <Badge variant="outline" className="border-border text-muted-foreground uppercase font-black tracking-widest text-[9px] px-3 py-1 rounded-lg">Verified Rank</Badge>
+                              <Badge variant="outline" className="border-border text-muted-foreground uppercase font-black tracking-widest text-[9px] px-3 py-1 rounded-lg">Verified Purchase</Badge>
                           </div>
                           <p className="text-lg text-muted-foreground leading-relaxed font-medium pl-1">{rev.comment}</p>
                       </div>

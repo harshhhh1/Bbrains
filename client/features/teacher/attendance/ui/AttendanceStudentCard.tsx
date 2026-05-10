@@ -124,20 +124,20 @@ function AttendanceOption({ status, active, onClick, disabled }: {
         present: { 
           icon: Check, 
           label: "Present",
-          activeClass: "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 border-emerald-500", 
-          inactiveClass: "text-emerald-600 hover:bg-emerald-500/10 border-transparent"
+          activeClass: "bg-green-500 text-white shadow-lg shadow-green-500/30 border-green-500 dark:bg-green-600", 
+          inactiveClass: "text-green-600 dark:text-green-400 hover:bg-green-500/10 border-transparent"
         },
         absent: { 
           icon: X, 
           label: "Absent",
-          activeClass: "bg-rose-500 text-white shadow-lg shadow-rose-500/30 border-rose-500", 
-          inactiveClass: "text-rose-600 hover:bg-rose-500/10 border-transparent"
+          activeClass: "bg-red-500 text-white shadow-lg shadow-red-500/30 border-red-500 dark:bg-red-600", 
+          inactiveClass: "text-red-600 dark:text-red-400 hover:bg-red-500/10 border-transparent"
         },
         late: { 
           icon: Clock, 
           label: "Late",
-          activeClass: "bg-amber-500 text-white shadow-lg shadow-amber-500/30 border-amber-500", 
-          inactiveClass: "text-amber-600 hover:bg-amber-500/10 border-transparent"
+          activeClass: "bg-yellow-500 text-white shadow-lg shadow-yellow-500/30 border-yellow-500 dark:bg-yellow-600", 
+          inactiveClass: "text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/10 border-transparent"
         }
     }
     

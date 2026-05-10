@@ -170,13 +170,13 @@ export default function MyProductsPage() {
   const statusColor = (status: string) => {
     switch (status) {
       case "approved":
-        return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
       case "pending":
-        return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+        return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20";
       case "rejected":
-        return "bg-rose-500/10 text-rose-500 border-rose-500/20";
+        return "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20";
       default:
-        return "bg-slate-500/10 text-slate-500 border-slate-500/20";
+        return "bg-muted text-muted-foreground border-border";
     }
   };
 
@@ -271,9 +271,9 @@ export default function MyProductsPage() {
                   </div>
 
                   {product.approval === "rejected" && product.metadata?.rejectionReason && (
-                    <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3">
-                      <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-rose-500">Reason for Rejection</p>
-                      <p className="text-xs font-medium leading-relaxed text-rose-400/90">
+                    <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3">
+                      <p className="mb-1 text-[10px] font-black uppercase tracking-widest text-red-600 dark:text-red-400">Reason for Rejection</p>
+                      <p className="text-xs font-medium leading-relaxed text-red-500/90 dark:text-red-400/90">
                         {product.metadata.rejectionReason}
                       </p>
                     </div>

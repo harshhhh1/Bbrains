@@ -140,62 +140,75 @@ export function ProductsApprovals() {
                     </div>
                 </Card>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="space-y-4">
                     {products.map((product) => {
                         const productType = product.metadata?.productType || product.productType || "physical";
 
                         return (
-                            <Card key={product.id} className="group overflow-hidden rounded-[1.5rem] border-border/40 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col">
-                                <div className="aspect-[4/3] relative bg-muted/20 flex flex-col items-center justify-center overflow-hidden border-b border-border/20 p-4">
-                                    {product.image ? (
-                                        <Image 
-                                            src={product.image} 
-                                            alt={product.name} 
-                                            fill 
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                    ) : (
-                                        <Package className="size-12 text-muted-foreground/30" />
-                                    )}
-                                    <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
-                                        <Badge className="font-bold text-[10px] uppercase tracking-wider bg-black/60 text-white backdrop-blur-md border-none">
-                                            {productType}
-                                        </Badge>
-                                    </div>
-                                </div>
-                                <CardContent className="p-5 flex flex-col flex-1">
-                                    <div className="flex items-start justify-between gap-2 mb-1">
-                                        <h3 className="font-bold text-lg leading-tight line-clamp-1 group-hover:text-brand-purple transition-colors">
-                                            {product.name}
-                                        </h3>
-                                    </div>
-                                    
-                                    <p className="text-xs text-muted-foreground font-medium mb-3">
-                                        by @{product.creator?.username || "unknown"}
-                                    </p>
-
-                                    <p className="text-sm text-foreground/80 line-clamp-2 min-h-[2.5rem] mb-4">
-                                        {product.description || <span className="italic opacity-50">No description provided.</span>}
-                                    </p>
-
-                                    <div className="grid grid-cols-2 gap-2 mb-5 py-3 border-t border-b border-border/30">
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Price</span>
-                                            <span className="font-black text-brand-orange">{fmtCurrency(product.price)}</span>
+                            <Card key={product.id} className="group overflow-hidden rounded-2xl border-border/40 shadow-sm hover:shadow-md transition-all duration-300">
+                                <CardContent className="p-0">
+                                    <div className="flex flex-col md:flex-row h-auto md:h-40">
+                                        {/* Product Image */}
+                                        <div className="relative w-full md:w-56 h-40 bg-muted/20 flex flex-col items-center justify-center overflow-hidden shrink-0 border-b md:border-b-0 md:border-r border-border/20">
+                                            {product.image ? (
+                                                <Image 
+                                                    src={product.image} 
+                                                    alt={product.name} 
+                                                    fill 
+                                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <Package className="size-10 text-muted-foreground/30" />
+                                            )}
+                                            <Badge className="absolute top-2 left-2 font-bold text-[10px] uppercase tracking-wider bg-black/60 text-white backdrop-blur-md border-none">
+                                                {productType}
+                                            </Badge>
                                         </div>
-                                        <div className="flex flex-col items-end">
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">Stock</span>
-                                            <span className="font-bold text-foreground">{product.stock}</span>
-                                        </div>
-                                    </div>
 
-                                    <div className="mt-auto pt-2">
-                                        <Button 
-                                            onClick={() => handleViewDetails(product)}
-                                            className="w-full bg-brand-purple/10 text-brand-purple hover:bg-brand-purple/20 font-bold group-hover:bg-brand-purple group-hover:text-white transition-colors"
-                                        >
-                                            View Details <ArrowRight className="ml-2 size-4" />
-                                        </Button>
+                                        {/* Content Area */}
+                                        <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
+                                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                                <div className="space-y-1.5 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="font-bold text-xl leading-tight truncate group-hover:text-brand-purple transition-colors">
+                                                            {product.name}
+                                                        </h3>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground font-medium">
+                                                        by <span className="text-foreground/70">@{product.creator?.username || "unknown"}</span>
+                                                    </p>
+                                                    <p className="text-sm text-foreground/80 line-clamp-1">
+                                                        {product.description || <span className="italic opacity-50 text-xs">No description provided.</span>}
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-4 md:gap-1 shrink-0 bg-muted/30 md:bg-transparent p-3 md:p-0 rounded-xl border border-border/30 md:border-none">
+                                                    <div className="flex flex-col md:items-end">
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground md:hidden">Price</span>
+                                                        <span className="font-black text-brand-orange text-lg">{fmtCurrency(product.price)}</span>
+                                                    </div>
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground md:hidden">Stock</span>
+                                                        <span className="text-xs font-bold text-muted-foreground">Stock: {product.stock}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t border-border/20">
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] font-bold uppercase tracking-wider">
+                                                        Pending Review
+                                                    </Badge>
+                                                </div>
+                                                <Button 
+                                                    onClick={() => handleViewDetails(product)}
+                                                    size="sm"
+                                                    className="bg-brand-purple/10 text-brand-purple hover:bg-brand-purple/20 font-bold px-6 h-9 rounded-xl transition-all group-hover:bg-brand-purple group-hover:text-white"
+                                                >
+                                                    View Details <ArrowRight className="ml-2 size-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>

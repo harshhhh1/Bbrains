@@ -166,7 +166,7 @@ export default function MarketPage() {
             <Store className="w-12 h-12 text-primary" />
             Marketplace
           </h1>
-          <p className="text-muted-foreground font-medium text-lg">Buy verified educational items and tools.</p>
+          <p className="text-muted-foreground font-medium text-lg">Discover the best tools and resources for your academic journey.</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/products">
@@ -175,7 +175,10 @@ export default function MarketPage() {
               My Inventory
             </Button>
           </Link>
-          <Button className="h-12 px-6 rounded-xl bg-secondary hover:bg-muted border border-border relative" onClick={() => setShowCart(true)}>
+          <Button 
+            className="h-12 px-6 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 relative transition-all" 
+            onClick={() => setShowCart(true)}
+          >
             <ShoppingCart className="w-4 h-4 mr-2" />
             <span className="font-black text-[10px] uppercase tracking-widest">Cart</span>
             {cartCount > 0 && (
@@ -200,7 +203,7 @@ export default function MarketPage() {
       {loading ? (
         <div className="py-40 flex flex-col items-center justify-center gap-3">
           <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Market...</p>
+          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Fetching marketplace...</p>
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="py-32 text-center bg-muted/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
@@ -209,7 +212,7 @@ export default function MarketPage() {
           <p className="text-muted-foreground font-medium mt-2">No items match your search parameters.</p>
         </div>
       ) : (
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="space-y-8">
           {filteredProducts.map((product) => (
             <MarketProductCard
               key={product.id}
@@ -250,13 +253,19 @@ export default function MarketPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-10 gap-3 justify-center">
-            <AlertDialogCancel className="h-14 px-8 rounded-2xl border-border bg-transparent text-muted-foreground font-black uppercase tracking-widest text-[10px] hover:bg-muted">Abort</AlertDialogCancel>
-            <AlertDialogAction
+            <Button 
+               variant="outline"
+               onClick={() => setShowBuyConfirm(false)}
+               className="h-14 px-8 rounded-2xl border-border bg-transparent text-muted-foreground font-black uppercase tracking-widest text-[10px] hover:bg-muted"
+            >
+              Cancel
+            </Button>
+            <Button
               onClick={() => { setShowBuyConfirm(false); setShowPinDialog(true); }}
               className="h-14 px-10 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20"
             >
-              Continue to PIN
-            </AlertDialogAction>
+              Proceed to Payment
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

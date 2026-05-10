@@ -34,6 +34,8 @@ export function useTeacherDashboard() {
   const [attendance, setAttendance] = useState<AttendanceData | null>(null);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [incomeReceived, setIncomeReceived] = useState(0);
+  const [salaryTransactions, setSalaryTransactions] = useState<Transaction[]>([]);
+  const [pendingAssignments, setPendingAssignments] = useState(0);
   const [teacherSchedule, setTeacherSchedule] = useState<WeeklyScheduleDay[]>([]);
   const [chapterProgressDraft, setChapterProgressDraft] = useState<SubjectChapterProgress[]>([]);
   const [collegeId, setCollegeId] = useState<string | number | undefined>();
@@ -44,13 +46,14 @@ export function useTeacherDashboard() {
         setLoading(true);
         setError(null);
         const client = await getAuthedClient();
-        const [dashboardResult, userResult, coursesResult, announcementsResult, transactionsResult, attendanceResult] = await Promise.allSettled([
+        const [dashboardResult, userResult, coursesResult, announcementsResult, transactionsResult, attendanceResult, assignmentsResult] = await Promise.allSettled([
           client.get<{ success: boolean; data: TeacherDashboardResponse }>("/dashboard"),
           client.get<{ success: boolean; data: TeacherDashboardUser }>("/user/me"),
           client.get<{ success: boolean; data: TeacherCourse[] }>("/courses?limit=100"),
           client.get<{ success: boolean; data: Announcement[] }>("/announcements"),
           client.get<{ success: boolean; data: Transaction[] }>("/transactions/me?limit=100&category=salary&type=credit&status=success"),
           client.get<{ success: boolean; data: AttendanceRecord[] }>("/attendance"),
+          client.get<{ success: boolean; data: any }>("/assignments?status=pending"),
         ]);
 
         if (dashboardResult.status === "rejected" && userResult.status === "rejected") {
@@ -75,6 +78,11 @@ export function useTeacherDashboard() {
         setCourses(nextCourses);
         setAnnouncements(announcementsResult.status === "fulfilled" ? (announcementsResult.value.data.data || []).slice(0, 5) : []);
         setIncomeReceived(transactionsResult.status === "fulfilled" ? (transactionsResult.value.data.data || []).reduce((sum, t) => sum + Number(t.amount || 0), 0) : 0);
+        setSalaryTransactions(transactionsResult.status === "fulfilled" ? (transactionsResult.value.data.data || []) : []);
+        
+        const assignmentsData = assignmentsResult.status === "fulfilled" ? (assignmentsResult.value.data.data || []) : [];
+        setPendingAssignments(Array.isArray(assignmentsData) ? assignmentsData.length : 0);
+        
         setAttendance(attendanceResult.status === "fulfilled" ? normalizeAttendance(attendanceResult.value.data.data || []) : normalizeAttendance([]));
         setTeacherSchedule(buildWeeklyScheduleFromCourses(nextCourses, fullName || teacherProfile?.username || "Teacher"));
         if (nextCourses.length > 0) setSelectedCourseId(String(nextCourses[0].id));
@@ -163,6 +171,8 @@ export function useTeacherDashboard() {
     attendance,
     announcements,
     incomeReceived,
+    salaryTransactions,
+    pendingAssignments,
     teacherSchedule,
     chapterProgressDraft,
     collegeId,

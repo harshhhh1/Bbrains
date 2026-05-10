@@ -56,8 +56,8 @@ export function CartDrawer({
                   <ShoppingCart className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <DrawerTitle className="text-xl font-black tracking-tight">Acquisition Cart</DrawerTitle>
-                  <DrawerDescription className="font-medium text-[10px] uppercase tracking-widest text-muted-foreground">{cartCount} unit{cartCount !== 1 ? 's' : ''} staged for transfer</DrawerDescription>
+                  <DrawerTitle className="text-xl font-black tracking-tight">Your Cart</DrawerTitle>
+                   <DrawerDescription className="font-medium text-[10px] uppercase tracking-widest text-muted-foreground">{cartCount} item{cartCount !== 1 ? 's' : ''} in your cart</DrawerDescription>
                 </div>
               </div>
               <DrawerClose asChild>
@@ -75,8 +75,8 @@ export function CartDrawer({
                    <ShoppingCart className="w-10 h-10 text-muted-foreground/10" />
                 </div>
                 <div className="space-y-1">
-                   <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40">No Records</p>
-                   <p className="text-[10px] font-bold text-muted-foreground/30">No items in cart</p>
+                    <p className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/40">Empty Cart</p>
+                    <p className="text-[10px] font-bold text-muted-foreground/30">Your cart is currently empty</p>
                 </div>
               </div>
             ) : (
@@ -131,7 +131,7 @@ export function CartDrawer({
           {cartCount > 0 && (
             <div className="p-8 border-t border-border/60 bg-muted/20 space-y-8 shadow-[0_-20px_50px_rgba(0,0,0,0.1)]">
               <div className="flex justify-between items-end px-2">
-                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Aggregate Value</span>
+                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Total Amount</span>
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl font-black text-foreground tabular-nums tracking-tighter leading-none">{cartTotal}</span>
                   <span className="text-xs font-black text-primary uppercase tracking-widest">B-Coins</span>

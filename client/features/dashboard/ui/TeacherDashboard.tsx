@@ -12,6 +12,9 @@ import { TeacherDashboardHeader } from "./teacher/TeacherDashboardHeader";
 import { ClassFocusCard } from "./teacher/ClassFocusCard";
 import { ClassProgressHub } from "./teacher/ClassProgressHub";
 import { formatCurrency } from "./teacher/utils";
+import { TeacherStatsCards } from "./teacher/TeacherStatsCards";
+import { TeacherIncomeChart } from "./teacher/TeacherIncomeChart";
+import { PendingTasksWidget } from "./teacher/PendingTasksWidget";
 
 export function TeacherDashboard() {
   const {
@@ -27,6 +30,8 @@ export function TeacherDashboard() {
     attendance,
     announcements,
     incomeReceived,
+    salaryTransactions,
+    pendingAssignments,
     teacherSchedule,
     chapterProgressDraft,
     collegeId,
@@ -50,6 +55,7 @@ export function TeacherDashboard() {
 
   return (
     <DashboardContent maxWidth="max-w-[96rem]" className="space-y-4">
+
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.85fr)]">
         <TeacherDashboardHeader 
           teacherName={teacherName}
@@ -72,21 +78,32 @@ export function TeacherDashboard() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
-        <ClassProgressHub 
-          courseLoading={courseLoading}
-          selectedCourse={selectedCourse}
-          chapterProgressDraft={chapterProgressDraft}
-          teacherSubjects={teacherSubjects}
-          savingChapterProgress={savingChapterProgress}
-          hasChapterDraftChanges={hasChapterDraftChanges}
-          onUpdateProgress={updateChapterProgress}
-          onSave={handleSaveChapterProgress}
-        />
+        <div className="space-y-4">
+          <ClassProgressHub 
+            courseLoading={courseLoading}
+            selectedCourse={selectedCourse}
+            chapterProgressDraft={chapterProgressDraft}
+            teacherSubjects={teacherSubjects}
+            savingChapterProgress={savingChapterProgress}
+            hasChapterDraftChanges={hasChapterDraftChanges}
+            onUpdateProgress={updateChapterProgress}
+            onSave={handleSaveChapterProgress}
+          />
+          
+          <TeacherIncomeChart salaryTransactions={salaryTransactions} />
+        </div>
         
-        <AnnouncementsCard 
-          initialAnnouncements={announcements} 
-          collegeId={collegeId} 
-        />
+        <div className="space-y-4">
+          <PendingTasksWidget 
+            pendingAssignments={pendingAssignments}
+            pendingAttendance={0}
+          />
+          
+          <AnnouncementsCard 
+            initialAnnouncements={announcements} 
+            collegeId={collegeId} 
+          />
+        </div>
       </div>
 
       <WeeklySchedulePanel 

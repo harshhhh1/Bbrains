@@ -68,12 +68,12 @@ export function AttendanceHistoryDrawer({
             ) : (
               <div className="space-y-3">
                 {records.map((record) => (
-                  <div key={record.id} className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-white/[0.02] hover:bg-white/[0.04] transition-all group">
+                  <div key={record.id} className="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-card hover:bg-muted/50 transition-all group">
                     <div className="flex items-center gap-4">
                       <div className={cn(
                         "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105",
-                        record.status === "present" ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20" :
-                        record.status === "absent" ? "bg-rose-500/10 text-rose-600 border border-rose-500/20" : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                        record.status === "present" ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20" :
+                        record.status === "absent" ? "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20" : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/20"
                       )}>
                         {record.status === "present" ? <Check className="h-6 w-6" /> :
                           record.status === "absent" ? <X className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
@@ -82,8 +82,8 @@ export function AttendanceHistoryDrawer({
                         <p className="font-black text-foreground text-sm">{format(new Date(record.date), "PPP")}</p>
                         <p className={cn(
                           "text-[9px] font-black uppercase tracking-[0.2em] mt-0.5",
-                          record.status === "present" ? "text-emerald-600" :
-                          record.status === "absent" ? "text-rose-600" : "text-amber-600"
+                          record.status === "present" ? "text-green-600 dark:text-green-400" :
+                          record.status === "absent" ? "text-red-600 dark:text-red-400" : "text-yellow-600 dark:text-yellow-400"
                         )}>{record.status}</p>
                         {record.notes && (
                           <p className="text-[11px] text-muted-foreground mt-2 px-3 py-1.5 bg-muted/40 rounded-lg italic border-l-2 border-primary/30 max-w-[240px]">
