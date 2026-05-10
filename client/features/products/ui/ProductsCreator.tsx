@@ -36,9 +36,9 @@ import { Package, Plus, Loader2, BarChart3, X } from "lucide-react";
 import { toast } from "sonner";
 import { marketApi, Product } from "@/services/api/client";
 import Link from "next/link";
-import { ProductCard } from "./components/ProductCard";
-import { ProductForm } from "./components/ProductForm";
-import { useProductsForm } from "./hooks/useProductsForm";
+import { ProductCard } from "../components/ProductCard";
+import { ProductForm } from "../components/ProductForm";
+import { useProductsForm } from "../hooks/useProductsForm";
 
 interface ProductFormData {
   name: string;
