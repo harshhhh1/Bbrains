@@ -121,73 +121,74 @@ export default function ApprovalsPage() {
                     </div>
                 </div>
 
-            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted">
-                {products.length > 0 ? (
-                    products.map((product) => {
-                        const isProcessing = processing === product.id
-                        return (
-                            <Card key={product.id} className="overflow-hidden transition-all hover:shadow-md">
-                                <CardContent className="p-4">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div className="min-w-0 flex-1">
-                                            <h3 className="line-clamp-1 text-sm font-bold text-foreground">
-                                                {product.name}
-                                            </h3>
-                                            <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-                                                {product.description || "No description"}
-                                            </p>
-                                            <div className="mt-2 flex items-center gap-4">
-                                                <span className="text-sm font-bold text-foreground">
-                                                    Rs.{product.price.toLocaleString()}
-                                                </span>
-                                                <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                                                    <User className="size-3" />
-                                                    {product.creatorName}
-                                                </span>
+                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted">
+                    {products.length > 0 ? (
+                        products.map((product) => {
+                            const isProcessing = processing === product.id
+                            return (
+                                <Card key={product.id} className="overflow-hidden transition-all hover:shadow-md">
+                                    <CardContent className="p-4">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                <h3 className="line-clamp-1 text-sm font-bold text-foreground">
+                                                    {product.name}
+                                                </h3>
+                                                <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                                                    {product.description || "No description"}
+                                                </p>
+                                                <div className="mt-2 flex items-center gap-4">
+                                                    <span className="text-sm font-bold text-foreground">
+                                                        Rs.{product.price.toLocaleString()}
+                                                    </span>
+                                                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                                        <User className="size-3" />
+                                                        {product.creatorName}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex shrink-0 items-center gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="gap-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-700 dark:hover:text-red-300"
+                                                    disabled={isProcessing}
+                                                    onClick={() => handleDecision(product.id, "rejected")}
+                                                >
+                                                    {isProcessing ? (
+                                                        <Loader2 className="size-3.5 animate-spin" />
+                                                    ) : (
+                                                        <X className="size-3.5" />
+                                                    )}
+                                                    Reject
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    className="gap-1.5"
+                                                    disabled={isProcessing}
+                                                    onClick={() => handleDecision(product.id, "approved")}
+                                                >
+                                                    {isProcessing ? (
+                                                        <Loader2 className="size-3.5 animate-spin" />
+                                                    ) : (
+                                                        <Check className="size-3.5" />
+                                                    )}
+                                                    Approve
+                                                </Button>
                                             </div>
                                         </div>
-
-                                        <div className="flex shrink-0 items-center gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="gap-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950 hover:text-red-700 dark:hover:text-red-300"
-                                                disabled={isProcessing}
-                                                onClick={() => handleDecision(product.id, "rejected")}
-                                            >
-                                                {isProcessing ? (
-                                                    <Loader2 className="size-3.5 animate-spin" />
-                                                ) : (
-                                                    <X className="size-3.5" />
-                                                )}
-                                                Reject
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                className="gap-1.5"
-                                                disabled={isProcessing}
-                                                onClick={() => handleDecision(product.id, "approved")}
-                                            >
-                                                {isProcessing ? (
-                                                    <Loader2 className="size-3.5 animate-spin" />
-                                                ) : (
-                                                    <Check className="size-3.5" />
-                                                )}
-                                                Approve
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )
-                    })
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                        <Package className="mb-3 size-10 opacity-40" />
-                        <p className="text-sm font-medium">No pending items</p>
-                        <p className="mt-1 text-xs">All products have been reviewed</p>
-                    </div>
-                )}
+                                    </CardContent>
+                                </Card>
+                            )
+                        })
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+                            <Package className="mb-3 size-10 opacity-40" />
+                            <p className="text-sm font-medium">No pending items</p>
+                            <p className="mt-1 text-xs">All products have been reviewed</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </DashboardContent>
     )

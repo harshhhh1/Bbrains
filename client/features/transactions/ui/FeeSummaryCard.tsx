@@ -4,7 +4,7 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Landmark, Calendar, CreditCard, Clock, CheckCircle2 } from "lucide-react";
+import { Landmark, Calendar, CreditCard, Clock, CheckCircle2, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FeeSummaryCardProps {

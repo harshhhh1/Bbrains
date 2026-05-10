@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Pencil, Star, Trash2 } from "lucide-react";
+import { Pencil, Star, Trash2, Package } from "lucide-react";
 import Image from "next/image";
 import { Product } from "@/services/api/client";
 import { cn } from "@/lib/utils";

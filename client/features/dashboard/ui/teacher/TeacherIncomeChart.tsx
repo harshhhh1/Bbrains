@@ -21,7 +21,7 @@ import {
 import { TrendingUp } from "lucide-react";
 
 interface SalaryTransaction {
-  amount: number;
+  amount: number | string;
   transactionDate: string;
 }
 
@@ -57,7 +57,7 @@ export function TeacherIncomeChart({ salaryTransactions }: TeacherIncomeChartPro
       });
       const sortedEntries = Object.entries(quarterlyData).sort(([a], [b]) => a.localeCompare(b));
       const last4 = sortedEntries.slice(-4);
-      return lastEntries.map(([quarter, amount]) => ({ date: quarter, amount }));
+      return last4.map(([quarter, amount]) => ({ date: quarter, amount }));
     }
 
     const monthlyData: Record<string, number> = {};
@@ -146,7 +146,7 @@ export function TeacherIncomeChart({ salaryTransactions }: TeacherIncomeChartPro
                   formatter={(value: number) => [`₹${value.toLocaleString()}`, "Amount"]}
                 />
                 <Line
-                  type="catmullRom"
+                  type="monotone"
                   dataKey="amount"
                   stroke="#10b981"
                   strokeWidth={2.5}

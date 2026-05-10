@@ -2,6 +2,6 @@
 // Re-exported from individual type modules for backwards compatibility
 
 export * from './index';
-export {
+export type {
     LogCategory
 } from './system';
