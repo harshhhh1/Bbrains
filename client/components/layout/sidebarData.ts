@@ -86,7 +86,7 @@ export function getSidebarGroups(role: Role | Role[], sidebarAccessOverride?: Re
         // 1. Check if path is hardcoded admin-only
         const itemUrl = typeof item.url === "string" ? item.url : "";
         if (ADMIN_ONLY_PATHS.some(path => itemUrl === path || itemUrl.startsWith(path))) {
-            return roles.includes("admin");
+            return roles.includes("admin") || roles.includes("superadmin");
         }
 
         // 2. Check for override (URL first for uniqueness, then title for backward compatibility/generics)

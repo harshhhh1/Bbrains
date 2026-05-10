@@ -48,7 +48,7 @@ export function useAcademics() {
 
 
   const handleEditClick = (course: Course) => {
-    router.push(`/manager/classes?courseId=${course.id}`);
+    router.push(`/classes?courseId=${course.id}`);
   };
 
   const handleDelete = useCallback(async () => {

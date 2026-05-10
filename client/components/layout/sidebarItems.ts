@@ -75,7 +75,7 @@ export const sidebarItems = [
     title: "Study Materials",
     url: "/study-materials",
     icon: "FolderOpen",
-    access: ["student", "teacher", "admin", "staff", "manager", "superadmin"],
+    access: ["student", "teacher", "admin", "staff", "manager"],
   },
   {
     title: "Tools",
@@ -100,7 +100,7 @@ export const sidebarItems = [
     title: "Manage Users",
     url: "/users",
     icon: "UserCog",
-    access: ["admin"],
+    access: ["admin", "superadmin"],
   },
   {
     title: "Colleges",
@@ -112,14 +112,14 @@ export const sidebarItems = [
     title: "Roles & Access",
     url: "/admin/roles",
     icon: "Shield",
-    access: ["admin"],
-    cs: true,
+    access: ["admin", "superadmin"],
   },
   {
     title: "Sidebar Config",
     url: "/admin/config/sidebar-access",
     icon: "Settings2",
-    access: ["admin"],
+    access: ["superadmin"],
+
   },
   {
     title: "Academics",
@@ -132,7 +132,7 @@ export const sidebarItems = [
     title: "Audit Log",
     url: "/admin/audit-log",
     icon: "FileText",
-    access: ["admin"],
+    access: ["admin", "superadmin"],
   },
   // { title: "System Config", url: "/admin/config", icon: "Settings2", access: ["admin", "bbrains_official"] },
   // { title: "Grading", url: "/teacher/grading", icon: "CheckSquare", access: ["teacher"] },
@@ -145,7 +145,7 @@ export const sidebarItems = [
   // { title: "Announcements", url: "/teacher/announcements", icon: "Megaphone", access: ["teacher"] },
   {
     title: "Classes",
-    url: "/manager/classes",
+    url: "/classes",
     icon: "BookOpen",
     access: ["manager"],
   },
@@ -153,18 +153,18 @@ export const sidebarItems = [
     title: "Teachers",
     url: "/manager/teachers",
     icon: "UserCheck",
-    access: ["manager"],
+    access: ["manager","admin"],
   },
   {
     title: "XP & Levels",
     url: "/admin/xpconfig",
     icon: "Trophy",
-    access: ["bbrains_official"],
+    access: ["admin"],
   },
   {
     title: "Leaderboard Rewards",
     url: "/admin/leaderboard-rewards",
     icon: "Gift",
-    access: ["admin"],
+    access: ["admin", "superadmin"],
   },
 ];

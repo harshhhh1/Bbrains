@@ -48,7 +48,7 @@ export default function ManagerClassesPage() {
         removeSemester={page.removeSemester}
         addSubjectToSemester={page.addSubjectToSemester}
         removeSubjectFromSemester={page.removeSubjectFromSemester}
-        updateSubjectInSemester={page.updateSubjectInSemester}
+        updateSubjectInSemetable={page.updateSubjectInSemester}
       />
 
     </DashboardContent>
