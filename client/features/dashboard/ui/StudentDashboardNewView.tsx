@@ -18,6 +18,7 @@ import { UpcomingEventsCard } from "@/features/dashboard/ui/UpcomingEventsCard";
 import { AnnouncementsCard } from "@/features/dashboard/ui/AnnouncementsCard";
 import { MyTasksCard } from "@/features/dashboard/ui/MyTasksCard";
 import { DashboardContent } from "@/components/dashboard-content";
+import { useUser } from "@/context/user-context";
 import { LevelWidget } from "@/features/dashboard/ui/LevelWidget";
 import { FeeStatusCard } from "@/features/dashboard/ui/FeeStatusCard";
 import { HandButton } from "@/components/hand-drawn/button";
@@ -187,6 +188,9 @@ export function StudentDashboardNewView({
     },
   ];
 
+  const { user } = useUser();
+  const greetingName = user?.displayName || user?.firstName || username || "Student";
+
   return (
     <DashboardContent maxWidth="max-w-[92rem]" className="space-y-8">
       <div className="relative overflow-hidden rounded-[42px] border-[3px] border-hand-pencil bg-hand-paper bg-paper-texture [background-size:18px_18px] shadow-[10px_10px_0px_0px_rgba(45,45,45,0.12)]">
@@ -223,7 +227,7 @@ export function StudentDashboardNewView({
               <h1 className="font-kalam text-4xl font-bold leading-tight text-hand-pencil md:text-6xl">
                 Welcome back,
                 <span className="relative ml-3 inline-block text-hand-red">
-                  {username}
+                  {greetingName}
                   <span className="absolute -bottom-1 left-0 h-3 w-full -rotate-1 bg-hand-yellow/90" />
                 </span>
               </h1>

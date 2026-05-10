@@ -17,6 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SectionHeader } from "@/features/admin/ui/SectionHeader"
+import { useUser } from "@/context/user-context"
 import type { ManagerOverviewStats } from "@/features/dashboard/types/manager"
 
 function formatCurrency(amount: number | null, currency: string) {
@@ -46,8 +47,9 @@ function formatDate(value: string | null) {
     }).format(date)
 }
 
-function getFullName(firstName: string, lastName: string, fallback: string) {
-    const fullName = `${firstName} ${lastName}`.trim()
+function getFullName(displayName: string | undefined, firstName: string | undefined, lastName: string | undefined, fallback: string) {
+    if (displayName) return displayName
+    const fullName = `${firstName || ""} ${lastName || ""}`.trim()
     return fullName || fallback
 }
 
@@ -99,7 +101,9 @@ function EmptyState({ title, description }: { title: string; description: string
 }
 
 export function ManagerOverviewClient({ stats }: { stats: ManagerOverviewStats }) {
-    const fullName = getFullName(stats.manager.firstName, stats.manager.lastName, stats.manager.username || "Manager")
+    const { user } = useUser()
+    const fullName = getFullName(stats.manager.displayName, stats.manager.firstName, stats.manager.lastName, stats.manager.username || "Manager")
+    const greetingName = user?.displayName || user?.firstName || fullName
     const currentDate = new Intl.DateTimeFormat("en-IN", {
         weekday: "long",
         day: "numeric",
@@ -122,7 +126,7 @@ export function ManagerOverviewClient({ stats }: { stats: ManagerOverviewStats }
                                 {stats.institution?.name || "Institution Workspace"}
                             </p>
                             <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                                Leadership snapshot for {fullName}
+                                Leadership snapshot for {greetingName}
                             </h1>
                             <p className="max-w-3xl text-sm text-muted-foreground">
                                 This dashboard reuses the current system data. Where the project has no salary or staff-attendance records yet, the card states that clearly instead of inventing numbers.

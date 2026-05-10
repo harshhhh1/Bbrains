@@ -79,23 +79,16 @@ export function getSidebarGroups(role: Role | Role[], sidebarAccessOverride?: Re
     const roles = Array.isArray(role) ? role : [role];
     const primaryRole = roles[0] || "student";
 
-    // Define hardcoded admin-only paths that cannot be overridden
-    const ADMIN_ONLY_PATHS = ["/users", "/roles", "/config", "/config/sidebar-access"];
-
     const filteredItems = masterSidebarItems.filter(item => {
-        // 1. Check if path is hardcoded admin-only
         const itemUrl = typeof item.url === "string" ? item.url : "";
-        if (ADMIN_ONLY_PATHS.some(path => itemUrl === path || itemUrl.startsWith(path))) {
-            return roles.includes("admin") || roles.includes("superadmin");
-        }
 
-        // 2. Check for override (URL first for uniqueness, then title for backward compatibility/generics)
+        // 1. Check for override (URL first for uniqueness, then title for backward compatibility/generics)
         const overrideRoles = sidebarAccessOverride?.[itemUrl] || sidebarAccessOverride?.[item.title];
         if (overrideRoles) {
             return overrideRoles.some(r => roles.includes(r as Role));
         }
 
-        // 3. Fallback to default access
+        // 2. Fallback to default access from sidebarItems.ts
         return item.access.some(r => roles.includes(r));
     });
 

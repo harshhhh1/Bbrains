@@ -37,6 +37,7 @@ export interface ManagerOverviewProfile {
     avatar: string | null
     firstName: string
     lastName: string
+    displayName: string
     phone: string
     bio: string
     walletBalance: number
@@ -99,6 +100,7 @@ export const emptyManagerStats: ManagerOverviewStats = {
         avatar: null,
         firstName: "",
         lastName: "",
+        displayName: "",
         phone: "",
         bio: "",
         walletBalance: 0,

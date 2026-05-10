@@ -59,19 +59,14 @@ export default function AcademicsPage() {
           />
         </div>
 
-        <TabsContent value="courses" className="mt-0">
-          <Card className="overflow-hidden rounded-2xl border border-border/70 bg-card/90">
-            <CardContent className="p-0">
-              <CoursesTable
-                courses={courses}
-                search={search}
-                onDelete={setDeleteId}
-                onEdit={canManageCourse ? handleEditClick : undefined}
-                onEnroll={canManageCourse ? handleEnrollClick : undefined}
-              />
-
-            </CardContent>
-          </Card>
+        <TabsContent value="courses" className="mt-0 pt-2">
+          <CoursesTable
+            courses={courses}
+            search={search}
+            onDelete={setDeleteId}
+            onEdit={canManageCourse ? handleEditClick : undefined}
+            onEnroll={canManageCourse ? handleEnrollClick : undefined}
+          />
         </TabsContent>
       </Tabs>
 
@@ -88,7 +83,7 @@ export default function AcademicsPage() {
         onSuccess={onCourseCreated}
       />
 
-      <BulkEnrollmentModal 
+      <BulkEnrollmentModal
         open={enrollmentModalOpen}
         onOpenChange={setEnrollmentModalOpen}
         course={selectedCourse}

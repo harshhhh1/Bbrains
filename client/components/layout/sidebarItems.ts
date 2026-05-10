@@ -148,18 +148,18 @@ export const sidebarItems = [
     icon: "BookOpen",
     access: ["manager"],
   },
-  {
-    title: "Students",
-    url: "/students",
-    icon: "GraduationCap",
-    access: ["admin"],
-  },
-  {
-    title: "Teachers",
-    url: "/teachers",
-    icon: "UserCheck",
-    access: ["admin"],
-  },
+  // {
+  //   title: "Students",
+  //   url: "/students",
+  //   icon: "GraduationCap",
+  //   access: ["admin"],
+  // },
+  // {
+  //   title: "Teachers",
+  //   url: "/teachers",
+  //   icon: "UserCheck",
+  //   access: ["admin"],
+  // },
   {
     title: "XP & Levels",
     url: "/admin/xpconfig",

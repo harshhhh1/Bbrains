@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Wallet, TrendingUp, AlertCircle } from "lucide-react";
+import { Wallet, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
@@ -54,7 +54,6 @@ export function WalletMiniCard({ initialWallet, initialBalance }: WalletMiniCard
             <Wallet className="h-5 w-5 text-muted-foreground" />
             Wallet
           </CardTitle>
-          <TrendingUp className="h-4 w-4 text-green-500" />
         </div>
       </CardHeader>
       <CardContent>

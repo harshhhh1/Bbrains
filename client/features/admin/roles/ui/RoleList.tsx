@@ -240,7 +240,7 @@ export default function RoleList({
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5 bg-background">
+      <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-0.5  bg-dashboard-surface">
 
 
         <DndContext

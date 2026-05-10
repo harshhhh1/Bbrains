@@ -98,7 +98,7 @@ export default function ManageMembersTab({
 
   return (
     <div className="flex h-full flex-col relative">
-      <div className="border-b border-border/60 p-4 shrink-0 bg-muted/20">
+      <div className="border-b border-border/60 p-4 shrink-0 bg-dashboard-surface">
         <div className="relative">
           <input
             type="text"
@@ -111,7 +111,7 @@ export default function ManageMembersTab({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-32">
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-32 bg-dashboard-surface ">
         {isSuperAdmin && (
           <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20">
             SuperAdmin membership is managed securely at the database level.

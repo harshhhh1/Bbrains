@@ -95,7 +95,7 @@ export default function PermissionsTab({ role, allPermissions, isSelectedRoleSup
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-border/60 p-4 shrink-0 bg-muted/20">
+      <div className="border-b border-border/60 p-4 shrink-0 bg-dashboard-surface">
         <div className="relative">
           <input
             type="text"
@@ -108,7 +108,7 @@ export default function PermissionsTab({ role, allPermissions, isSelectedRoleSup
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-24">
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-24 bg-dashboard-surface">
         {isSelectedRoleSuperAdmin && (
           <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive border border-destructive/20">
             SuperAdmin has all permissions by default. You cannot modify permissions for this role.

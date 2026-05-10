@@ -42,21 +42,15 @@ export const getDashboard = async (req, res) => {
 
 export const getAdminOverview = async (req, res) => {
     try {
-        const adminId = req.user.id;
-        const collegeId = req.user.collegeId;
+        const adminId = String(req.user.id);
+        const collegeId = req.user.collegeId ? Number(req.user.collegeId) : null;
 
-        const [
-            adminUser,
-            students,
-            teachersCount,
-            staffCount,
-            roleCounts,
-            configs,
-            courses,
-            feeTaggedCredits,
-            latestTransactions,
-        ] = await Promise.all([
-            prisma.user.findUnique({
+        if (!collegeId) {
+            return sendError(res, 'College ID is required', 400);
+        }
+
+        // Run queries separately to avoid complex Promise.all issues
+        const adminUser = await prisma.user.findUnique({
                 where: { id: adminId },
                 select: {
                     id: true,
@@ -79,6 +73,7 @@ export const getAdminOverview = async (req, res) => {
                             avatar: true,
                             firstName: true,
                             lastName: true,
+                            displayName: true,
                             phone: true,
                             bio: true,
                         },
@@ -98,8 +93,9 @@ export const getAdminOverview = async (req, res) => {
                         },
                     },
                 },
-            }),
-            prisma.user.findMany({
+            });
+
+            const students = await prisma.user.findMany({
                 where: { 
                     type: 'student',
                     collegeId
@@ -117,10 +113,12 @@ export const getAdminOverview = async (req, res) => {
                         },
                     },
                 },
-            }),
-            prisma.user.count({ where: { type: 'teacher', collegeId } }),
-            prisma.user.count({ where: { type: 'staff', collegeId } }),
-            prisma.role.findMany({
+            });
+
+            const teachersCount = await prisma.user.count({ where: { type: 'teacher', collegeId } });
+            const staffCount = await prisma.user.count({ where: { type: 'staff', collegeId } });
+            
+            const roleCounts = await prisma.role.findMany({
                 where: { collegeId },
                 select: {
                     name: true,
@@ -132,9 +130,11 @@ export const getAdminOverview = async (req, res) => {
                         },
                     },
                 },
-            }),
-            prisma.systemConfig.findMany(),
-            prisma.course.findMany({
+            });
+
+            const configs = await prisma.systemConfig.findMany();
+
+            const courses = await prisma.course.findMany({
                 where: { college: { id: collegeId } },
                 select: {
                     feePerStudent: true,
@@ -144,8 +144,9 @@ export const getAdminOverview = async (req, res) => {
                         },
                     },
                 },
-            }),
-            prisma.transactionHistory.aggregate({
+            });
+
+            const feeTaggedCredits = await prisma.transactionHistory.aggregate({
                 _sum: {
                     amount: true,
                 },
@@ -155,20 +156,15 @@ export const getAdminOverview = async (req, res) => {
                     status: 'success',
                     OR: buildTransactionSignalFilters('fee', feeNoteKeywords),
                 },
-            }),
-            prisma.transactionHistory.findMany({
+            });
+
+            const latestTransactions = await prisma.transactionHistory.findMany({
                 where: {
                     user: { collegeId },
                     status: 'success',
                     OR: [
-                        {
-                            category: 'fee',
-                            type: 'credit',
-                        },
-                        {
-                            category: 'salary',
-                            type: 'debit',
-                        },
+                        { category: 'fee', type: 'credit' },
+                        { category: 'salary', type: 'debit' },
                     ],
                 },
                 select: {
@@ -179,8 +175,118 @@ export const getAdminOverview = async (req, res) => {
                 },
                 orderBy: { transactionDate: 'desc' },
                 take: 5,
-            }),
-        ]);
+            });
+
+            const announcements = await prisma.announcement.findMany({
+                where: { collegeId },
+                select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    createdAt: true,
+                    user: {
+                        select: {
+                            username: true,
+                            userDetails: {
+                                select: {
+                                    firstName: true,
+                                    lastName: true,
+                                    displayName: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+                take: 5,
+            });
+
+            // Fetch monthly revenue and salary for the last 12 months
+            const last12Months = [];
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                date.setDate(1);
+                date.setHours(0, 0, 0, 0);
+                
+                const nextDate = new Date(date);
+                nextDate.setMonth(nextDate.getMonth() + 1);
+                last12Months.push({ date, nextDate });
+            }
+
+            const [revenueTrend, salaryTrend] = await Promise.all([
+                Promise.all(last12Months.map(async ({ date, nextDate }) => {
+                    const aggregate = await prisma.transactionHistory.aggregate({
+                        _sum: { amount: true },
+                        where: {
+                            user: { collegeId },
+                            type: 'credit',
+                            status: 'success',
+                            transactionDate: { gte: date, lt: nextDate }
+                        }
+                    });
+                    return {
+                        date: date.toLocaleDateString('en-IN', { month: 'short' }),
+                        amount: Number(aggregate._sum.amount || 0)
+                    };
+                })),
+                Promise.all(last12Months.map(async ({ date, nextDate }) => {
+                    const aggregate = await prisma.transactionHistory.aggregate({
+                        _sum: { amount: true },
+                        where: {
+                            user: { collegeId },
+                            type: 'debit',
+                            status: 'success',
+                            OR: buildTransactionSignalFilters('salary', salaryNoteKeywords),
+                            transactionDate: { gte: date, lt: nextDate }
+                        }
+                    });
+                    return {
+                        date: date.toLocaleDateString('en-IN', { month: 'short' }),
+                        amount: Number(aggregate._sum.amount || 0)
+                    };
+                }))
+            ]);
+
+            const auditLogs = await prisma.auditLog.findMany({
+                where: {
+                    user: { collegeId },
+                },
+                select: {
+                    id: true,
+                    action: true,
+                    category: true,
+                    entity: true,
+                    entityId: true,
+                    userId: true,
+                    createdAt: true,
+                    user: {
+                        select: {
+                            username: true,
+                            userDetails: {
+                                select: {
+                                    firstName: true,
+                                    lastName: true,
+                                    displayName: true,
+                                },
+                            },
+                        },
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+                take: 10,
+            });
+
+            const coursesList = await prisma.course.findMany({
+                where: { college: { id: collegeId } },
+                select: {
+                    id: true,
+                    name: true,
+                    standard: true,
+                },
+});
+
+        // Build response using the collected data
 
         if (!adminUser) {
             return sendError(res, 'Admin user not found', 404);
@@ -224,6 +330,10 @@ export const getAdminOverview = async (req, res) => {
                 staff: otherStaffCount,
                 students: studentsCount,
                 studentToTeacherRatio,
+                roleDistribution: roleCounts.map(rc => ({
+                    role: rc.name,
+                    count: rc._count.users
+                }))
             },
             students: {
                 total: studentsCount,
@@ -237,6 +347,8 @@ export const getAdminOverview = async (req, res) => {
                 receivedIncome,
                 accruedIncome,
                 receivableIncome,
+                revenueTrend,
+                salaryTrend,
                 receivedSource: configuredReceivedIncome > 0 ? 'config' : 'transactions',
                 accruedSource: courses.some((course) => Number(course.feePerStudent || 0) > 0) ? 'classes' : 'unavailable',
                 latestTransactions: latestTransactions.map((transaction) => ({
@@ -255,6 +367,7 @@ export const getAdminOverview = async (req, res) => {
                 avatar: adminUser.userDetails?.avatar || null,
                 firstName: adminUser.userDetails?.firstName || '',
                 lastName: adminUser.userDetails?.lastName || '',
+                displayName: adminUser.userDetails?.displayName || '',
                 phone: adminUser.userDetails?.phone || '',
                 bio: adminUser.userDetails?.bio || '',
                 walletBalance: Number(adminUser.wallet?.balance || 0),
@@ -270,17 +383,45 @@ export const getAdminOverview = async (req, res) => {
                     address: formatAddress(adminUser.college.address),
                 }
                 : null,
+            announcements: announcements.map((ann) => ({
+                id: ann.id,
+                title: ann.title,
+                content: ann.description,
+                createdAt: ann.createdAt,
+                createdBy: ann.user,
+            })),
+            auditLogs: auditLogs.map((log) => ({
+                id: log.id,
+                action: log.action,
+                category: log.category,
+                entityType: log.entity,
+                entityId: log.entityId || '',
+                userId: log.userId,
+                createdAt: log.createdAt,
+                user: log.user,
+            })),
+            recentAttendance: [],
+            courses: coursesList.map((course) => ({
+                id: course.id,
+                name: course.name,
+                standard: course.standard || '',
+            })),
         });
     } catch (error) {
-        console.error('Admin Overview error details:', error);
+        console.error('Admin Overview error details:', {
+            message: error.message,
+            stack: error.stack,
+            collegeId: req.user?.collegeId,
+            adminId: req.user?.id
+        });
         return sendError(res, 'Failed to fetch admin overview', 500);
     }
 };
 
 export const getManagerOverview = async (req, res) => {
     try {
-        const managerId = req.user.id;
-        const collegeId = req.user.collegeId;
+        const managerId = String(req.user.id);
+        const collegeId = req.user.collegeId ? Number(req.user.collegeId) : null;
         const customRoleNames = await getCustomRoleNames(managerId);
         const hasManagerRole = customRoleNames.some((role) => role.toLowerCase().includes('manager'));
 
@@ -326,6 +467,7 @@ export const getManagerOverview = async (req, res) => {
                             avatar: true,
                             firstName: true,
                             lastName: true,
+                            displayName: true,
                             phone: true,
                             bio: true,
                         },
@@ -548,6 +690,7 @@ export const getManagerOverview = async (req, res) => {
                 avatar: managerUser.userDetails?.avatar || null,
                 firstName: managerUser.userDetails?.firstName || '',
                 lastName: managerUser.userDetails?.lastName || '',
+                displayName: managerUser.userDetails?.displayName || '',
                 phone: managerUser.userDetails?.phone || '',
                 bio: managerUser.userDetails?.bio || '',
                 walletBalance: Number(managerUser.wallet?.balance || 0),
@@ -574,8 +717,8 @@ export const getManagerOverview = async (req, res) => {
 
 async function studentDashboard(currentUser, res) {
     try {
-        const userId = currentUser.id;
-        const collegeId = currentUser.collegeId;
+        const userId = String(currentUser.id);
+        const collegeId = currentUser.collegeId ? Number(currentUser.collegeId) : null;
 
         const [
             user,
@@ -597,7 +740,7 @@ async function studentDashboard(currentUser, res) {
                 where: { id: userId },
                 select: {
                     id: true, username: true, email: true, type: true,
-                    userDetails: { select: { avatar: true, firstName: true, lastName: true } },
+                    userDetails: { select: { avatar: true, firstName: true, lastName: true, displayName: true } },
                     college: { select: { name: true } }
                 }
             }),
@@ -632,7 +775,7 @@ async function studentDashboard(currentUser, res) {
                     user: {
                         select: {
                             username: true,
-                            userDetails: { select: { avatar: true, firstName: true, lastName: true } }
+                            userDetails: { select: { avatar: true, firstName: true, lastName: true, displayName: true } }
                         }
                     }
                 }
@@ -656,7 +799,8 @@ async function studentDashboard(currentUser, res) {
                                 select: {
                                     avatar: true,
                                     firstName: true,
-                                    lastName: true
+                                    lastName: true,
+                                    displayName: true
                                 }
                             }
                         }

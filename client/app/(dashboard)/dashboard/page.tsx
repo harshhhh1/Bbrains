@@ -47,7 +47,7 @@ export default function DashboardOverview() {
 
         if (userData.success && userData.data) {
           dbUserType = userData.data.type
-          username = userData.data.firstName || userData.data.username || 'User'
+          username = userData.data.displayName || userData.data.firstName || userData.data.username || 'User'
           const roles = userData.data.roles || []
           roleNames = roles.flatMap((row: RoleRow) => {
             if (Array.isArray(row?.role)) {

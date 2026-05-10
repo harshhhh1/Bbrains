@@ -4,6 +4,10 @@ export interface OverviewPeopleStats {
     staff: number
     students: number
     studentToTeacherRatio: number | null
+    roleDistribution: Array<{
+        role: string
+        count: number
+    }>
 }
 
 export interface OverviewStudentStats {
@@ -26,6 +30,14 @@ export interface OverviewFinanceStats {
     receivedIncome: number
     accruedIncome: number
     receivableIncome: number
+    revenueTrend: Array<{
+        date: string
+        amount: number
+    }>
+    salaryTrend: Array<{
+        date: string
+        amount: number
+    }>
     receivedSource: "config" | "transactions"
     accruedSource: "classes" | "config" | "unavailable"
     latestTransactions: OverviewFinanceTransaction[]
@@ -40,6 +52,7 @@ export interface OverviewAdminProfile {
     avatar: string | null
     firstName: string
     lastName: string
+    displayName: string
     phone: string
     bio: string
     walletBalance: number
@@ -55,12 +68,62 @@ export interface OverviewInstitutionProfile {
     address: string | null
 }
 
+export interface OverviewAnnouncement {
+    id: number
+    title: string
+    content: string
+    createdAt: string
+    createdBy: {
+        username: string
+        userDetails: {
+            firstName: string
+            lastName: string
+            displayName: string
+        } | null
+    } | null
+}
+
+export interface OverviewAttendance {
+    date: string
+    present: number
+    absent: number
+    total: number
+}
+
+export interface OverviewAuditLog {
+    id: number
+    action: string
+    category: string
+    entityType: string
+    entityId: string
+    userId: string
+    createdAt: string
+    user?: {
+        username: string
+        userDetails: {
+            firstName: string
+            lastName: string
+            displayName: string
+        } | null
+    } | null
+}
+
+export interface OverviewCourse {
+    id: number
+    name: string
+    standard: string
+}
+
 export interface OverviewStats {
     people: OverviewPeopleStats
     students: OverviewStudentStats
     finance: OverviewFinanceStats
     admin: OverviewAdminProfile
     institution: OverviewInstitutionProfile | null
+    announcements: OverviewAnnouncement[]
+    auditLogs: OverviewAuditLog[]
+    recentAttendance: OverviewAttendance[]
+    courses: OverviewCourse[]
 }
 
 export const emptyStats: OverviewStats = {
@@ -70,6 +133,7 @@ export const emptyStats: OverviewStats = {
         staff: 0,
         students: 0,
         studentToTeacherRatio: null,
+        roleDistribution: [],
     },
     students: {
         total: 0,
@@ -83,6 +147,8 @@ export const emptyStats: OverviewStats = {
         receivedIncome: 0,
         accruedIncome: 0,
         receivableIncome: 0,
+        revenueTrend: [],
+        salaryTrend: [],
         receivedSource: "transactions",
         accruedSource: "unavailable",
         latestTransactions: [],
@@ -96,10 +162,15 @@ export const emptyStats: OverviewStats = {
         avatar: null,
         firstName: "",
         lastName: "",
+        displayName: "",
         phone: "",
         bio: "",
         walletBalance: 0,
         roles: [],
     },
     institution: null,
+    announcements: [],
+    auditLogs: [],
+    recentAttendance: [],
+    courses: [],
 }

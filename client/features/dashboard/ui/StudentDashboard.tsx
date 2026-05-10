@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@/context/user-context";
 import { DailyRewardCard } from "@/features/dashboard/ui/DailyRewardCard";
 import { WalletMiniCard } from "@/features/dashboard/ui/WalletMiniCard";
 import { AttendanceCard } from "@/features/dashboard/ui/AttendanceCard";
@@ -46,6 +47,9 @@ export function StudentDashboard({
   dashboardData, 
   transformedLeaderboard 
 }: StudentDashboardProps) {
+  const { user } = useUser();
+  const greetingName = user?.displayName || user?.firstName || username || "Student";
+  
   const initialMyPosition = dashboardData?.stats?.leaderboardRank ? {
     id: dashboardData?.user?.id || '',
     rank: dashboardData?.stats?.leaderboardRank,
@@ -63,7 +67,7 @@ export function StudentDashboard({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-            Welcome back, {username}! 👋
+            Welcome back, {greetingName}! 👋
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             Here&apos;s what&apos;s happening with your studies today.

@@ -87,6 +87,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
 
     // Fetch product details if on market product page
     React.useEffect(() => {
+        let isMounted = true
         const segments = pathname.split("/").filter(Boolean)
         const isMarketProduct = segments[0] === "market" && segments[1] && segments.length === 2
         
@@ -94,13 +95,19 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
             const productId = parseInt(segments[1])
             if (!isNaN(productId)) {
                 marketApi.getProduct(productId).then(resp => {
-                    if (resp.success && resp.data) {
+                    if (isMounted && resp.success && resp.data) {
                         setDynamicProduct(resp.data)
                     }
-                }).catch(console.error)
+                }).catch(err => {
+                    if (isMounted) console.error(err)
+                })
             }
         } else {
             setDynamicProduct(null)
+        }
+
+        return () => {
+            isMounted = false
         }
     }, [pathname])
 
@@ -163,8 +170,9 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                     </span>
                 </div>
 
-                <div className="hidden items-center justify-end flex-1 xl:flex mr-4">
-                    <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card/50 px-4 py-2 shadow-sm ring-1 ring-border/5">
+                <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
+                    {/* Coin Balance - moved inside right-aligned container to fix gap */}
+                    <div className="hidden items-center gap-3 rounded-2xl border border-border/70 bg-card/50 px-4 py-2 shadow-sm ring-1 ring-border/5 xl:flex">
                         <div className="flex h-9 w-9 items-center justify-center">
                             <Image src="/bcoin.svg" width={36} height={36} alt="BCoin" className="drop-shadow-sm" />
                         </div>
@@ -175,9 +183,7 @@ export function MainNavbar({ user }: { user?: NavbarUser | null }) {
                             </span>
                         </div>
                     </div>
-                </div>
 
-                <div className="flex flex-1 items-center justify-end gap-2 md:gap-3">
                     {user?.isImpersonating && (
                         <Button
                             variant="outline"

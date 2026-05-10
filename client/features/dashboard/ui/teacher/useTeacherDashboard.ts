@@ -58,9 +58,10 @@ export function useTeacherDashboard() {
         }
 
         const teacherProfile = (userResult.status === "fulfilled" ? userResult.value.data.data : undefined) as any || (dashboardResult.status === "fulfilled" ? dashboardResult.value.data.data?.user : undefined);
+        const displayName = teacherProfile?.displayName || teacherProfile?.userDetails?.displayName || "";
         const firstName = teacherProfile?.firstName || teacherProfile?.userDetails?.firstName || "";
         const lastName = teacherProfile?.lastName || teacherProfile?.userDetails?.lastName || "";
-        const fullName = `${firstName} ${lastName}`.trim();
+        const fullName = displayName || `${firstName} ${lastName}`.trim();
         const nextCourses = coursesResult.status === "fulfilled" ? coursesResult.value.data.data || [] : [];
         
         setTeacherName(fullName || teacherProfile?.username || "Teacher");

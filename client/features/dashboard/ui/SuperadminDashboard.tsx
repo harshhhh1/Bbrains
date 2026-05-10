@@ -2,11 +2,15 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Building2, Settings } from "lucide-react";
 import { DashboardContent } from "@/components/dashboard-content";
+import { useUser } from "@/context/user-context";
 
 export function SuperadminDashboard() {
+    const { user } = useUser();
+    const greetingName = user?.displayName || user?.firstName || user?.username || "Superadmin";
+
     return (
         <DashboardContent className="space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight">Superadmin Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {greetingName}! 👋</h1>
             <p className="text-muted-foreground">Welcome to the Bbrains Officials control panel.</p>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

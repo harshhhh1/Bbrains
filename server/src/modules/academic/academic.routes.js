@@ -10,18 +10,18 @@ import authorize from '../../middleware/authorize.js';
 
 const router = express.Router();
 
+// Submissions
+router.get('/assignments/submissions/my', verifyToken, getMySubmissionsHandler);
+router.post('/assignments/submit', verifyToken, submitAssignmentHandler);
+router.get('/assignments/:assignmentId/submissions', verifyToken, authorize('teacher', 'admin', 'manager'), getSubmissionsHandler);
+router.post('/assignments/submissions/:submissionId/review', verifyToken, authorize('teacher', 'admin', 'manager'), reviewSubmissionHandler);
+
 // Assignments
 router.post('/assignments', verifyToken, authorize('teacher', 'admin', 'manager'), createAssignmentHandler);
 router.get('/assignments', verifyToken, getAssignmentsHandler);
 router.get('/assignments/:id', verifyToken, getAssignmentHandler);
 router.put('/assignments/:id', verifyToken, authorize('teacher', 'admin', 'manager'), updateAssignmentHandler);
 router.delete('/assignments/:id', verifyToken, authorize('teacher', 'admin', 'manager'), deleteAssignmentHandler);
-
-// Submissions
-router.get('/assignments/submissions/my', verifyToken, getMySubmissionsHandler);
-router.post('/assignments/submit', verifyToken, submitAssignmentHandler);
-router.get('/assignments/:assignmentId/submissions', verifyToken, authorize('teacher', 'admin', 'manager'), getSubmissionsHandler);
-router.post('/assignments/submissions/:submissionId/review', verifyToken, authorize('teacher', 'admin', 'manager'), reviewSubmissionHandler);
 
 // Announcements
 router.post('/announcements', verifyToken, authorize('teacher', 'admin'), createAnnouncementHandler);

@@ -163,7 +163,7 @@ export default function RolesPage() {
       <div
         className={`${
           !isMobileListVisible ? "flex" : "hidden"
-        } md:flex flex-1 flex-col bg-background overflow-hidden relative`}
+        } md:flex flex-1 flex-col bg-dashboard-surface overflow-hidden relative`}
       >
         {selectedRole ? (
           <RoleDetail 
@@ -176,7 +176,7 @@ export default function RolesPage() {
             isUserSuperAdmin={isUserSuperAdmin}
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground">
+          <div className="flex h-full items-center justify-center text-muted-foreground bg-dashboard-surface">
             Select a role to manage its settings
           </div>
         )}

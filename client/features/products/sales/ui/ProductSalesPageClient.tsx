@@ -14,23 +14,29 @@ export default function SalesPage() {
   const [sales, setSales] = useState<SalesData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchSales = useCallback(async () => {
+  const fetchSales = useCallback(async (isMounted: boolean) => {
     try {
       setLoading(true);
       const resp = await marketApi.getSales();
-      if (resp.success && resp.data) {
+      if (isMounted && resp.success && resp.data) {
         setSales(resp.data);
       }
     } catch (error) {
-      console.error("Failed to fetch sales:", error);
-      toast.error("Failed to load sales data");
+      if (isMounted) {
+        console.error("Failed to fetch sales:", error);
+        toast.error("Failed to load sales data");
+      }
     } finally {
-      setLoading(false);
+      if (isMounted) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchSales();
+    let isMounted = true;
+    fetchSales(isMounted);
+    return () => {
+      isMounted = false;
+    };
   }, [fetchSales]);
 
   if (loading) {

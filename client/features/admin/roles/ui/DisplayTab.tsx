@@ -74,13 +74,13 @@ export default function DisplayTab({ role, isSuperAdmin, onUpdate, userLowestPos
   const isSystemLocked = role.isSystem && !isUserSuperAdmin;
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-dashboard-surface">
       {isSystemLocked && (
-          <div className="m-5 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-600 border border-amber-500/20">
+          <div className="bg- m-5 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-600 border border-amber-500/20">
             This is a system role. Its name and color are protected, but you can still manage its permissions and members.
           </div>
         )}
-      <div className="p-6 pt-1 space-y-6 flex-1">
+      <div className="p-6 pt-1 space-y-6 flex-1 bg-dashboard-surface">
         {/* Name */}
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
