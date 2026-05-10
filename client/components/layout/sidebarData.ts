@@ -80,7 +80,7 @@ export function getSidebarGroups(role: Role | Role[], sidebarAccessOverride?: Re
     const primaryRole = roles[0] || "student";
 
     // Define hardcoded admin-only paths that cannot be overridden
-    const ADMIN_ONLY_PATHS = ["/users", "/admin/roles", "/admin/config", "/admin/config/sidebar-access"];
+    const ADMIN_ONLY_PATHS = ["/users", "/roles", "/config", "/config/sidebar-access"];
 
     const filteredItems = masterSidebarItems.filter(item => {
         // 1. Check if path is hardcoded admin-only

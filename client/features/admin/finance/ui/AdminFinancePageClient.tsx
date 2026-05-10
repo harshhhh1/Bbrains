@@ -139,7 +139,7 @@ export default function AdminFinancePage() {
         </CardContent>
       </Card>
 
-      <Link href="/admin/config" className="block">
+      <Link href="/config" className="block">
         <Card className="border-dashed border-border/70 shadow-sm transition-all hover:border-primary/40 hover:shadow-md">
           <CardContent className="flex items-start justify-between gap-4 p-5">
             <div>

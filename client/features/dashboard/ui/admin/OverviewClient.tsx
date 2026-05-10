@@ -260,7 +260,7 @@ export function OverviewClient({ stats }: OverviewClientProps) {
                             </CardContent>
                         </OverviewLinkCard>
 
-                        <OverviewLinkCard href="/admin/finance">
+                        <OverviewLinkCard href="/finance">
                             <CardHeader className="space-y-1 pb-3">
                                 <div className="flex items-start justify-between gap-3">
                                     <div>
@@ -316,7 +316,7 @@ export function OverviewClient({ stats }: OverviewClientProps) {
                         </OverviewLinkCard>
                     </div>
 
-                    <OverviewLinkCard href="/admin/finance">
+                    <OverviewLinkCard href="/finance">
                         <CardHeader className="space-y-1 pb-3">
                             <div className="flex items-start justify-between gap-3">
                                 <div>
@@ -398,7 +398,7 @@ export function OverviewClient({ stats }: OverviewClientProps) {
                         </CardContent>
                     </OverviewLinkCard>
 
-                    <OverviewLinkCard href="/admin/institution">
+                    <OverviewLinkCard href="/institution">
                         <CardHeader className="space-y-1 pb-3">
                             <div className="flex items-start justify-between gap-3">
                                 <div>

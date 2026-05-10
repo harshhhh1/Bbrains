@@ -16,7 +16,7 @@ type Role = typeof ROLES[number];
 // Filter out items that should never be toggled (hardcoded admin only)
 // AND remove duplicates (same URL or Title) to keep config clean after route merging
 const TOGGLABLE_ITEMS = (() => {
-    const ADMIN_ONLY_PATHS = ["/users", "/admin/roles", "/admin/config"];
+    const ADMIN_ONLY_PATHS = ["/users", "/roles", "/config"];
     const seen = new Set<string>();
     
     return sidebarItems.filter(item => {

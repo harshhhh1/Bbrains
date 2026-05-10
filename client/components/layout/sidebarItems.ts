@@ -110,13 +110,13 @@ export const sidebarItems = [
   },
   {
     title: "Roles & Access",
-    url: "/admin/roles",
+    url: "/roles",
     icon: "Shield",
     access: ["admin", "superadmin"],
   },
   {
     title: "Sidebar Config",
-    url: "/admin/config/sidebar-access",
+    url: "/config/sidebar-access",
     icon: "Settings2",
     access: ["superadmin"],
 
@@ -127,14 +127,14 @@ export const sidebarItems = [
     icon: "GraduationCap",
     access: ["admin", "manager"],
   },
-  // { title: "Statistics", url: "/admin/stats", icon: "BarChart3", access: ["admin"] },
+  // { title: "Statistics", url: "/stats", icon: "BarChart3", access: ["admin"] },
   {
     title: "Audit Log",
-    url: "/admin/audit-log",
+    url: "/audit-log",
     icon: "FileText",
     access: ["admin", "superadmin"],
   },
-  // { title: "System Config", url: "/admin/config", icon: "Settings2", access: ["admin", "bbrains_official"] },
+  // { title: "System Config", url: "/config", icon: "Settings2", access: ["admin", "bbrains_official"] },
   // { title: "Grading", url: "/teacher/grading", icon: "CheckSquare", access: ["teacher"] },
   {
     title: "Attendance",
@@ -150,10 +150,16 @@ export const sidebarItems = [
     access: ["manager"],
   },
   {
+    title: "Students",
+    url: "/students",
+    icon: "GraduationCap",
+    access: ["admin"],
+  },
+  {
     title: "Teachers",
-    url: "/manager/teachers",
+    url: "/teachers",
     icon: "UserCheck",
-    access: ["manager","admin"],
+    access: ["admin"],
   },
   {
     title: "XP & Levels",
@@ -163,7 +169,7 @@ export const sidebarItems = [
   },
   {
     title: "Leaderboard Rewards",
-    url: "/admin/leaderboard-rewards",
+    url: "/leaderboard-rewards",
     icon: "Gift",
     access: ["admin", "superadmin"],
   },
