@@ -55,7 +55,7 @@ export function SignUpForm({ className, ...props }: React.ComponentPropsWithoutR
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${getBaseUrl()}/register`, {
+      const response = await fetch(`${getBaseUrl()}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, username: email.split("@")[0] }),

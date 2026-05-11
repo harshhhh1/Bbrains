@@ -9,7 +9,7 @@ export function LogoutButton() {
 
   const logout = async () => {
     try {
-      await fetch(`${getBaseUrl()}/logout`, { method: 'POST', credentials: 'include' })
+      await fetch(`${getBaseUrl()}/auth/logout`, { method: 'POST', credentials: 'include' })
     } catch (e) {
       console.error('Logout error:', e)
     }

@@ -29,7 +29,7 @@ export function UpdatePasswordForm({ className, ...props }: React.ComponentProps
     setError(null);
 
     try {
-      const response = await fetch(`${getBaseUrl()}/password`, {
+      const response = await fetch(`${getBaseUrl()}/auth/password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ newPassword: password }),

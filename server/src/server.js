@@ -87,7 +87,7 @@ app.get('/health', (req, res) => {
 });
 
 // Routes
-app.use("/", authRouter);
+app.use("/auth", authRouter);
 app.use("/sidebaraccess", sidebarAccessRouter);
 app.use("/api/sidebar-access", sidebarAccessRouter);
 app.use("/user", streakRouter);

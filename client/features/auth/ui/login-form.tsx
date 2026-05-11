@@ -59,7 +59,7 @@ export function LoginForm({
     setIsLoading(true)
 
     try {
-      const response = await fetch(`${getBaseUrl()}/login`, {
+      const response = await fetch(`${getBaseUrl()}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
