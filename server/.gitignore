@@ -51,4 +51,4 @@ next-env.d.ts
 
 # etc files
 /etc
-database.sql
+/prisma/seed.ts
