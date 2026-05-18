@@ -83,7 +83,6 @@ export interface RequestOptions extends RequestInit {
   params?: Record<string, any>;
 }
 
-// Simple in-memory cache for in-flight GET requests to prevent duplicates
 const inflightRequests = new Map<string, Promise<any>>();
 
 export async function makeRequest<T>(
@@ -174,27 +173,27 @@ export async function makeRequest<T>(
 }
 
 export const api = {
-  get: <T>(endpoint: string, options: RequestOptions = {}) => 
+  get: <T>(endpoint: string, options: RequestOptions = {}) =>
     makeRequest<T>(endpoint, { ...options, method: 'GET' }),
-  post: <T>(endpoint: string, body?: unknown, options: RequestOptions = {}) => 
+  post: <T>(endpoint: string, body?: unknown, options: RequestOptions = {}) =>
     makeRequest<T>(endpoint, {
       ...options,
       method: 'POST',
       body: body ? JSON.stringify(body) : undefined,
     }),
-  put: <T>(endpoint: string, body?: unknown, options: RequestOptions = {}) => 
+  put: <T>(endpoint: string, body?: unknown, options: RequestOptions = {}) =>
     makeRequest<T>(endpoint, {
       ...options,
       method: 'PUT',
       body: body ? JSON.stringify(body) : undefined,
     }),
-  patch: <T>(endpoint: string, body?: unknown, options: RequestOptions = {}) => 
+  patch: <T>(endpoint: string, body?: unknown, options: RequestOptions = {}) =>
     makeRequest<T>(endpoint, {
       ...options,
       method: 'PATCH',
       body: body ? JSON.stringify(body) : undefined,
     }),
-  delete: <T>(endpoint: string, options: RequestOptions = {}) => 
+  delete: <T>(endpoint: string, options: RequestOptions = {}) =>
     makeRequest<T>(endpoint, { ...options, method: 'DELETE' }),
   getAuthToken,
 };

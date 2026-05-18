@@ -164,12 +164,12 @@ export const sidebarItems = [
     title: "XP & Levels",
     url: "/admin/xpconfig",
     icon: "Trophy",
-    access: ["admin"],
+    access: ["superadmin"],
   },
   {
     title: "Leaderboard Rewards",
     url: "/leaderboard-rewards",
     icon: "Gift",
-    access: ["admin", "superadmin"],
+    access: ["admin"],
   },
 ];

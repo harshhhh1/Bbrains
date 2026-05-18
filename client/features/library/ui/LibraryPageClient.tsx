@@ -49,7 +49,6 @@ export default function LibraryPage() {
     }
   };
 
-  // Filter out themes as requested
   const digitalItems = items.filter(i => i.category !== 'theme' && i.fileUrl);
   const physicalItems = items.filter(i => i.category !== 'theme' && !i.fileUrl);
 
