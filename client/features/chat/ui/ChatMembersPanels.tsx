@@ -29,7 +29,7 @@ export function ChatMembersPanels({
   return (
     <>
       {/* Desktop sidebar */}
-      <div className="hidden md:block">
+      <div className="hidden md:block h-full">
         <Memberssidebar
           members={members}
           currentUserId={currentUserId}

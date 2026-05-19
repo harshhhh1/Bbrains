@@ -90,7 +90,7 @@ export const Memberssidebar = React.memo(function MembersSidebar({ members, onCl
     ) 
 
     return (
-        <aside className="fixed inset-y-0 right-0 w-[280px] bg-background border-l border-border flex flex-col z-[100] md:relative md:inset-auto md:w-60 md:z-auto shadow-xl md:shadow-none animate-in slide-in-from-right duration-300">
+        <aside className="fixed inset-y-0 right-0 w-[280px] bg-background border-l border-border flex flex-col z-[100] md:relative md:inset-auto md:w-60 md:h-full md:z-auto shadow-xl md:shadow-none animate-in slide-in-from-right duration-300">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">
                 <button
                     onClick={onClose}

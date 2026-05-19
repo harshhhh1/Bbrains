@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
 import prisma from "../../utils/prisma.js";
 import { dispatchMentionNotifications } from "./normalizers.js";
+import { awardAchievement } from "../achievement/achievement.service.js";
 
 let activeUsers = {};
 const mentionPattern = /@([a-zA-Z0-9_]+)/g;
@@ -227,6 +228,11 @@ export const initChatSocket = (server) => {
 
     io.on("connection", (socket) => {
         console.log(`Socket connected: ${socket.id}`);
+        
+        // Join a personal room for private notifications (achievements, etc)
+        if (socket.data.user?.userId) {
+            socket.join(socket.data.user.userId);
+        }
 
         socket.on("chat:join", async (payload = {}) => {
             try {
@@ -449,12 +455,6 @@ export const initChatSocket = (server) => {
             if (roomName) {
                 emitPresence(io, roomName);
             }
-        });
-    });
-
-    return io;
-};
-         }
         });
     });
 
