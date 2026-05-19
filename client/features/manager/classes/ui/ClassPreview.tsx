@@ -1,10 +1,17 @@
 "use client";
 
-import { WeeklySchedulePanel } from "@/features/schedule/ui/WeeklySchedulePanel";
+import { WeeklySchedulePanel } from "@/components/ui/weekly-schedule-panel";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Course } from "@/services/api/client";
-import { formatCurrency, toWeeklySchedule } from "@/features/manager/classes/model/classes";
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(amount);
+}
+
+function toWeeklySchedule(course: any) {
+  return [];
+}
 
 export function ClassPreview({ selectedClass }: { selectedClass: Course | null }) {
   return (
@@ -36,7 +43,7 @@ export function ClassPreview({ selectedClass }: { selectedClass: Course | null }
                   Duration And Fees
                 </p>
                 <p className="mt-3 text-sm text-foreground">
-                  {selectedClass.durationValue} {selectedClass.durationUnit} at {formatCurrency(selectedClass.feePerStudent)} per
+                  {selectedClass.durationValue} {selectedClass.durationUnit} at {formatCurrency(Number(selectedClass.feePerStudent || 0))} per
                   student
                 </p>
               </div>

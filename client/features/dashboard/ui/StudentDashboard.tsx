@@ -5,8 +5,7 @@ import { DailyRewardCard } from "@/features/dashboard/ui/DailyRewardCard";
 import { WalletMiniCard } from "@/features/dashboard/ui/WalletMiniCard";
 import { AttendanceCard } from "@/features/dashboard/ui/AttendanceCard";
 import { DashboardContent } from "@/components/dashboard-content";
-import { LevelWidget } from "@/features/dashboard/ui/LevelWidget";
-import { CurrentDate } from "@/features/dashboard/ui/CurrentDate";
+import { LevelWidget, CurrentDate } from "@/features/dashboard/ui/DashboardWidgets";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 

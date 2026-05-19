@@ -1,5 +1,5 @@
-import { AuditLogClient } from "@/features/admin/audit-log/ui/AuditLogClient"
-import { fetchAuditLogs } from "@/features/admin/audit-log/model/api"
+import { AuditLogClient } from "@/features/audit-log/ui/AuditLogClient"
+import { fetchAuditLogs } from "@/features/audit-log/model/api"
 
 export default async function AuditLogPage() {
     const initialLogs = await fetchAuditLogs()

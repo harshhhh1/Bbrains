@@ -3,7 +3,7 @@
 import React from "react";
 import { DashboardContent } from "@/components/dashboard-content";
 import { AnnouncementsCard } from "@/features/dashboard/ui/AnnouncementsCard";
-import { WeeklySchedulePanel } from "@/features/schedule/ui/WeeklySchedulePanel";
+import { WeeklySchedulePanel } from "@/components/ui/weekly-schedule-panel";
 import { Loader2 } from "lucide-react";
 
 // Local teacher dashboard components and hooks

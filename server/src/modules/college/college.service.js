@@ -161,7 +161,6 @@ export const deleteCollegeRecord = async (id) => {
             await tx.xp.deleteMany({ where: { userId: { in: userIds } } });
             await tx.wallet.deleteMany({ where: { userId: { in: userIds } } });
             await tx.auditLog.deleteMany({ where: { userId: { in: userIds } } });
-            await tx.pushSubscription.deleteMany({ where: { userId: { in: userIds } } });
             await tx.acknowledged.deleteMany({ where: { userId: { in: userIds } } });
             await tx.userDetails.deleteMany({ where: { userId: { in: userIds } } });
         }

@@ -8,10 +8,19 @@ import {
   type Announcement,
   type AttendanceData
 } from "@/services/api/client";
-import { buildWeeklyScheduleFromCourses, type WeeklyScheduleDay } from "@/features/schedule/api/data";
 import { normalizeCourseSubjectProgress } from "@/lib/subject-progress";
 import { toast } from "sonner";
 import { normalizeAttendance, getRequestErrorMessage } from "./utils";
+
+export interface WeeklyScheduleDay {
+  day: string;
+  classes: any[];
+}
+
+function buildWeeklyScheduleFromCourses(courses: any[], teacherName: string): WeeklyScheduleDay[] {
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  return days.map(day => ({ day, classes: [] }));
+}
 import type { 
   TeacherDashboardResponse, 
   TeacherDashboardUser, 

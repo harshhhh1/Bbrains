@@ -19,8 +19,7 @@ import { AnnouncementsCard } from "@/features/dashboard/ui/AnnouncementsCard";
 import { MyTasksCard } from "@/features/dashboard/ui/MyTasksCard";
 import { DashboardContent } from "@/components/dashboard-content";
 import { useUser } from "@/context/user-context";
-import { LevelWidget } from "@/features/dashboard/ui/LevelWidget";
-import { FeeStatusCard } from "@/features/dashboard/ui/FeeStatusCard";
+import { LevelWidget, FeeStatusCard } from "@/features/dashboard/ui/DashboardWidgets";
 import { HandButton } from "@/components/hand-drawn/button";
 import {
   HandCard,
@@ -423,7 +422,7 @@ export function StudentDashboardNewView({
               </p>
             </div>
             <HandButton asChild variant="secondary" className="rotate-1">
-              <Link href="/calendar">
+              <Link href="/events">
                 Plan the week <BookOpenText className="ml-2 h-4 w-4" />
               </Link>
             </HandButton>
