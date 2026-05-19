@@ -1,4 +1,5 @@
 import prisma from '../../utils/prisma.js';
+import crypto from 'crypto';
 
 export const getStreak = async (userId) => {
     let streak = await prisma.streak.findUnique({
@@ -37,8 +38,10 @@ export const claimDailyPoints = async (userId) => {
     }
 
     const XP_REWARDS = [50, 50, 75, 75, 100, 100, 200];
+    const COIN_REWARDS = [10, 10, 15, 15, 20, 20, 50];
     const dayIndex = (streak.currentStreak || 0) % 7;
     const rewardXP = XP_REWARDS[dayIndex];
+    const rewardCoins = COIN_REWARDS[dayIndex];
 
     return await prisma.$transaction(async (tx) => {
         // 1. Award XP
@@ -48,7 +51,19 @@ export const claimDailyPoints = async (userId) => {
             create: { userId, xp: rewardXP, level: 1 }
         });
 
-        // 2. Log Action
+        // 2. Award Coins
+        await tx.wallet.upsert({
+            where: { userId },
+            update: { balance: { increment: rewardCoins } },
+            create: {
+                id: crypto.randomUUID(),
+                userId,
+                balance: rewardCoins,
+                pin: '000000'
+            }
+        });
+
+        // 3. Log Action
         await tx.auditLog.create({
             data: {
                 user: { connect: { id: userId } },
@@ -56,11 +71,11 @@ export const claimDailyPoints = async (userId) => {
                 action: 'DAILY_CLAIM',
                 entity: 'User',
                 entityId: userId,
-                change: { xp: rewardXP, day: dayIndex + 1 }
+                change: { xp: rewardXP, coins: rewardCoins, day: dayIndex + 1 }
             }
         });
 
-        // 3. Update Streak
+        // 4. Update Streak
         return await tx.streak.update({
             where: { userId },
             data: {

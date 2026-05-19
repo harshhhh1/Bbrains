@@ -63,7 +63,7 @@ const gamificationFeatures = [
     iconColor: "text-hand-pencil",
     title: "Daily Rewards",
     description: "Build your momentum",
-    content: "Log in daily to earn bonus XP. The longer your streak, the bigger the rewards - up to 200 XP on day 7!",
+    content: "Log in daily to earn bonus XP & B-Coins. The longer your streak, the bigger the rewards - up to 200 XP & 50 B-Coins on day 7!",
     cardStyle: "rotate-1",
     cardDecoration: "tack" as const,
     cardVariant: "yellow" as const,

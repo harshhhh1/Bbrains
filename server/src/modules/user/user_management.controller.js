@@ -826,6 +826,27 @@ export const batchImportUsers = async (req, res) => {
                         }
                     });
 
+                    // Create Xp record (use upsert to handle duplicates)
+                    await tx.xp.upsert({
+                        where: { userId: user.id },
+                        update: {},
+                        create: {
+                            userId: user.id,
+                            xp: 0,
+                            level: 1
+                        }
+                    });
+
+                    // Create Streak record (use upsert to handle duplicates)
+                    await tx.streak.upsert({
+                        where: { userId: user.id },
+                        update: {},
+                        create: {
+                            userId: user.id,
+                            currentStreak: 0
+                        }
+                    });
+
                     // If student, create Enrollment record
                     if (enumType === 'student') {
                         if (course) {

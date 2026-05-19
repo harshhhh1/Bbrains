@@ -34,17 +34,20 @@ export const claimDaily = async (req, res) => {
     try {
         const streak = await claimDailyPoints(req.user.id);
         const XP_REWARDS = [50, 50, 75, 75, 100, 100, 200];
+        const COIN_REWARDS = [10, 10, 15, 15, 20, 20, 50];
         const dayIndex = ((streak.currentStreak || 1) - 1) % 7;
         const xp = XP_REWARDS[dayIndex];
+        const coins = COIN_REWARDS[dayIndex];
 
         const { sendSuccess } = await import('../../utils/response.js');
         return sendSuccess(res, {
             xp,
+            coins,
             streak: {
                 ...streak,
                 canClaim: false
             }
-        }, 'Successfully claimed daily XP!');
+        }, 'Successfully claimed daily rewards!');
     } catch (error) {
         console.error('Claim daily error:', error);
         return sendError(res, error.message || 'Failed to claim daily reward');

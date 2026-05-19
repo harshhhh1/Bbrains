@@ -10,7 +10,53 @@ function formatCurrency(amount: number) {
 }
 
 function toWeeklySchedule(course: any) {
-  return [];
+  if (!course) return [];
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  
+  const scheduleMap = new Map<string, any[]>();
+  daysOfWeek.forEach(day => scheduleMap.set(day, []));
+
+  let timetable: any[] = [];
+  if (course.timetable) {
+    try {
+      timetable = typeof course.timetable === "string" 
+        ? JSON.parse(course.timetable) 
+        : course.timetable;
+    } catch (e) {
+      console.error("Failed to parse timetable for course", course.id, e);
+    }
+  }
+
+  if (Array.isArray(timetable)) {
+    timetable.forEach(entry => {
+      const entryDayNormalized = daysOfWeek.find(
+        d => d.toLowerCase() === entry.day?.toLowerCase() || d.toLowerCase().startsWith(entry.day?.toLowerCase()?.slice(0, 3) || "")
+      );
+
+      if (entryDayNormalized) {
+        scheduleMap.get(entryDayNormalized)?.push({
+          courseId: course.id,
+          courseName: course.name,
+          standard: course.standard || course.name,
+          subject: entry.subject,
+          startTime: entry.startTime,
+          endTime: entry.endTime,
+          room: entry.room || "N/A"
+        });
+      }
+    });
+  }
+
+  daysOfWeek.forEach(day => {
+    const dayClasses = scheduleMap.get(day) || [];
+    dayClasses.sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""));
+    scheduleMap.set(day, dayClasses);
+  });
+
+  return daysOfWeek.map(day => ({
+    day,
+    classes: scheduleMap.get(day) || []
+  }));
 }
 
 export function ClassPreview({ selectedClass }: { selectedClass: Course | null }) {

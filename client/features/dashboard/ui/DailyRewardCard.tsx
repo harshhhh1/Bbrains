@@ -7,7 +7,7 @@ import { Gift, AlertCircle, CheckCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { dashboardApi, streakApi, StreakData } from "@/services/api/client";
 import { useRouter } from "next/navigation";
-import { TOTAL_DAYS, XP_REWARDS } from "@/features/dashboard/config/rewards";
+import { TOTAL_DAYS, XP_REWARDS, COIN_REWARDS } from "@/features/dashboard/config/rewards";
 import { useUser } from "@/context/user-context";
 
 interface DailyRewardCardProps {
@@ -80,7 +80,7 @@ export function DailyRewardCard({ initialStreak }: DailyRewardCardProps) {
     try {
       const response = await dashboardApi.claimDaily();
       if (response.success && response.data) {
-        setSuccess(`+${response.data.xp} XP earned!`);
+        setSuccess(`+${response.data.xp} XP & +${response.data.coins} Coins earned!`);
         if (response.data.streak) {
           const newStreak = response.data.streak;
           setStreak(newStreak);
@@ -109,6 +109,7 @@ export function DailyRewardCard({ initialStreak }: DailyRewardCardProps) {
     : cycleProgress;
   const displayDay = currentRewardIndex + 1;
   const xpReward = XP_REWARDS[currentRewardIndex] ?? XP_REWARDS[0];
+  const coinReward = COIN_REWARDS[currentRewardIndex] ?? COIN_REWARDS[0];
   const completedBars = claimedToday
     ? cycleProgress === 0 && streakCount > 0
       ? TOTAL_DAYS
@@ -147,7 +148,7 @@ export function DailyRewardCard({ initialStreak }: DailyRewardCardProps) {
                 <p className="text-amber-100 text-sm">
                   {claimedToday ? "Reward claimed!" : "Claim your daily reward!"}
                 </p>
-                <p className="text-2xl font-bold">+{xpReward} XP</p>
+                <p className="text-2xl font-bold">+{xpReward} XP / +{coinReward} Coins</p>
                 {success && (
                   <p className="text-sm text-green-200 flex items-center gap-1">
                     <CheckCircle className="h-3 w-3" />

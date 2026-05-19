@@ -71,7 +71,7 @@ export const createCourse = async (req, res) => {
         console.log("DEBUG: createCourse payload:", JSON.stringify(req.body, null, 2));
         const validated = createCourseSchema.parse(req.body);
         const course = await createCourseRecord(validated, req.user);
-        await createAuditLog(req.user.id, 'ACADEMIC', 'CREATE', 'Course', course.id);
+        await createAuditLog(req.user.id, 'ACADEMIC', 'CREATE', 'Course', course.id, { after: course });
         return sendCreated(res, course, 'Course created successfully');
     } catch (error) {
         if (error.name === 'ZodError') {

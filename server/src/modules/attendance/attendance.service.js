@@ -220,7 +220,7 @@ export const markAttendanceForStudent = async (studentId, date, status, markedBy
             where: {
                 userId: studentId,
                 note: { contains: ATTENDANCE_REWARD_REASON },
-                createdAt: {
+                transactionDate: {
                     gte: new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
                 }
             }
@@ -238,7 +238,7 @@ export const markAttendanceForStudent = async (studentId, date, status, markedBy
             where: {
                 userId: studentId,
                 note: { contains: ATTENDANCE_REWARD_REASON },
-                createdAt: {
+                transactionDate: {
                     gte: new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
                 }
             }
@@ -320,7 +320,7 @@ export const markAttendanceForStudents = async (studentIds, date, status, marked
                     where: {
                         userId: studentId,
                         note: { contains: ATTENDANCE_REWARD_REASON },
-                        createdAt: {
+                        transactionDate: {
                             gte: new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
                         }
                     }
@@ -343,7 +343,7 @@ export const markAttendanceForStudents = async (studentIds, date, status, marked
                     where: {
                         userId: studentId,
                         note: { contains: ATTENDANCE_REWARD_REASON },
-                        createdAt: {
+                        transactionDate: {
                             gte: new Date(dt.getFullYear(), dt.getMonth(), dt.getDate())
                         }
                     }

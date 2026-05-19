@@ -10,6 +10,17 @@ export type TeacherDashboardUser = {
 
 export type TeacherDashboardResponse = {
   user?: TeacherDashboardUser;
+  recentSubmissions?: {
+    id: number;
+    submittedAt: string;
+    reviewStatus: string;
+    user: {
+      username: string;
+    };
+    assignment: {
+      title: string;
+    };
+  }[];
 };
 
 export type TeacherCourse = {

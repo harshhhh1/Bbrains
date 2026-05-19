@@ -252,20 +252,6 @@ export function FinanceTransactionsWorkspace({ mode }: FinanceTransactionsWorksp
         action={{ label: "Record Transaction", icon: <ReceiptText className="size-3.5" />, onClick: () => setModalOpen(true) }}
       />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-[2rem] border border-border/60 bg-card p-4 sm:p-6 shadow-sm overflow-hidden group relative">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">Records Evaluated</p>
-          <p className="mt-1 text-2xl sm:text-4xl font-black text-foreground tabular-nums tracking-tighter">{recordedTransactions.length}</p>
-          <p className="mt-2 text-xs font-medium text-muted-foreground/60 leading-relaxed">Primary financial events logged in this cycle.</p>
-          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-3xl -translate-x-4 -translate-y-4 group-hover:bg-primary/10 transition-colors" />
-        </div>
-        <div className="rounded-[2rem] border border-primary/20 bg-primary/5 p-4 sm:p-6 shadow-sm overflow-hidden group relative">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-1">Aggregate Value</p>
-          <p className="mt-1 text-2xl sm:text-4xl font-black text-primary tabular-nums tracking-tighter">{formatCurrency(recordedTotal)}</p>
-          <p className="mt-2 text-xs font-bold text-primary/40 leading-relaxed uppercase tracking-widest">Combined institutional volume.</p>
-        </div>
-      </div>
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-8">
         <div className="space-y-1">
           <h2 className="text-2xl font-black tracking-tight">Verified Ledger</h2>

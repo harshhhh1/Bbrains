@@ -226,7 +226,12 @@ const awardCoinsToUser = async (userId, amount, reason = "System Reward") => {
         const wallet = await tx.wallet.upsert({
             where: { userId },
             update: { balance: { increment: Number(amount) } },
-            create: { userId, balance: Number(amount) }
+            create: {
+                id: crypto.randomUUID(),
+                userId,
+                balance: Number(amount),
+                pin: '000000'
+            }
         });
 
         const transaction = await tx.transactionHistory.create({

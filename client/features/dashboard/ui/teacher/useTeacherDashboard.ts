@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
-import { 
-  courseApi, 
-  getAuthedClient, 
-  type SubjectChapterProgress, 
-  type Transaction, 
-  type AttendanceRecord, 
+import {
+  courseApi,
+  getAuthedClient,
+  type SubjectChapterProgress,
+  type Transaction,
+  type AttendanceRecord,
   type Announcement,
   type AttendanceData
 } from "@/services/api/client";
@@ -18,15 +18,63 @@ export interface WeeklyScheduleDay {
 }
 
 function buildWeeklyScheduleFromCourses(courses: any[], teacherName: string): WeeklyScheduleDay[] {
-  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  return days.map(day => ({ day, classes: [] }));
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  
+  const scheduleMap = new Map<string, any[]>();
+  daysOfWeek.forEach(day => scheduleMap.set(day, []));
+
+  courses.forEach(course => {
+    let timetable: any[] = [];
+    if (course.timetable) {
+      try {
+        timetable = typeof course.timetable === "string" 
+          ? JSON.parse(course.timetable) 
+          : course.timetable;
+      } catch (e) {
+        console.error("Failed to parse timetable for course", course.id, e);
+      }
+    }
+
+    if (Array.isArray(timetable)) {
+      timetable.forEach(entry => {
+        const entryDayNormalized = daysOfWeek.find(
+          d => d.toLowerCase() === entry.day?.toLowerCase() || d.toLowerCase().startsWith(entry.day?.toLowerCase()?.slice(0, 3) || "")
+        );
+
+        if (entryDayNormalized) {
+          scheduleMap.get(entryDayNormalized)?.push({
+            courseId: course.id,
+            courseName: course.name,
+            standard: course.standard || course.name,
+            subject: entry.subject,
+            startTime: entry.startTime,
+            endTime: entry.endTime,
+            room: entry.room || "N/A"
+          });
+        }
+      });
+    }
+  });
+
+  daysOfWeek.forEach(day => {
+    const dayClasses = scheduleMap.get(day) || [];
+    dayClasses.sort((a, b) => {
+      return (a.startTime || "").localeCompare(b.startTime || "");
+    });
+    scheduleMap.set(day, dayClasses);
+  });
+
+  return daysOfWeek.map(day => ({
+    day,
+    classes: scheduleMap.get(day) || []
+  }));
 }
-import type { 
-  TeacherDashboardResponse, 
-  TeacherDashboardUser, 
-  TeacherCourse, 
-  CourseStudentEnrollment, 
-  CourseAssignment 
+import type {
+  TeacherDashboardResponse,
+  TeacherDashboardUser,
+  TeacherCourse,
+  CourseStudentEnrollment,
+  CourseAssignment
 } from "./types";
 
 export function useTeacherDashboard() {
@@ -48,6 +96,7 @@ export function useTeacherDashboard() {
   const [teacherSchedule, setTeacherSchedule] = useState<WeeklyScheduleDay[]>([]);
   const [chapterProgressDraft, setChapterProgressDraft] = useState<SubjectChapterProgress[]>([]);
   const [collegeId, setCollegeId] = useState<string | number | undefined>();
+  const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadOverview() {
@@ -62,7 +111,7 @@ export function useTeacherDashboard() {
           client.get<{ success: boolean; data: Announcement[] }>("/announcements"),
           client.get<{ success: boolean; data: Transaction[] }>("/transactions/me?limit=100&category=salary&type=credit&status=success"),
           client.get<{ success: boolean; data: AttendanceRecord[] }>("/attendance"),
-          client.get<{ success: boolean; data: any }>("/assignments?status=pending"),
+          client.get<{ success: boolean; data: any }>("/academic/assignments?status=pending"),
         ]);
 
         if (dashboardResult.status === "rejected" && userResult.status === "rejected") {
@@ -75,11 +124,11 @@ export function useTeacherDashboard() {
         const lastName = teacherProfile?.lastName || teacherProfile?.userDetails?.lastName || "";
         const fullName = displayName || `${firstName} ${lastName}`.trim();
         const nextCourses = coursesResult.status === "fulfilled" ? coursesResult.value.data.data || [] : [];
-        
+
         setTeacherName(fullName || teacherProfile?.username || "Teacher");
         setCollegeId(teacherProfile?.collegeId);
-        const nextTeacherSubjects = Array.isArray(teacherProfile?.teacherSubjects) 
-          ? teacherProfile.teacherSubjects 
+        const nextTeacherSubjects = Array.isArray(teacherProfile?.teacherSubjects)
+          ? teacherProfile.teacherSubjects
           : Array.isArray(teacherProfile?.userDetails?.teacherSubjects)
             ? teacherProfile.userDetails.teacherSubjects
             : [];
@@ -88,10 +137,13 @@ export function useTeacherDashboard() {
         setAnnouncements(announcementsResult.status === "fulfilled" ? (announcementsResult.value.data.data || []).slice(0, 5) : []);
         setIncomeReceived(transactionsResult.status === "fulfilled" ? (transactionsResult.value.data.data || []).reduce((sum, t) => sum + Number(t.amount || 0), 0) : 0);
         setSalaryTransactions(transactionsResult.status === "fulfilled" ? (transactionsResult.value.data.data || []) : []);
-        
+
         const assignmentsData = assignmentsResult.status === "fulfilled" ? (assignmentsResult.value.data.data || []) : [];
         setPendingAssignments(Array.isArray(assignmentsData) ? assignmentsData.length : 0);
-        
+
+        const nextSubmissions = dashboardResult.status === "fulfilled" ? dashboardResult.value.data.data?.recentSubmissions || [] : [];
+        setRecentSubmissions(nextSubmissions);
+
         setAttendance(attendanceResult.status === "fulfilled" ? normalizeAttendance(attendanceResult.value.data.data || []) : normalizeAttendance([]));
         setTeacherSchedule(buildWeeklyScheduleFromCourses(nextCourses, fullName || teacherProfile?.username || "Teacher"));
         if (nextCourses.length > 0) setSelectedCourseId(String(nextCourses[0].id));
@@ -132,13 +184,13 @@ export function useTeacherDashboard() {
 
   const selectedCourse = useMemo(() => courses.find((c) => String(c.id) === selectedCourseId) || null, [courses, selectedCourseId]);
   const selectedCourseSubjectProgress = useMemo(() => normalizeCourseSubjectProgress(selectedCourse), [selectedCourse]);
-  
-  useEffect(() => { 
-    setChapterProgressDraft(selectedCourseSubjectProgress); 
+
+  useEffect(() => {
+    setChapterProgressDraft(selectedCourseSubjectProgress);
   }, [selectedCourseSubjectProgress]);
-  
+
   const hasChapterDraftChanges = useMemo(() => JSON.stringify(chapterProgressDraft) !== JSON.stringify(selectedCourseSubjectProgress), [chapterProgressDraft, selectedCourseSubjectProgress]);
-  
+
   const updateChapterProgress = (subject: string, field: "completedChapters" | "totalChapters", value: number) => {
     setChapterProgressDraft((prev) =>
       prev.map((p) =>
@@ -188,6 +240,7 @@ export function useTeacherDashboard() {
     selectedCourse,
     hasChapterDraftChanges,
     updateChapterProgress,
-    handleSaveChapterProgress
+    handleSaveChapterProgress,
+    recentSubmissions
   };
 }

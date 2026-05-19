@@ -45,6 +45,24 @@ const createUser = async (userId, username, email, collegeId, password, avatar, 
                     dob: options.dob ? new Date(options.dob) : new Date("2005-07-08"),
                     phone: options.phone ?? "7634928634"
                 }
+            },
+            xp: {
+                create: {
+                    xp: 0,
+                    level: 1
+                }
+            },
+            wallet: {
+                create: {
+                    id: `wallet_${userId}`,
+                    balance: 500,
+                    pin: "000000"
+                }
+            },
+            streak: {
+                create: {
+                    currentStreak: 0
+                }
             }
         },
     });
