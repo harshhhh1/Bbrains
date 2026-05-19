@@ -70,19 +70,20 @@ export const awardXpToUser = async (userId, amount) => {
         'achievement'
     );
 
-    // Check for achievements based on total XP
-    await checkAchievements(userId, xpRecord.xp, xpRecord.level);
-
-    // Auto-level-up check
+    // Check for level up
     const nextLevel = await prisma.level.findFirst({
         where: { levelNumber: xpRecord.level + 1 }
     });
+
+    let finalRecord = xpRecord;
 
     if (nextLevel && Number(xpRecord.xp) >= Number(nextLevel.requiredXp)) {
         const updated = await prisma.xp.update({
             where: { userId },
             data: { level: { increment: 1 } }
         });
+
+        finalRecord = updated;
 
         // Audit Log for Level Up
         await createAuditLog(
@@ -94,7 +95,7 @@ export const awardXpToUser = async (userId, amount) => {
             { oldLevel: xpRecord.level, newLevel: updated.level }
         );
 
-        // Notify Level Up with reward info (reward coins could be dynamic but using +50 as example)
+        // Notify Level Up
         await createNotification(
             userId,
             'Level Up!',
@@ -104,11 +105,12 @@ export const awardXpToUser = async (userId, amount) => {
 
         // Auto assign roles based on new level
         await autoAssignRoles(userId, updated.level);
-
-        return updated;
     }
 
-    return xpRecord;
+    // Check for achievements based on total XP and NEW level
+    await checkAchievements(userId, finalRecord.xp, finalRecord.level);
+
+    return finalRecord;
 };
 
 export const deductXpFromUser = async (userId, amount) => {

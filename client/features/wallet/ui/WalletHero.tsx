@@ -17,9 +17,7 @@ export function WalletHero({ walletBalance, xp, level, nextLevel, progressPercen
 
   return (
     <section className="relative overflow-hidden rounded-[30px] border border-border bg-gradient-to-br from-background via-card/50 to-muted/20 p-6 shadow-sm dark:from-slate-900/50 dark:via-slate-900/20 dark:to-slate-950/40">
-      <div className="pointer-events-none absolute right-6 top-6 hidden opacity-20 md:block">
-        <CreditCard className="w-14 h-14 text-foreground" />
-      </div>
+
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <div>
 

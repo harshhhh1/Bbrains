@@ -337,6 +337,9 @@ export const initChatSocket = (server) => {
                         if (parent) norm.replyToDetails = parent;
                     }
                     io.to(roomName).emit("chat:new", norm);
+
+                    // Trigger "First Blood" achievement
+                    void awardAchievement(identity.userId, "First Blood");
                 } else {
                     socket.emit("chat:error", { message: "Failed to save message" });
                 }
@@ -446,6 +449,12 @@ export const initChatSocket = (server) => {
             if (roomName) {
                 emitPresence(io, roomName);
             }
+        });
+    });
+
+    return io;
+};
+         }
         });
     });
 
