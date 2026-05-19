@@ -170,12 +170,6 @@ export function NotificationsBell() {
                         </div>
                     )}
                 </ScrollArea>
-                
-                <div className="p-2 border-t border-border">
-                    <Button variant="ghost" className="w-full text-xs font-medium h-8" onClick={() => router.push('/notifications')}>
-                        View all activity
-                    </Button>
-                </div>
             </DropdownMenuContent>
         </DropdownMenu>
     )

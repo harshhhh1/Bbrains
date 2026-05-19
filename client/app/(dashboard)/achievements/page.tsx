@@ -23,7 +23,7 @@ export default function AchievementsPage() {
           My Achievements
         </h1>
         <p className="text-muted-foreground">
-          View the milestones you&apos;ve unlocked on your learning journey.
+          View the milestones you've unlocked on your learning journey.
         </p>
       </div>
 

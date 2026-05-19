@@ -2,7 +2,6 @@
 
 import React from "react";
 import { StudentDashboard } from "@/features/dashboard/ui/StudentDashboard";
-import { StudentDashboardNewView } from "@/features/dashboard/ui/StudentDashboardNewView";
 import { AdminDashboard } from "@/features/dashboard/ui/AdminDashboard";
 import { TeacherDashboard } from "@/features/dashboard/ui/TeacherDashboard";
 import { ManagerDashboard } from "@/features/dashboard/ui/ManagerDashboard";
@@ -47,18 +46,6 @@ export function DashboardClient({
   }
 
   // Default to Student View
-  if (uiMode === "new") {
-    return (
-      <StudentDashboardNewView
-        dashboardData={dashboardData}
-        transformedLeaderboard={transformedLeaderboard}
-        username={username}
-        resolvedLevel={resolvedLevel}
-        resolvedXp={resolvedXp}
-      />
-    );
-  }
-
   return (
     <StudentDashboard
       username={username}
