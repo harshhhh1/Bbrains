@@ -9,7 +9,7 @@ const router = express.Router();
 router.use(verifyToken);
 
 router.get('/', getAllAnnouncements);
-router.post('/', checkPermission('create_announcement'), createAnnouncement);
+router.post('/', checkPermission('manage_announcement'), createAnnouncement);
 router.delete('/:id', checkPermission('manage_announcement'), deleteAnnouncement);
 router.post('/:id/acknowledge', acknowledgeAnnouncement);
 router.get('/:id/acknowledged', getAcknowledgedUsers);

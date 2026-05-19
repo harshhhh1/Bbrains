@@ -4,16 +4,16 @@ import {
     deleteCourse, listCourseStudents, listCourseAssignments
 } from './course.controller.js';
 import verifyToken from '../../middleware/auth.middleware.js';
-import authorize from '../../middleware/authorize.js';
+import checkPermission from '../../middleware/checkPermission.js';
 
 const router = express.Router();
 
-router.post('/', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), createCourse);
+router.post('/', verifyToken, checkPermission('manage_course'), createCourse);
 router.get('/', verifyToken, getCourses);
 router.get('/:id', verifyToken, getCourse);
-router.put('/:id', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), updateCourse);
-router.delete('/:id', verifyToken, authorize('admin', 'manager', 'superadmin'), deleteCourse);
-router.get('/:id/students', verifyToken, authorize('teacher', 'admin', 'manager', 'superadmin'), listCourseStudents);
+router.put('/:id', verifyToken, checkPermission('manage_course'), updateCourse);
+router.delete('/:id', verifyToken, checkPermission('manage_course'), deleteCourse);
+router.get('/:id/students', verifyToken, checkPermission('manage_course'), listCourseStudents);
 router.get('/:id/assignments', verifyToken, listCourseAssignments);
 
 export default router;

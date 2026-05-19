@@ -20,14 +20,7 @@ export function useStudyMaterials(initialCollegeId?: string, initialCourseId?: s
   const [breadcrumbs, setBreadcrumbs] = useState<{ name: string; prefix: string; displayName?: string }[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [canEdit, setCanEdit] = useState(false)
-
-  // Check if user can edit (admin, manager, teacher)
-  useEffect(() => {
-    const userType = user?.type as UserRole
-    const editableRoles: UserRole[] = ['admin', 'manager', 'superadmin', 'teacher']
-    setCanEdit(userType ? editableRoles.includes(userType) : false)
-  }, [user])
+  const canEdit = hasPermission("upload_materials")
 
   // Load materials for current prefix
   const loadMaterials = useCallback(async (prefix: string, collegeId?: string, courseId?: string) => {

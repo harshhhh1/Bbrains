@@ -30,9 +30,16 @@ export const getAllLogs = async (req, res) => {
         const limit = Math.min(parseInt(req.query.limit) || 20, 100);
         const skip = (page - 1) * limit;
 
-        const where = {
-            user: { collegeId: req.user.collegeId }
-        };
+        const isSuperAdmin = req.user.type === 'superadmin' || req.user.originalType === 'superadmin' ||
+                             req.user.type === 'bbrains_official' || req.user.originalType === 'bbrains_official';
+
+        const where = {};
+        if (!isSuperAdmin) {
+            where.user = { collegeId: req.user.collegeId };
+        } else if (req.query.collegeId) {
+            where.user = { collegeId: parseInt(req.query.collegeId) };
+        }
+
         if (req.query.category) where.category = req.query.category;
         if (req.query.action) where.action = req.query.action;
         if (req.query.userId) where.userId = req.query.userId;
@@ -47,7 +54,18 @@ export const getAllLogs = async (req, res) => {
         const [logs, total] = await prisma.$transaction([
             prisma.auditLog.findMany({
                 where, skip, take: limit,
-                include: { user: { select: { username: true } } },
+                include: {
+                    user: {
+                        select: {
+                            username: true,
+                            college: {
+                                select: {
+                                    name: true
+                                }
+                            }
+                        }
+                    }
+                },
                 orderBy: { createdAt: 'desc' }
             }),
             prisma.auditLog.count({ where })
@@ -55,6 +73,7 @@ export const getAllLogs = async (req, res) => {
 
         return sendPaginated(res, logs, { page, limit, total });
     } catch (error) {
+        console.error('getAllLogs error:', error);
         return sendError(res, 'Failed to fetch logs', 500);
     }
 };
@@ -67,10 +86,27 @@ export const getLogById = async (req, res) => {
 
         const log = await prisma.auditLog.findUnique({
             where: { id },
-            include: { user: { select: { username: true, collegeId: true } } }
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        collegeId: true,
+                        college: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
-        if (!log || log.user?.collegeId !== req.user.collegeId) return sendError(res, 'Log not found', 404);
+        const isSuperAdmin = req.user.type === 'superadmin' || req.user.originalType === 'superadmin' ||
+                             req.user.type === 'bbrains_official' || req.user.originalType === 'bbrains_official';
+
+        if (!log || (!isSuperAdmin && log.user?.collegeId !== req.user.collegeId)) {
+            return sendError(res, 'Log not found', 404);
+        }
         return sendSuccess(res, log);
     } catch (error) {
         return sendError(res, 'Failed to fetch log', 500);
@@ -80,7 +116,16 @@ export const getLogById = async (req, res) => {
 // GET /logs/stats
 export const getLogStats = async (req, res) => {
     try {
-        const where = { user: { collegeId: req.user.collegeId } };
+        const isSuperAdmin = req.user.type === 'superadmin' || req.user.originalType === 'superadmin' ||
+                             req.user.type === 'bbrains_official' || req.user.originalType === 'bbrains_official';
+
+        const where = {};
+        if (!isSuperAdmin) {
+            where.user = { collegeId: req.user.collegeId };
+        } else if (req.query.collegeId) {
+            where.user = { collegeId: parseInt(req.query.collegeId) };
+        }
+
         const [totalLogs, byCategory, byAction] = await Promise.all([
             prisma.auditLog.count({ where }),
             prisma.auditLog.groupBy({

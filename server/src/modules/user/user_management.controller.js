@@ -669,7 +669,7 @@ export const batchImportUsers = async (req, res) => {
         // Validate required fields - only the essentials
         const requiredFields = [
             'firstname', 'lastname', 'email', 'type',
-            'sex', 'dob', 'courseid'
+            'sex', 'dob'
         ];
 
         const validationResult = validateCSVData(csvData, requiredFields);
@@ -732,10 +732,16 @@ export const batchImportUsers = async (req, res) => {
                     }
 
                     // Validate collegeId from request user
-                    const collegeId = await resolveCollegeId(null, req.user.collegeId);
+                    const collegeId = await resolveCollegeId(null, req.user.collegeId, req.user.type, req.user.originalType);
+                    if (!collegeId) {
+                        throw new Error('Please impersonate a college first before importing users');
+                    }
 
                     // Validate course exists and belongs to same college
-                    const course = await findCourseInCollege(tx, Number(row.courseid), collegeId, 'Selected course was not found for this college');
+                    let course = null;
+                    if (row.courseid && String(row.courseid).trim() !== "") {
+                        course = await findCourseInCollege(tx, Number(row.courseid), collegeId, 'Selected course was not found for this college');
+                    }
 
                     // Create Address record only if address fields present
                     let address = null;
@@ -822,16 +828,18 @@ export const batchImportUsers = async (req, res) => {
 
                     // If student, create Enrollment record
                     if (enumType === 'student') {
-                        await tx.enrollment.create({
-                            data: {
-                                userId: user.id,
-                                courseId: Number(row.courseid),
-                                enrolledAt: new Date()
-                            }
-                        });
-                    } 
+                        if (course) {
+                            await tx.enrollment.create({
+                                data: {
+                                    userId: user.id,
+                                    courseId: course.id,
+                                    enrolledAt: new Date()
+                                }
+                            });
+                        }
+                    }
                     // If teacher, try to assign as class teacher if course has none
-                    else if (enumType === 'teacher' && !course.classTeacherId) {
+                    else if (enumType === 'teacher' && course && !course.classTeacherId) {
                         await tx.course.update({
                             where: { id: course.id },
                             data: { classTeacherId: user.id }

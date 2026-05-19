@@ -1,6 +1,6 @@
 import express from 'express';
 import { 
-    createRole, getRoles, updateRole, deleteRole, 
+    createRole, getRoles, updateRole, deleteRole, updateRolePermissions,
     assignRole, removeRole, listUsers, listUserRoles,
     getAllData
 } from './role.controller.js';
@@ -14,6 +14,7 @@ router.get('/all-data', verifyToken, authorize('admin', 'superadmin'), getAllDat
 router.post('/', verifyToken, authorize('admin', 'superadmin'), createRole);
 router.get('/', verifyToken, authorize('admin', 'superadmin'), getRoles);
 router.put('/:id', verifyToken, authorize('admin', 'superadmin'), updateRole);
+router.put('/:id/permissions', verifyToken, authorize('admin', 'superadmin'), updateRolePermissions);
 router.delete('/:id', verifyToken, authorize('admin', 'superadmin'), deleteRole);
 
 // User role management (admin only, except viewing own)

@@ -16,7 +16,7 @@ export function useUsersManagement(pageCollegeId: string | null) {
   const [submitting, setSubmitting] = useState(false);
   const [editingUser, setEditingUser] = useState<ApiUser | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [roleDialogUser, setRoleDialogUser] = useState<ApiUser | null>(null);
+
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [importSubmitting, setImportSubmitting] = useState(false);
   const [importProgress, setImportProgress] = useState(0);
@@ -116,10 +116,20 @@ export function useUsersManagement(pageCollegeId: string | null) {
       formData.append('file', file);
 
       const token = await getAuthToken();
+      const getCookie = (name: string): string | null => {
+        if (typeof document === "undefined") return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+        return null;
+      };
+      const impersonateCollegeId = getCookie("impersonateCollegeId");
+
       const response = await fetch(`${getBaseUrl()}/users/batch-import`, {
         method: 'POST',
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(impersonateCollegeId ? { 'X-Impersonate-College-Id': impersonateCollegeId } : {}),
         },
         body: formData,
       });
@@ -290,8 +300,7 @@ export function useUsersManagement(pageCollegeId: string | null) {
     editingUser,
     deleteId,
     setDeleteId,
-    roleDialogUser,
-    setRoleDialogUser,
+
     importDialogOpen,
     setImportDialogOpen,
     importSubmitting,

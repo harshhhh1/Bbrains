@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Megaphone, Settings } from "lucide-react";
+import { Plus, Megaphone, Settings, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 
 export function SuperadminActions() {
@@ -22,6 +22,12 @@ export function SuperadminActions() {
           <Link href="/announcements?mode=global">
             <Megaphone className="h-4 w-4" />
             Global Announcement
+          </Link>
+        </Button>
+        <Button asChild variant="outline" className="justify-start gap-2">
+          <Link href="/superadmin/features">
+            <SlidersHorizontal className="h-4 w-4" />
+            Global Features
           </Link>
         </Button>
         <Button asChild variant="outline" className="justify-start gap-2">

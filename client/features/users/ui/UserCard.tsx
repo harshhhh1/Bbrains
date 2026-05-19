@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Trash2, Shield, Eye, Mail, Phone } from "lucide-react";
+import { Pencil, Trash2, Eye, Mail, Phone } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,11 @@ interface UserCardProps {
   user: ApiUser;
   onEdit?: (user: ApiUser) => void;
   onDelete: (userId: string) => void;
-  onManageRoles: (user: ApiUser) => void;
   onView?: (user: ApiUser) => void;
   isLast?: boolean;
 }
 
-export function UserCard({ user, onEdit, onDelete, onManageRoles, onView, isLast }: UserCardProps) {
+export function UserCard({ user, onEdit, onDelete, onView, isLast }: UserCardProps) {
   const firstName = user.userDetails?.firstName || "";
   const lastName = user.userDetails?.lastName || "";
   const displayName = user.userDetails?.displayName || `${firstName} ${lastName}`.trim() || user.username;
@@ -53,20 +52,29 @@ export function UserCard({ user, onEdit, onDelete, onManageRoles, onView, isLast
           <Badge variant="outline" className="capitalize text-[10px] px-1.5 py-0 h-5">
             {user.type}
           </Badge>
-          {(user.roles || []).slice(0, 3).map((entry) => (
-            entry?.role?.name ? (
-              <Badge 
-                key={`${user.id}-${entry.role.id}`} 
-                variant="secondary"
-                className="text-[10px] font-medium bg-primary/5 text-primary border-primary/10 h-5 px-1.5"
-              >
-                {entry.role.name}
-              </Badge>
-            ) : null
-          ))}
-          {(user.roles || []).length > 3 && (
-            <span className="text-[10px] text-muted-foreground">+{user.roles!.length - 3}</span>
-          )}
+          {(() => {
+            const displayRoles = (user.roles || []).filter(
+              (entry) => entry?.role?.name?.toLowerCase() !== user.type?.toLowerCase()
+            );
+            return (
+              <>
+                {displayRoles.slice(0, 3).map((entry) => (
+                  entry?.role?.name ? (
+                    <Badge 
+                      key={`${user.id}-${entry.role.id}`} 
+                      variant="secondary"
+                      className="text-[10px] font-medium bg-primary/5 text-primary border-primary/10 h-5 px-1.5"
+                    >
+                      {entry.role.name}
+                    </Badge>
+                  ) : null
+                ))}
+                {displayRoles.length > 3 && (
+                  <span className="text-[10px] text-muted-foreground">+{displayRoles.length - 3}</span>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         <div className="hidden lg:flex items-center gap-1">
@@ -81,15 +89,6 @@ export function UserCard({ user, onEdit, onDelete, onManageRoles, onView, isLast
               <Eye className="h-4 w-4" />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-blue-500/10 hover:text-blue-500 transition-colors shrink-0"
-            onClick={() => onManageRoles(user)}
-            title="Manage Roles"
-          >
-            <Shield className="h-4 w-4" />
-          </Button>
           {onEdit && (
             <Button
               variant="ghost"
@@ -125,15 +124,6 @@ export function UserCard({ user, onEdit, onDelete, onManageRoles, onView, isLast
             <Eye className="h-4 w-4" />
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 hover:bg-blue-500/10 hover:text-blue-500 transition-colors"
-          onClick={() => onManageRoles(user)}
-          title="Manage Roles"
-        >
-          <Shield className="h-4 w-4" />
-        </Button>
         {onEdit && (
           <Button
             variant="ghost"

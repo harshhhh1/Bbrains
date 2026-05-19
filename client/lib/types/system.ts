@@ -33,6 +33,9 @@ export interface ApiAuditLog {
     user?: {
         username: string
         avatar?: string | null
+        college?: {
+            name: string
+        } | null
     }
 }
 

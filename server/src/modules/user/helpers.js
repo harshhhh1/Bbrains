@@ -8,7 +8,7 @@ const findCourseInCollege = async (tx, courseId, collegeId, notFoundMessage) => 
         }
     });
 
-    if (!course || Number(course.collegeId ?? 0) !== Number(collegeId)) {
+    if (!course || (course.collegeId !== null && Number(course.collegeId) !== Number(collegeId))) {
         throw new Error(notFoundMessage);
     }
 

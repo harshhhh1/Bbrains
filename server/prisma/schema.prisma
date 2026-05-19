@@ -28,7 +28,7 @@ model College {
 model User {
   // Store Clerk's user id (e.g. "user_...") as the primary key.
   id                 String               @id @map("user_id")
-  collegeId          Int                  @map("college_id")
+  collegeId          Int?                 @map("college_id")
   email              String               @unique @db.VarChar(50)
   username           String               @unique @db.VarChar(32)
   password           String?              @db.VarChar(255)
@@ -48,7 +48,7 @@ model User {
   createdAssignments Assignment[]          @relation("AssignmentCreator")
   transactions       TransactionHistory[]
   library            Library[]
-  college            College              @relation(fields: [collegeId], references: [id])
+  college            College?             @relation(fields: [collegeId], references: [id], onDelete: SetNull)
   userAchievements   UserAchievements[]
   userDetails        UserDetails?
   roles              UserRoles[]

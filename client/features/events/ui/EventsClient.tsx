@@ -28,7 +28,7 @@ export function EventsClient() {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
-  const canCreateEvent = useHasPermission("teacher") || useHasPermission("admin");
+  const canCreateEvent = useHasPermission("create_event");
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);

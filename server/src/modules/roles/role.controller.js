@@ -76,6 +76,27 @@ export const updateRole = async (req, res) => {
     }
 };
 
+// PUT /roles/:id/permissions
+export const updateRolePermissions = async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (isNaN(id)) return sendError(res, 'Invalid role ID', 400);
+
+        const { permissions } = req.body;
+        if (!Array.isArray(permissions)) {
+            return sendError(res, 'Permissions must be an array', 400);
+        }
+
+        const role = await updateRoleRecord(id, { permissions });
+
+        await createAuditLog(req.user.id, 'SYSTEM', 'UPDATE', 'RolePermissions', id);
+        return sendSuccess(res, role, 'Role permissions updated successfully');
+    } catch (error) {
+        console.error("Failed to update role permissions:", error);
+        return sendError(res, 'Failed to update role permissions', 500);
+    }
+};
+
 // DELETE /roles/:id
 export const deleteRole = async (req, res) => {
     try {

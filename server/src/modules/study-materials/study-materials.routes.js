@@ -1,7 +1,7 @@
 import express from 'express'
 import multer from 'multer'
 import verifyToken from '../../middleware/auth.middleware.js'
-import authorize from '../../middleware/authorize.js'
+import checkPermission from '../../middleware/checkPermission.js'
 import {
   listMaterialsController,
   uploadMaterialController,
@@ -27,25 +27,25 @@ router.get('/list', listMaterialsController)
 // Get signed URL for private file download (accessible by all authenticated users)
 router.get('/signed-url', getSignedUrlController)
 
-// Upload material (admin, manager, teacher only)
+// Upload material (users with upload_materials permission)
 router.post(
   '/upload',
-  authorize('admin', 'manager', 'superadmin', 'teacher'),
+  checkPermission('upload_materials'),
   upload.single('file'),
   uploadMaterialController
 )
 
-// Delete material (admin, manager, teacher only)
+// Delete material (users with upload_materials permission)
 router.delete(
   '/delete',
-  authorize('admin', 'manager', 'superadmin', 'teacher'),
+  checkPermission('upload_materials'),
   deleteMaterialController
 )
 
-// Rename material (admin, manager, teacher only)
+// Rename material (users with upload_materials permission)
 router.put(
   '/rename',
-  authorize('admin', 'manager', 'superadmin', 'teacher'),
+  checkPermission('upload_materials'),
   renameMaterialController
 )
 

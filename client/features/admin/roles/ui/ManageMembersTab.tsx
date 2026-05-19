@@ -169,7 +169,7 @@ export default function ManageMembersTab({
             <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               Add Members
             </h3>
-            <div className="space-y-1 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-1  overflow-y-auto pr-2 custom-scrollbar">
               {filteredNonMembers.length > 0 ? (
                 filteredNonMembers.slice(0, 20).map((user) => (
                   <div key={user.id} className="flex items-center justify-between rounded-xl p-2 hover:bg-muted/50 transition-colors">

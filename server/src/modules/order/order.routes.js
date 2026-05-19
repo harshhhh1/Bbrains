@@ -1,14 +1,14 @@
 import express from 'express';
 import { getMyOrders, getOrder, listAllOrders, deliverOrder, updateOrderStatusHandler } from './order.controller.js';
 import verifyToken from '../../middleware/auth.middleware.js';
-import authorize from '../../middleware/authorize.js';
+import checkPermission from '../../middleware/checkPermission.js';
 
 const router = express.Router();
 
 router.get('/me', verifyToken, getMyOrders);
-router.get('/all', verifyToken, authorize('admin'), listAllOrders);
+router.get('/all', verifyToken, checkPermission('manage_product'), listAllOrders);
 router.get('/:id', verifyToken, getOrder);
 router.post('/:id/deliver', verifyToken, deliverOrder);
-router.put('/:id/status', verifyToken, authorize('admin'), updateOrderStatusHandler);
+router.put('/:id/status', verifyToken, checkPermission('manage_product'), updateOrderStatusHandler);
 
 export default router;

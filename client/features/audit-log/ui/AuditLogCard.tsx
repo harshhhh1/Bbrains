@@ -74,11 +74,16 @@ export function AuditLogCard({ log }: AuditLogCardProps) {
                             </span>
                         )}
                     </div>
-                    <div className="text-[11px] text-muted-foreground mt-0.5 font-medium flex items-center gap-2">
+                    <div className="text-[11px] text-muted-foreground mt-0.5 font-medium flex items-center gap-2 flex-wrap">
                         {fmtDate(log.createdAt)}
                         <Badge variant="outline" className={cn("px-1.5 py-0 h-4 text-[9px] font-bold tracking-tight", categoryColors[log.category])}>
                             {log.category}
                         </Badge>
+                        {log.user?.college?.name && (
+                            <Badge variant="outline" className="px-1.5 py-0 h-4 text-[9px] font-bold bg-brand-purple/5 border-brand-purple/20 text-brand-purple tracking-tight">
+                                {log.user.college.name}
+                            </Badge>
+                        )}
                     </div>
                 </div>
 

@@ -6,7 +6,8 @@ import prisma from '../utils/prisma.js';
  * Checks if the authenticated user has the specified permission key enabled in any of their roles.
  * Must be used AFTER verifyToken middleware.
  */
-const checkPermission = (permissionKey) => {
+const checkPermission = (...permissionKeys) => {
+    const keys = Array.isArray(permissionKeys[0]) ? permissionKeys[0] : permissionKeys;
     return async (req, res, next) => {
         try {
             if (!req.user) {
@@ -16,7 +17,7 @@ const checkPermission = (permissionKey) => {
             const userId = req.user.id;
             const type = req.user.type;
 
-            // Superadmins bypass all permission checks
+            // Superadmins and Admins bypass all permission checks
             if (type === 'superadmin' || type === 'admin') {
                 return next();
             }
@@ -50,14 +51,15 @@ const checkPermission = (permissionKey) => {
                 }
             });
 
-            // Check if user has the specific permission OR global administrator permission
-            if (activePermissions.has(permissionKey) || activePermissions.has('administrator')) {
+            // Check if user has any of the specified permissions OR global administrator permission
+            const hasAny = keys.some((k) => activePermissions.has(k)) || activePermissions.has('administrator');
+            if (hasAny) {
                 return next();
             }
 
             return res.status(403).json({
                 success: false,
-                message: `You do not have permission to ${permissionKey.replace(/_/g, ' ')}`
+                message: `You do not have permission to perform this action. Required permissions: ${keys.join(' or ').replace(/_/g, ' ')}`
             });
         } catch (error) {
             console.error('Permission check error:', error);

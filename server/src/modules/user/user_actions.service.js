@@ -74,7 +74,51 @@ const updateUser = async (id, data) => {
             }
         }
 
-        return user;
+        return await tx.user.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                type: true,
+                userDetails: {
+                    select: {
+                        firstName: true,
+                        lastName: true,
+                        avatar: true,
+                        sex: true,
+                        dob: true,
+                        phone: true,
+                        bio: true,
+                        teacherSubjects: true,
+                    }
+                },
+                roles: {
+                    select: {
+                        role: true
+                    }
+                },
+                enrollments: {
+                    select: {
+                        courseId: true,
+                        course: {
+                            select: {
+                                id: true,
+                                name: true,
+                                standard: true
+                            }
+                        }
+                    }
+                },
+                classTeacherCourse: {
+                    select: {
+                        id: true,
+                        name: true,
+                        standard: true
+                    }
+                }
+            }
+        });
     });
 };
 

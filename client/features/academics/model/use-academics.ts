@@ -7,7 +7,7 @@ import { useHasPermission } from "@/components/providers/permissions-provider";
 
 export function useAcademics() {
   const router = useRouter();
-  const canCreateCourse = useHasPermission("create_course");
+  const canCreateCourse = useHasPermission("manage_course");
   const canManageCourse = useHasPermission("manage_course");
   const [tab, setTab] = useState("courses");
   const [search, setSearch] = useState("");

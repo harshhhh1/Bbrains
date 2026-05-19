@@ -5,23 +5,23 @@ import {
     getPermissions, updatePermissions, updateMembers
 } from './role.controller.js';
 import verifyToken from '../../middleware/auth.middleware.js';
-import authorize from '../../middleware/authorize.js';
+import checkPermission from '../../middleware/checkPermission.js';
 
 const router = express.Router();
 
-// Role CRUD (admin only)
-router.post('/', verifyToken, authorize('admin', 'superadmin'), createRole);
-router.get('/', verifyToken, authorize('admin', 'superadmin'), getRoles);
-router.get('/permissions', verifyToken, authorize('admin', 'superadmin'), getPermissions);
-router.put('/:id/permissions', verifyToken, authorize('admin', 'superadmin'), updatePermissions);
-router.put('/:id/members', verifyToken, authorize('admin', 'superadmin'), updateMembers);
-router.put('/:id', verifyToken, authorize('admin', 'superadmin'), updateRole);
-router.delete('/:id', verifyToken, authorize('admin', 'superadmin'), deleteRole);
+// Role CRUD
+router.post('/', verifyToken, checkPermission('manage_roles'), createRole);
+router.get('/', verifyToken, checkPermission('manage_roles', 'assign_roles'), getRoles);
+router.get('/permissions', verifyToken, checkPermission('manage_roles'), getPermissions);
+router.put('/:id/permissions', verifyToken, checkPermission('manage_roles'), updatePermissions);
+router.put('/:id/members', verifyToken, checkPermission('assign_roles'), updateMembers);
+router.put('/:id', verifyToken, checkPermission('manage_roles'), updateRole);
+router.delete('/:id', verifyToken, checkPermission('manage_roles'), deleteRole);
 
-// User role management (admin only, except viewing own)
-router.get('/users', verifyToken, authorize('admin', 'superadmin'), listUsers);
-router.post('/users/:userId/assign', verifyToken, authorize('admin', 'superadmin'), assignRole);
-router.delete('/users/:userId/:roleId', verifyToken, authorize('admin', 'superadmin'), removeRole);
+// User role management (except viewing own)
+router.get('/users', verifyToken, checkPermission('manage_roles', 'assign_roles'), listUsers);
+router.post('/users/:userId/assign', verifyToken, checkPermission('assign_roles'), assignRole);
+router.delete('/users/:userId/:roleId', verifyToken, checkPermission('assign_roles'), removeRole);
 router.get('/users/:userId', verifyToken, listUserRoles);
 
 export default router;

@@ -170,7 +170,7 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
     }
   };
 
-  const canCreateAnnouncement = useHasPermission("create_announcement");
+  const canCreateAnnouncement = useHasPermission("manage_announcement");
   const contentBottomPadding = canCreateAnnouncement ? "16rem" : "4rem";
 
   return (

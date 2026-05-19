@@ -22,9 +22,9 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
     const userRole = user?.type || "student"
     
     // Check permissions
-    const hasManagePerm = useHasPermission("manage_products")
+    const hasManagePerm = useHasPermission("manage_product")
     const canManageProducts = hasManagePerm && userRole !== "admin" // Hide for admin as requested
-    const canApproveProducts = useHasPermission("approve_products") || hasManagePerm || userRole === "teacher" || userRole === "manager" // Allow teachers & managers to approve
+    const canApproveProducts = hasManagePerm;
 
     const isManagerial = ["admin", "superadmin", "teacher", "manager"].includes(userRole)
 

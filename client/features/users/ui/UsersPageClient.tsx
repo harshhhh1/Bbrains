@@ -7,7 +7,6 @@ import { BriefcaseBusiness, ShieldCheck } from "lucide-react";
 import { CrudDrawer } from "@/features/admin/ui/CrudDrawer";
 import { UserFilters } from "@/features/users/ui/UserFilters";
 import { UsersGrid } from "@/features/users/ui/UsersGrid";
-import { UserRolesDialog } from "@/features/users/ui/UserRolesDialog";
 import { UserDetailsDrawer } from "@/features/users/ui/UserDetailsDrawer";
 import { DeleteConfirmationDialog } from "@/features/users/ui/DeleteConfirmationDialog";
 import { ManagerForm } from "@/features/users/ui/ManagerForm";
@@ -38,8 +37,6 @@ export default function UsersPageClient() {
     editingUser,
     deleteId,
     setDeleteId,
-    roleDialogUser,
-    setRoleDialogUser,
     importDialogOpen,
     setImportDialogOpen,
     importSubmitting,
@@ -59,8 +56,6 @@ export default function UsersPageClient() {
     // Sync impersonation cookie with URL param for Superadmins
     if (pageCollegeId) {
       import("@/services/api/base").then(m => (m as any).setImpersonateCollegeId(pageCollegeId));
-    } else {
-      import("@/services/api/base").then(m => (m as any).setImpersonateCollegeId(null));
     }
   }, [pageCollegeId]);
 
@@ -107,7 +102,6 @@ export default function UsersPageClient() {
         loading={loading}
         onEdit={handleEditUser}
         onDelete={setDeleteId}
-        onManageRoles={setRoleDialogUser}
         onView={(user) => {
           setSelectedUserDetails(user);
           setShowDetailsDrawer(true);
@@ -132,12 +126,7 @@ export default function UsersPageClient() {
         <ManagerForm form={form} onChange={setForm} disabled={submitting} roles={roles} courses={courses} isEditing={!!editingUser} />
       </CrudDrawer>
 
-      <UserRolesDialog
-        open={!!roleDialogUser}
-        onOpenChange={(open) => !open && setRoleDialogUser(null)}
-        userId={roleDialogUser?.id ?? null}
-        username={roleDialogUser?.username ?? ""}
-      />
+
 
       <DeleteConfirmationDialog
         open={!!deleteId}

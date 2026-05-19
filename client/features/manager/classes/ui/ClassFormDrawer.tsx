@@ -19,7 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { TimetableEditorDialog } from "@/features/manager/classes/ui/TimetableEditorDialog";
 import type { Course } from "@/services/api/client";
 import type { ClassFormState } from "@/features/manager/classes/types/classes";
-import { standardOptions } from "@/features/manager/classes/model/classes";
+
 
 type ClassFormDrawerProps = {
   open: boolean;
@@ -110,16 +110,10 @@ export function ClassFormDrawer({
                   <Label htmlFor="class-standard">Standard / Course</Label>
                   <Input
                     id="class-standard"
-                    list="class-standard-options"
                     value={form.standard}
                     onChange={(event) => setForm((current) => ({ ...current, standard: event.target.value }))}
                     placeholder="8th Standard / FY BCom / BSc 1st Year"
                   />
-                  <datalist id="class-standard-options">
-                    {standardOptions.map((option) => (
-                      <option key={option} value={option} />
-                    ))}
-                  </datalist>
                 </div>
               </div>
 

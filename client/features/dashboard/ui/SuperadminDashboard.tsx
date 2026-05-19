@@ -1,8 +1,10 @@
-import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Building2, Settings } from "lucide-react";
-import { DashboardContent } from "@/components/dashboard-content";
+import { SuperadminMetrics } from "@/features/superadmin/components/superadmin-metrics";
+import { SuperadminActions } from "@/features/superadmin/components/superadmin-actions";
+import { CollegesQuickList } from "@/features/superadmin/components/colleges-quick-list";
+import { RecentAuditLogs } from "@/features/superadmin/components/recent-audit-logs";
+import { PendingActions } from "@/features/superadmin/components/pending-actions";
 import { useUser } from "@/context/user-context";
+import { DashboardContent } from "@/components/dashboard-content";
 
 export function SuperadminDashboard() {
     const { user } = useUser();
@@ -10,35 +12,26 @@ export function SuperadminDashboard() {
 
     return (
         <DashboardContent className="space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight">Welcome back, {greetingName}! 👋</h1>
-            <p className="text-muted-foreground">Welcome to the Bbrains Officials control panel.</p>
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight">Welcome back, {greetingName}! 👋</h1>
+                <p className="text-muted-foreground">Welcome to the Bbrains Officials control panel.</p>
+            </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Link href="/colleges" className="block">
-                    <Card className="hover:bg-accent/50 transition-colors">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Manage Colleges</CardTitle>
-                            <Building2 className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">Colleges</div>
-                            <p className="text-xs text-muted-foreground">Configure feature flags per college</p>
-                        </CardContent>
-                    </Card>
-                </Link>
+            <SuperadminMetrics />
 
-                <Link href="/superadmin/features" className="block">
-                    <Card className="hover:bg-accent/50 transition-colors">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Global Features</CardTitle>
-                            <Settings className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">System Config</div>
-                            <p className="text-xs text-muted-foreground">Manage system-wide features</p>
-                        </CardContent>
-                    </Card>
-                </Link>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <div className="md:col-span-1 lg:col-span-1 flex flex-col gap-6">
+                    <SuperadminActions />
+                    <PendingActions />
+                </div>
+                
+                <div className="md:col-span-1 lg:col-span-3">
+                    <CollegesQuickList />
+                </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-1">
+                <RecentAuditLogs />
             </div>
         </DashboardContent>
     );

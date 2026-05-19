@@ -93,7 +93,7 @@ export const updateCollegeRecord = async (id, data) => {
     });
 };
 
-// Delete college (Manual cascade to clean up all institutional data)
+
 export const deleteCollegeRecord = async (id) => {
     const collegeId = parseInt(id);
 
@@ -122,6 +122,11 @@ export const deleteCollegeRecord = async (id) => {
         // 4. Start cleaning up from the most dependent tables up
         
         // --- Academic Cleanup ---
+        if (userIds.length > 0) {
+            await tx.submission.deleteMany({ where: { userId: { in: userIds } } });
+            await tx.grade.deleteMany({ where: { userId: { in: userIds } } });
+            await tx.enrollment.deleteMany({ where: { userId: { in: userIds } } });
+        }
         if (assignmentIds.length > 0) {
             await tx.submission.deleteMany({ where: { assignmentId: { in: assignmentIds } } });
             await tx.grade.deleteMany({ where: { assignmentId: { in: assignmentIds } } });

@@ -11,11 +11,10 @@ interface UsersGridProps {
   loading?: boolean;
   onEdit?: (user: ApiUser) => void;
   onDelete: (userId: string) => void;
-  onManageRoles: (user: ApiUser) => void;
   onView?: (user: ApiUser) => void;
 }
 
-export function UsersGrid({ users, loading, onEdit, onDelete, onManageRoles, onView }: UsersGridProps) {
+export function UsersGrid({ users, loading, onEdit, onDelete, onView }: UsersGridProps) {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -42,7 +41,6 @@ export function UsersGrid({ users, loading, onEdit, onDelete, onManageRoles, onV
           user={user}
           onEdit={onEdit}
           onDelete={onDelete}
-          onManageRoles={onManageRoles}
           onView={onView}
           isLast={index === users.length - 1}
         />

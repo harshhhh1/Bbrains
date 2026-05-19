@@ -8,7 +8,7 @@ import {
     getProductReviews, checkCanReview, createReview, getSales
 } from './market.controller.js';
 import verifyToken from '../../middleware/auth.middleware.js';
-import authorize from '../../middleware/authorize.js';
+import checkPermission from '../../middleware/checkPermission.js';
 
 const router = express.Router();
 
@@ -33,9 +33,9 @@ router.post('/products/:id/reviews', verifyToken, createReview);
 router.get('/my-products', verifyToken, getMyProducts);
 router.get('/sales', verifyToken, getSales);
 
-// Pending products & approval (admin/teacher/manager only)
-router.get('/pending', verifyToken, authorize('teacher', 'admin', 'manager'), getPendingProducts);
-router.patch('/products/:id/approval', verifyToken, authorize('teacher', 'admin', 'manager'), approveProduct);
+// Pending products & approval
+router.get('/pending', verifyToken, checkPermission('manage_product'), getPendingProducts);
+router.patch('/products/:id/approval', verifyToken, checkPermission('manage_product'), approveProduct);
 
 // Themes
 router.get('/themes', verifyToken, getAllThemes);

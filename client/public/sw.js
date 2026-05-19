@@ -6,7 +6,15 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then(async (cache) => {
+        for (const url of PRECACHE_URLS) {
+          try {
+            await cache.add(url);
+          } catch (error) {
+            console.warn(`Failed to precache ${url}:`, error);
+          }
+        }
+      })
       .then(() => self.skipWaiting())
   )
 })

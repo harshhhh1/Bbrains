@@ -102,11 +102,31 @@ export const getUsersWithRoles = async (collegeId) => {
                     dob: true,
                     phone: true,
                     bio: true,
+                    teacherSubjects: true,
                 }
             },
             roles: {
                 select: {
                     role: true
+                }
+            },
+            enrollments: {
+                select: {
+                    courseId: true,
+                    course: {
+                        select: {
+                            id: true,
+                            name: true,
+                            standard: true
+                        }
+                    }
+                }
+            },
+            classTeacherCourse: {
+                select: {
+                    id: true,
+                    name: true,
+                    standard: true
                 }
             }
         }
