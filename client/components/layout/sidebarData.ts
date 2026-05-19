@@ -47,7 +47,8 @@ const getIcon = (name: string): LucideIcon => {
 };
 
 // Process dynamic URLs (Dashboard)
-function getDashboardUrl(): string {
+function getDashboardUrl(role: Role): string {
+    if (role === "superadmin") return "/superadmin";
     return "/dashboard";
 }
 

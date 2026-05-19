@@ -90,6 +90,9 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
     setVisibleCount(ANNOUNCEMENTS_PAGE_SIZE);
   }, [searchQuery]);
 
+  const isGlobalMode = searchParams.get('mode') === 'global';
+  const [isGlobal, setIsGlobal] = useState(isGlobalMode);
+
   const handlePost = async () => {
     if (!newAnnouncementTitle.trim() || !newAnnouncement.trim()) return;
     setPosting(true);
@@ -99,7 +102,8 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
         description: newAnnouncement.trim(),
         category: "general",
         image: attachedImage || undefined,
-        ...(currentCollegeId ? { collegeId: currentCollegeId } : {})
+        isGlobal: isGlobal,
+        ...(!isGlobal && currentCollegeId ? { collegeId: currentCollegeId } : {})
       });
       
       if (response.success && response.data) {
@@ -173,8 +177,21 @@ export function AnnouncementsContent({ initialAnnouncements, currentUser }: Anno
     <div className="relative min-h-[calc(100vh-8rem)] flex flex-col px-4 md:px-0">
       <div className="max-w-4xl mx-auto w-full" style={{ paddingBottom: contentBottomPadding }}>
         <header className="mb-10">
-          <h2 className="text-4xl font-black tracking-tight">Announcements</h2>
-          <p className="text-muted-foreground mt-2 text-lg font-medium">Internal news and faculty broadcasts.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-4xl font-black tracking-tight">Announcements</h2>
+              <p className="text-muted-foreground mt-2 text-lg font-medium">Internal news and faculty broadcasts.</p>
+            </div>
+            {isGlobal && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-600 rounded-2xl font-black text-xs uppercase tracking-widest border border-amber-500/20 animate-pulse">
+                <Bell className="w-4 h-4" />
+                Global Posting Mode
+                <button onClick={() => setIsGlobal(false)} className="ml-2 hover:text-amber-700">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
         </header>
 
         <div className="relative mb-10 max-w-md group">

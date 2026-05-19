@@ -43,3 +43,78 @@ export const updateGlobalFeatures = async (features) => {
     clearFeaturesCache();
     return config;
 };
+
+export const getDashboardStats = async () => {
+    const [collegeCount, userCount, courseCount, recentColleges] = await Promise.all([
+        prisma.college.count(),
+        prisma.user.count(),
+        prisma.course.count(),
+        prisma.college.findMany({
+            take: 5,
+            orderBy: { createdAt: 'desc' },
+            select: { id: true, name: true, createdAt: true }
+        })
+    ]);
+
+    return {
+        totalColleges: collegeCount,
+        totalUsers: userCount,
+        totalCourses: courseCount,
+        recentColleges
+    };
+};
+
+export const getTopColleges = async (limit = 5) => {
+    const colleges = await prisma.college.findMany({
+        take: limit,
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            _count: {
+                select: { users: true }
+            }
+        },
+        orderBy: {
+            users: { _count: 'desc' }
+        }
+    });
+
+    return colleges.map(c => ({
+        id: c.id,
+        name: c.name,
+        email: c.email,
+        userCount: c._count.users
+    }));
+};
+
+export const getRecentAuditLogs = async (limit = 10) => {
+    return await prisma.auditLog.findMany({
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    userDetails: {
+                        select: { firstName: true, lastName: true }
+                    }
+                }
+            }
+        }
+    });
+};
+
+export const getPendingActions = async () => {
+    const [pendingProducts, pendingSuggestions] = await Promise.all([
+        prisma.product.count({ where: { approval: 'pending' } }),
+        prisma.suggestion.count({ where: { status: 'pending' } })
+    ]);
+
+    return {
+        pendingProducts,
+        pendingSuggestions,
+        totalPending: pendingProducts + pendingSuggestions
+    };
+};

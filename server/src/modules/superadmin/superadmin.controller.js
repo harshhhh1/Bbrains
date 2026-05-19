@@ -51,3 +51,39 @@ export const updateGlobalFeatures = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getDashboardStats = async (req, res, next) => {
+    try {
+        const stats = await superadminService.getDashboardStats();
+        return sendSuccess(res, stats, 'Dashboard stats fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getTopColleges = async (req, res, next) => {
+    try {
+        const colleges = await superadminService.getTopColleges(parseInt(req.query.limit) || 5);
+        return sendSuccess(res, colleges, 'Top colleges fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getRecentAuditLogs = async (req, res, next) => {
+    try {
+        const logs = await superadminService.getRecentAuditLogs(parseInt(req.query.limit) || 10);
+        return sendSuccess(res, logs, 'Recent audit logs fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getPendingActions = async (req, res, next) => {
+    try {
+        const pending = await superadminService.getPendingActions();
+        return sendSuccess(res, pending, 'Pending actions fetched successfully');
+    } catch (error) {
+        next(error);
+    }
+};

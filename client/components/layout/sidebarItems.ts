@@ -11,7 +11,7 @@ export const sidebarItems = [
     title: "Announcements",
     url: "/announcements",
     icon: "Megaphone",
-    access: ["student", "teacher", "admin", "staff", "manager"],
+    access: ["student", "teacher", "admin", "staff", "manager","superadmin"],
   },
   {
     title: "Events",

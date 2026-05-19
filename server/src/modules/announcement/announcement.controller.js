@@ -52,8 +52,11 @@ export const createAnnouncement = async (req, res, next) => {
         const { title, description, image, isGlobal, collegeId: bodyCollegeId, type: bodyType } = createAnnouncementSchema.parse(req.body ?? {});
         const userId = req.user?.id;
         const collegeId = isGlobal ? null : (bodyCollegeId || req.user?.collegeId);
-        const isSuperadmin = req.user?.type === 'superadmin';
+        
+        const isSuperadmin = req.user?.type === 'superadmin' || req.user?.type === 'bbrains_official';
         const type = isSuperadmin ? 'system' : (bodyType || 'user');
+
+        console.log(`[Announcement] Creating: "${title}" | User: ${req.user?.username} (${req.user?.type}) | Type: ${type} | Global: ${isGlobal}`);
 
         if (!userId) return res.status(401).json({ success: false, message: "Unauthorized missing user id" });
         

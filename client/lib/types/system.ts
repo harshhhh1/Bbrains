@@ -56,6 +56,7 @@ export interface ApiAnnouncement {
     description?: string
     image?: string
     isGlobal?: boolean
+    type?: string
     collegeId?: number | string
     createdAt: string
     user?: {

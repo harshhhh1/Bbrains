@@ -67,6 +67,11 @@ export function AnnouncementItem({
               <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase text-primary tracking-wider">
                 {announcement.user?.type}
               </span>
+              {announcement.type === 'system' && (
+                <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-600 tracking-wider">
+                  System
+                </span>
+              )}
             </div>
             <p className="text-[11px] text-muted-foreground">
               {formatDistanceToNow(new Date(announcement.createdAt), { addSuffix: true })}
