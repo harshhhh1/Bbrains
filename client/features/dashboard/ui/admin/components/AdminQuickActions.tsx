@@ -41,7 +41,6 @@ export function AdminQuickActions() {
                         <CardTitle className="text-lg">Quick Actions</CardTitle>
                         <CardDescription>Manage your institution</CardDescription>
                     </div>
-                    <ShieldCheck className="h-5 w-5 text-muted-foreground" />
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">

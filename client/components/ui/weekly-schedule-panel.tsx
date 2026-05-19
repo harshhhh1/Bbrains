@@ -24,7 +24,6 @@ export function WeeklySchedulePanel({
   description = "View your scheduled classes for the week.",
   emptyMessage = "No classes scheduled for this day.",
 }: WeeklySchedulePanelProps) {
-  // Find current day name to default active tab (e.g. "Monday")
   const currentDayName = new Date().toLocaleDateString("en-US", { weekday: "long" });
   const initialTab = schedule.some((s) => s.day.toLowerCase() === currentDayName.toLowerCase())
     ? currentDayName
@@ -37,18 +36,13 @@ export function WeeklySchedulePanel({
 
   return (
     <Card className="border-border/60 shadow-md overflow-hidden bg-gradient-to-br from-card to-card/95 transition-all hover:shadow-lg">
-      <CardHeader className="bg-muted/30 pb-5 border-b border-border/40">
+      <CardHeader className="bg-muted/30 pt-5 border-b border-border/40">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20">
-              <Calendar className="size-5" />
-            </div>
             <div>
               <CardTitle className="text-xl font-bold tracking-tight text-foreground">{title}</CardTitle>
               <CardDescription className="text-sm text-muted-foreground">{description}</CardDescription>
             </div>
-          </div>
-          <div className="flex items-center gap-1.5 self-start sm:self-center px-3 py-1 rounded-full bg-primary/5 border border-primary/10 text-xs font-semibold text-primary">
           </div>
         </div>
       </CardHeader>
@@ -103,9 +97,6 @@ export function WeeklySchedulePanel({
                         key={idx}
                         className="group flex items-start gap-4 p-5 rounded-2xl border border-border/50 bg-card hover:bg-muted/10 transition-all duration-300 hover:border-primary/30 hover:shadow-sm"
                       >
-                        <div className="p-3 rounded-xl bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300">
-                          
-                        </div>
                         <div className="flex-1 min-w-0 space-y-1.5">
                           <div className="flex items-start justify-between gap-2">
                             <h4 className="text-base font-bold text-foreground truncate group-hover:text-primary transition-colors duration-200">

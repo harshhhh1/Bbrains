@@ -67,7 +67,6 @@ export default function LibraryPage() {
     <DashboardContent className="mx-auto w-full max-w-5xl p-6 md:p-12 space-y-10">
       <header>
         <h1 className="text-4xl font-black tracking-tight flex items-center gap-3">
-          <BookOpen className="w-10 h-10 text-primary" />
           Your Library
         </h1>
         <p className="text-muted-foreground text-lg font-medium mt-2">Access your digital items and assigned items.</p>

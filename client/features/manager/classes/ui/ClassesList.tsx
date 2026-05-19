@@ -84,7 +84,7 @@ export function ClassesList({
                   <div className="space-y-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-lg font-semibold text-foreground">{course.name}</p>
-                      <Badge variant="outline">{course.standard || "Standard not set"}</Badge>
+                      
                       <button
                         onClick={(event) => {
                           event.stopPropagation();

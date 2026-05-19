@@ -163,7 +163,6 @@ export default function MarketPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
           <h1 className="text-5xl font-black tracking-tighter flex items-center gap-4 text-foreground">
-            <Store className="w-12 h-12 text-primary" />
             Marketplace
           </h1>
           <p className="text-muted-foreground font-medium text-lg">Discover the best tools and resources for your academic journey.</p>

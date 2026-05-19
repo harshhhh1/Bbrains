@@ -243,9 +243,7 @@ export function SettingsProfileTab({
         <div className="rounded-3xl border border-border/40 bg-card p-6 md:p-8">
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
-                <Trophy className="h-5 w-5" />
-              </div>
+
               <div>
                 <h2 className="text-lg font-bold tracking-tight">Achievements</h2>
                 <p className="text-xs text-muted-foreground/70">{achievements.length} badges earned</p>

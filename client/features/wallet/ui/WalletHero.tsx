@@ -22,9 +22,7 @@ export function WalletHero({ walletBalance, xp, level, nextLevel, progressPercen
       </div>
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <div>
-          <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-            Student Wallet
-          </span>
+
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
             Your campus coins, XP, and reward progress
           </h1>

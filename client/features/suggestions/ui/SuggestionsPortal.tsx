@@ -89,7 +89,6 @@ export function SuggestionsPortal() {
         <div className="max-w-5xl mx-auto space-y-8">
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-black tracking-tight flex items-center gap-3">
-                    <MessageSquarePlus className="h-8 w-8 text-brand-orange" />
                     Suggestions & Feedback
                 </h1>
                 <p className="text-muted-foreground">Help us improve BBrains by sharing your ideas and reporting issues.</p>

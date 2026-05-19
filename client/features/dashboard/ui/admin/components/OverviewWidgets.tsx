@@ -402,7 +402,6 @@ export function AdminRecentActivity({ auditLogs }: { auditLogs: OverviewStats["a
                         <CardTitle className="text-lg">Recent Activity</CardTitle>
                         <CardDescription>System-wide actions</CardDescription>
                     </div>
-                    <Activity className="h-5 w-5 text-muted-foreground" />
                 </div>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -413,7 +412,7 @@ export function AdminRecentActivity({ auditLogs }: { auditLogs: OverviewStats["a
                             className="flex items-center gap-3 rounded-lg border border-border/40 bg-muted/30 px-3 py-2"
                         >
                             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                                <Activity className="h-4 w-4 text-primary" />
+                                
                             </div>
                             <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-medium">
@@ -446,7 +445,6 @@ export function AdminProfileCard({ admin, finance }: { admin: OverviewStats["adm
                         <CardTitle className="text-lg">Admin Profile</CardTitle>
                         <CardDescription>Manage your account</CardDescription>
                     </div>
-                    <Users className="h-5 w-5 text-muted-foreground" />
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">

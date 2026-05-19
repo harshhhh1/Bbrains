@@ -20,7 +20,6 @@ export function AdminProfileCard({ admin, finance }: { admin: OverviewStats["adm
                         <CardTitle className="text-lg">Admin Profile</CardTitle>
                         <CardDescription>Manage your account</CardDescription>
                     </div>
-                    <Users className="h-5 w-5 text-muted-foreground" />
                 </div>
             </CardHeader>
             <CardContent className="space-y-4">

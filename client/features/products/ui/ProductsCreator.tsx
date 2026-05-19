@@ -136,7 +136,6 @@ export function ProductsCreator() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
-            <Package className="w-8 h-8 text-brand-orange" />
             My Products
           </h1>
           <p className="text-muted-foreground text-sm font-medium mt-1">Manage your marketplace listings</p>
