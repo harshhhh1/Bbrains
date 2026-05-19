@@ -123,16 +123,6 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
                             {user?.bio || <span className="italic text-[#949ba4]">No bio yet...</span>}
                         </p>
                     </div>
-
-                    {/* Member Since */}
-                    <div className="space-y-1">
-                        <h3 className="text-[12px] font-bold uppercase tracking-wider text-[#b5bac1]">Bbrains Member Since</h3>
-                        <div className="text-sm text-[#dbdee1]">
-                            {hasJoinedDate
-                                ? joinedDate?.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
-                                : "Just recently"}
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

@@ -9,14 +9,9 @@ export default function GlobalDashboardLoading() {
           <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
         </div>
       </div>
-      <div className="flex flex-col items-center gap-1">
-        <h3 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground/50">
-          Learnytics
-        </h3>
-        <p className="text-xs font-bold text-muted-foreground/30 animate-pulse">
-          Syncing Records...
-        </p>
-      </div>
+      <p className="text-xs font-bold text-muted-foreground/30 animate-pulse">
+        Loading Data...
+      </p>
     </div>
   );
 }

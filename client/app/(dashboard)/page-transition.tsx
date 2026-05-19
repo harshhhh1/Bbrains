@@ -9,7 +9,6 @@ const TOP_LEVEL_TAB_PATHS = [
   "/assignments",
   "/chat",
   "/wallet",
-  // "/calendar",
   "/events",
   "/market",
   "/tools",
