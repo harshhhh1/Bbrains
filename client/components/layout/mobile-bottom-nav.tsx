@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { useNotifications } from "@/components/providers/notification-provider"
+import { usePermissionsContext } from "@/components/providers/permissions-provider"
 
 interface MobileBottomNavProps {
     user?: {
@@ -44,10 +45,11 @@ export function MobileBottomNav({ user }: MobileBottomNavProps) {
     const isLongPress = useRef(false)
 
     const { chatUnreadTotal, assignmentUnreadTotal, productUnreadTotal } = useNotifications()
+    const { hasPermission } = usePermissionsContext()
 
     const userRoles = user?.roles || [user?.appRole || user?.type || "student"].filter(Boolean)
     const resolvedRoles = resolveRole(userRoles) as Role[]
-    const navItems = getSidebarGroups(resolvedRoles).flatMap(g => g.items)
+    const navItems = getSidebarGroups(resolvedRoles, null, hasPermission).flatMap(g => g.items)
 
     const getInitials = () => {
         if (!user) return "U"

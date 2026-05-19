@@ -12,11 +12,13 @@ import { DeleteConfirmationDialog } from "@/features/users/ui/DeleteConfirmation
 import { ManagerForm } from "@/features/users/ui/ManagerForm";
 import { ImportUsersDialog } from "@/features/users/ui/ImportUsersDialog";
 import { useUsersManagement } from "@/features/users/hooks/useUsersManagement";
+import { useHasPermission } from "@/components/providers/permissions-provider";
 
 export default function UsersPageClient() {
   const searchParams = useSearchParams();
   const pageCollegeId = searchParams.get("collegeId");
   const [mounted, setMounted] = useState(false);
+  const canManageUser = useHasPermission("manage_user");
 
   const {
     users,
@@ -60,6 +62,16 @@ export default function UsersPageClient() {
   }, [pageCollegeId]);
 
   if (!mounted) return null;
+
+  if (!canManageUser) {
+    return (
+      <div className="flex h-[calc(100vh-4.5rem)] flex-col items-center justify-center gap-3 text-muted-foreground">
+        <ShieldCheck className="size-10 opacity-40 text-destructive" />
+        <h2 className="text-lg font-semibold text-foreground">Access Denied</h2>
+        <p className="text-sm">You do not have permission to manage users.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-10">

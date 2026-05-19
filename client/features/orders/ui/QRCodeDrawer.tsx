@@ -52,7 +52,11 @@ export function QRCodeDrawer({
           <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-8">
             {order.qrCode && (
               <div className="p-6 bg-white rounded-[2.5rem] shadow-2xl shadow-primary/5 border border-border/20 scale-110">
-                <QRCodeDisplay value={order.qrCode} size={200} label="Pickup Code" />
+                <QRCodeDisplay 
+                  value={order.id.toString()} 
+                  size={200} 
+                  label="Pickup Code" 
+                />
               </div>
             )}
             <div className="text-center space-y-2">

@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Shield } from "lucide-react";
+import { useHasPermission } from "@/components/providers/permissions-provider";
 import type { RewardTier } from "@/lib/types/api";
 
 export default function LeaderboardRewardsAdminPage() {
   const { user } = useUser();
   const { toast } = useToast();
+  const canManageInstitution = useHasPermission("manage_institution");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -96,6 +98,16 @@ export default function LeaderboardRewardsAdminPage() {
       )
     );
   };
+
+  if (!canManageInstitution) {
+    return (
+      <div className="flex h-[calc(100vh-4.5rem)] flex-col items-center justify-center gap-3 text-muted-foreground">
+        <Shield className="size-10 opacity-40 text-destructive" />
+        <h2 className="text-lg font-semibold text-foreground">Access Denied</h2>
+        <p className="text-sm">You do not have permission to manage leaderboard rewards.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto max-w-4xl p-6">

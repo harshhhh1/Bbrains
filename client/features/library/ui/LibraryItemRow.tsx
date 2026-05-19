@@ -46,8 +46,8 @@ export function LibraryItemRow({ item, isDownloading, onDownload }: LibraryItemR
                 {isDigital ? "Digital" : "Physical"}
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground font-medium">Provisioned by <span className="text-foreground/70">{item.creator || "Bbrains"}</span></p>
-            <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase tracking-tighter">Acquired {new Date(item.purchasedAt).toLocaleDateString()}</p>
+            <p className="text-xs text-muted-foreground font-medium">Sold by <span className="text-foreground/70">{item.creator || "Bbrains"}</span></p>
+            <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase tracking-tighter">Bought {new Date(item.purchasedAt).toLocaleDateString()}</p>
           </div>
 
           <div className="shrink-0 pl-2">

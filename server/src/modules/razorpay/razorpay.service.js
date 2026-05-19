@@ -56,7 +56,7 @@ export const recordFeePayment = async (user, paymentData, feeDetails) => {
       targetUserId: feeDetails.studentId,
       amount: feeDetails.amount,
       paymentMode: 'card', // Razorpay payments are typically card/online payments
-      referenceId: paymentData.razorpay_payment_id,
+      referenceId: paymentData.razorpayPaymentId || paymentData.razorpay_payment_id,
       note: `Razorpay payment for ${feeDetails.description || 'college fees'} - Order ID: ${paymentData.razorpayOrderId}`,
       paymentDate: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
     };
@@ -77,7 +77,7 @@ export const recordFeePayment = async (user, paymentData, feeDetails) => {
           targetUserId: feeDetails.studentId,
           amount: feeDetails.amount,
           paymentMode: 'card',
-          referenceId: paymentData.razorpay_payment_id,
+          referenceId: paymentData.razorpayPaymentId || paymentData.razorpay_payment_id,
           note: transactionPayload.note,
         },
       },

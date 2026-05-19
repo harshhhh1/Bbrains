@@ -100,6 +100,7 @@ export const sidebarItems = [
     url: "/users",
     icon: "UserCog",
     access: ["admin", "superadmin"],
+    permission: "manage_user",
   },
   {
     title: "Colleges",
@@ -112,6 +113,7 @@ export const sidebarItems = [
     url: "/roles",
     icon: "Shield",
     access: ["admin", "superadmin"],
+    permission: "manage_roles",
   },
   {
     title: "Sidebar Config",
@@ -125,6 +127,7 @@ export const sidebarItems = [
     url: "/academics",
     icon: "GraduationCap",
     access: ["admin", "manager"],
+    permission: "manage_course",
   },
   // { title: "Statistics", url: "/stats", icon: "BarChart3", access: ["admin"] },
   {
@@ -132,6 +135,7 @@ export const sidebarItems = [
     url: "/audit-log",
     icon: "FileText",
     access: ["admin", "superadmin"],
+    permission: "view_audit_logs",
   },
   // { title: "System Config", url: "/config", icon: "Settings2", access: ["admin", "bbrains_official"] },
   // { title: "Grading", url: "/teacher/grading", icon: "CheckSquare", access: ["teacher"] },
@@ -171,5 +175,6 @@ export const sidebarItems = [
     url: "/leaderboard-rewards",
     icon: "Gift",
     access: ["admin"],
+    permission: "manage_institution",
   },
 ];

@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getSidebarGroups, resolveRole } from "@/components/layout/sidebarData"
 import type { Role } from "@/components/layout/sidebarData"
 import { useNotifications } from "@/components/providers/notification-provider"
+import { usePermissionsContext } from "@/components/providers/permissions-provider"
 import dynamic from "next/dynamic"
 
 const UserProfileCard = dynamic(() => import("@/components/user-profile-card").then(mod => mod.UserProfileCard), {
@@ -45,6 +46,7 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
     const [mounted, setMounted] = useState(false)
     const isCollapsed = state === "collapsed"
     const { chatUnreadTotal, assignmentUnreadTotal, productUnreadTotal } = useNotifications()
+    const { hasPermission } = usePermissionsContext()
 
     React.useEffect(() => {
         setMounted(true)
@@ -54,7 +56,7 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
 
     const userRoles = user?.roles || [user?.type || "student"]
     const resolvedRoles = React.useMemo(() => resolveRole(userRoles) as Role[], [userRoles])
-    const groups = React.useMemo(() => getSidebarGroups(resolvedRoles, sidebarAccessOverride), [resolvedRoles, sidebarAccessOverride])
+    const groups = React.useMemo(() => getSidebarGroups(resolvedRoles, sidebarAccessOverride, hasPermission), [resolvedRoles, sidebarAccessOverride, hasPermission])
 
     return (
         <Sidebar collapsible="icon" className="border-none">

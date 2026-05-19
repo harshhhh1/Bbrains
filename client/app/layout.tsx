@@ -34,6 +34,10 @@ export const metadata: Metadata = {
   title: "BBrains - Smart Learning Platform",
   description: "A modern platform for smart learning and collaboration.",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/brain-light.svg",
+    apple: "/apple-icon-180.png",
+  },
   openGraph: {
     title: "BBrains - Smart Learning Platform",
     description: "Transform student engagement with our gamified learning platform.",
@@ -95,8 +99,9 @@ export default async function RootLayout({
         {/* LCP Logo Preloads */}
         <link rel="preload" href="/logo-dark.png" as="image" fetchPriority="high" />
         <link rel="preload" href="/logo-white.png" as="image" fetchPriority="high" />
-        
+
         {/* PWA & iOS meta tags */}
+        <link rel="icon" type="image/svg+xml" href="/brain-light.svg" />
         <link rel="icon" type="image/png" sizes="196x196" href="/favicon-196.png" />
         <link rel="apple-touch-icon" href="/apple-icon-180.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

@@ -27,4 +27,5 @@ export const marketApi = {
   createReview: (productId: number, data: any) => api.post<any>(`/market/reviews/${productId}`, data),
   hasPurchased: (productId: number) => api.get<{ hasPurchased: boolean }>(`/market/products/${productId}/purchased`),
   getSales: () => api.get<any>("/market/sales"),
+  deliverOrder: (id: number) => api.post<any>(`/orders/${id}/deliver`),
 };

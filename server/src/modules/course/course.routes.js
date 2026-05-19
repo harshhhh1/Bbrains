@@ -13,7 +13,7 @@ router.get('/', verifyToken, getCourses);
 router.get('/:id', verifyToken, getCourse);
 router.put('/:id', verifyToken, checkPermission('manage_course'), updateCourse);
 router.delete('/:id', verifyToken, checkPermission('manage_course'), deleteCourse);
-router.get('/:id/students', verifyToken, checkPermission('manage_course'), listCourseStudents);
+router.get('/:id/students', verifyToken, listCourseStudents);
 router.get('/:id/assignments', verifyToken, listCourseAssignments);
 
 export default router;

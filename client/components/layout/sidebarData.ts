@@ -30,6 +30,7 @@ export type SidebarItem = {
     url: string | ((role: Role) => string);
     icon: LucideIcon;
     access: Role[];
+    permission?: string;
     subItems?: { title: string; url: string; icon?: LucideIcon; cs?: boolean }[];
     cs?: boolean;
 };
@@ -75,11 +76,20 @@ export function resolveRole(rawRole?: string | string[] | null): Role | Role[] {
     return normalized as Role;
 }
 
-export function getSidebarGroups(role: Role | Role[], sidebarAccessOverride?: Record<string, string[]> | null): SidebarGroup[] {
+export function getSidebarGroups(
+    role: Role | Role[], 
+    sidebarAccessOverride?: Record<string, string[]> | null,
+    hasPermission?: (key: string) => boolean
+): SidebarGroup[] {
     const roles = Array.isArray(role) ? role : [role];
     const primaryRole = roles[0] || "student";
 
     const filteredItems = masterSidebarItems.filter(item => {
+        // If the item specifies a permission, use it as the primary check when hasPermission is provided
+        if (item.permission && hasPermission) {
+            return hasPermission(item.permission);
+        }
+
         const itemUrl = typeof item.url === "string" ? item.url : "";
 
         // 1. Check for override (URL first for uniqueness, then title for backward compatibility/generics)

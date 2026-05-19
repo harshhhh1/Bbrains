@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Shield } from "lucide-react";
 import { useUser } from "@/hooks/use-user";
+import { useHasPermission } from "@/components/providers/permissions-provider";
 import RoleList from "@/features/admin/roles/ui/RoleList";
 import RoleDetail from "@/features/admin/roles/ui/RoleDetail";
 import type { Role, Permission, UserWithRoles } from "@/features/admin/roles/types";
@@ -10,6 +11,7 @@ import { api } from "@/services/api/client";
 
 export default function RolesPage() {
   const { user, loading: userLoading } = useUser();
+  const canManageRoles = useHasPermission("manage_roles");
   
   const [roles, setRoles] = useState<Role[]>([]);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
@@ -119,6 +121,16 @@ export default function RolesPage() {
           <h2 className="mb-2 text-lg font-semibold">Please log in to manage roles</h2>
           <p className="text-sm text-muted-foreground">No active session found.</p>
         </div>
+      </div>
+    );
+  }
+
+  if (!canManageRoles) {
+    return (
+      <div className="flex h-[calc(100vh-4.5rem)] flex-col items-center justify-center gap-3 text-muted-foreground">
+        <Shield className="size-10 opacity-40 text-destructive" />
+        <h2 className="text-lg font-semibold text-foreground">Access Denied</h2>
+        <p className="text-sm">You do not have permission to manage roles and access.</p>
       </div>
     );
   }

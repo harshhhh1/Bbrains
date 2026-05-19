@@ -32,10 +32,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tabs } from "@/components/ui/tabs";
-import { Package, Plus, Loader2, BarChart3, X } from "lucide-react";
+import { Package, Plus, Loader2, BarChart3, X, QrCode, ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import { marketApi, Product } from "@/services/api/client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Scanner } from "@yudiel/react-qr-scanner";
 import { ProductCard } from "../components/ProductCard";
 import { ProductForm } from "../components/ProductForm";
 import { useProductsForm } from "../hooks/useProductsForm";
@@ -53,6 +55,8 @@ interface ProductFormData {
 }
 
 export function ProductsCreator() {
+  const router = useRouter();
+  const [showScanner, setShowScanner] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -144,6 +148,14 @@ export function ProductsCreator() {
               Sales
             </Button>
           </Link>
+          <Button 
+            variant="outline"
+            onClick={() => setShowScanner(true)}
+            className="h-12 w-full px-6 rounded-xl border-2 font-black uppercase tracking-widest text-[10px] hover:bg-white/5 sm:w-auto"
+          >
+            <ScanLine className="w-4 h-4 mr-2" />
+            Scan QR
+          </Button>
           <Button 
             onClick={() => { setAddForm(resetForm()); setShowAddDialog(true); }}
             className="h-12 w-full rounded-xl bg-brand-orange px-6 font-bold text-white shadow-lg shadow-brand-orange/20 hover:bg-brand-orange/90 sm:w-auto"
@@ -305,6 +317,74 @@ export function ProductsCreator() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Drawer open={showScanner} onOpenChange={setShowScanner}>
+        <DrawerContent className="p-0 data-[vaul-drawer-direction=bottom]:max-h-[88vh] before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-t-[2.5rem]">
+          <div className="flex flex-col overflow-hidden">
+            <DrawerHeader className="border-b border-border/60 p-8 text-center items-center flex flex-col justify-center">
+              <div className="w-16 h-16 bg-primary/10 rounded-[2rem] flex items-center justify-center mb-4">
+                <ScanLine className="h-8 w-8 text-primary" />
+              </div>
+              <DrawerTitle className="text-3xl font-black tracking-tight">Delivery Scanner</DrawerTitle>
+              <DrawerDescription className="text-base font-medium max-w-xs mx-auto">
+                Scan the buyer&apos;s order pickup QR code to process verification and delivery.
+              </DrawerDescription>
+            </DrawerHeader>
+            
+            <div className="flex flex-col items-center p-8 space-y-8">
+              <div className="relative w-72 h-72 rounded-[3rem] overflow-hidden border-4 border-primary/20 shadow-2xl bg-black group">
+                <Scanner
+                  onScan={async (result) => {
+                    const rawValue = result?.[0]?.rawValue;
+                    if (rawValue) {
+                      let orderId: number | null = null;
+                      if (rawValue.includes("/products/sales/deliver")) {
+                        const match = rawValue.match(/id=(\d+)/);
+                        if (match) {
+                          orderId = parseInt(match[1]);
+                        }
+                      } else if (/^\d+$/.test(rawValue)) {
+                        orderId = parseInt(rawValue);
+                      }
+
+                      if (orderId) {
+                        setShowScanner(false);
+                        const promise = marketApi.deliverOrder(orderId);
+                        toast.promise(promise, {
+                          loading: "Confirming physical delivery...",
+                          success: () => {
+                            fetchMyProducts();
+                            return "Order delivered successfully!";
+                          },
+                          error: (err: any) => {
+                            return err?.response?.data?.message || err.message || "Failed to deliver order.";
+                          }
+                        });
+                      } else {
+                        toast.error("Invalid delivery QR code");
+                      }
+                    }
+                  }}
+                  scanDelay={500}
+                  allowMultiple={false}
+                  components={{ finder: true }}
+                />
+                <div className="absolute inset-0 pointer-events-none border-[20px] border-black/40" />
+              </div>
+              
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground animate-pulse text-center">
+                 Align pickup code within viewport
+              </p>
+            </div>
+
+            <DrawerFooter className="border-t border-border/60 p-8 bg-muted/5">
+              <DrawerClose asChild>
+                <Button variant="ghost" className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-[10px]">Cancel Scan</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }

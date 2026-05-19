@@ -3,6 +3,7 @@ import { awardXpToUser } from "../xp/xp.service.js";
 import bcrypt from "bcrypt";
 
 const DAILY_REWARD_XP = [50, 50, 75, 75, 100, 100, 200];
+const DAILY_REWARD_COINS = [10, 10, 15, 15, 20, 20, 50];
 const STREAK_RESET_HOURS = 48;
 const CLAIM_COOLDOWN_HOURS = 24;
 
@@ -150,7 +151,7 @@ const claimDailyRewards = async (userId) => {
     }
 
     const rewardXP = DAILY_REWARD_XP[currentStreak % DAILY_REWARD_XP.length] ?? DAILY_REWARD_XP[0];
-    const rewardCoins = 100;
+    const rewardCoins = DAILY_REWARD_COINS[currentStreak % DAILY_REWARD_COINS.length] ?? DAILY_REWARD_COINS[0];
 
     // Use a transaction to ensure all updates succeed or fail together
     const txResult = await prisma.$transaction(async (tx) => {
