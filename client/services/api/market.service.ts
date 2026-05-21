@@ -11,7 +11,7 @@ export const marketApi = {
   
   getCart: () => api.get<any[]>("/market/cart"),
   addToCart: (productId: number, quantity: number) => api.post<any>("/market/cart", { productId, quantity }),
-  removeFromCart: (productId: number) => api.delete<any>(`/market/cart/${productId}`),
+  removeFromCart: (productId: number) => api.delete<any>(`/market/cart/remove/${productId}`),
   
   getLibrary: (category?: string, page = 1, limit = 10) => 
     api.get<any[]>(`/market/library?page=${page}&limit=${limit}${category ? `&category=${category}` : ""}`),
@@ -23,9 +23,9 @@ export const marketApi = {
   getOrders: (page = 1, limit = 10) => api.get<any[]>(`/orders/me?page=${page}&limit=${limit}`),
   getOrderDetails: (id: string) => api.get<any>(`/orders/${id}`),
   
-  getReviews: (productId: number) => api.get<any>(`/market/reviews/${productId}`),
-  createReview: (productId: number, data: any) => api.post<any>(`/market/reviews/${productId}`, data),
-  hasPurchased: (productId: number) => api.get<{ hasPurchased: boolean }>(`/market/products/${productId}/purchased`),
+  getReviews: (productId: number) => api.get<any>(`/market/products/${productId}/reviews`),
+  createReview: (productId: number, data: any) => api.post<any>(`/market/products/${productId}/reviews`, data),
+  hasPurchased: (productId: number) => api.get<{ hasPurchased: boolean }>(`/market/products/${productId}/can-review`),
   getSales: () => api.get<any>("/market/sales"),
   deliverOrder: (id: number) => api.post<any>(`/orders/${id}/deliver`),
 };

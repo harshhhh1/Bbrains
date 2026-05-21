@@ -47,6 +47,7 @@ export interface Review {
             firstName: string
             lastName?: string
             displayName?: string
+            avatar?: string
         }
     }
 }

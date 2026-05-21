@@ -10,6 +10,7 @@ import { Grid, PageContainer, PageHeader, Stack } from "@/components/layout/page
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import { marketApi, SalesData } from "@/services/api/client";
+import { SalesChart } from "@/features/products/sales/ui/SalesChart";
 import Link from "next/link";
 
 export default function SalesPage() {
@@ -63,7 +64,6 @@ export default function SalesPage() {
         <PageHeader
           title={
             <span className="flex items-center gap-2">
-              <TrendingUp className="w-8 h-8 text-brand-orange" />
               Sales Analytics
             </span>
           }
@@ -80,64 +80,12 @@ export default function SalesPage() {
           }
         />
 
-        <Grid className="md:grid-cols-2 lg:grid-cols-4">
-          <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-brand-orange/10 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-brand-orange" />
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest text-white/30">Total Earnings</span>
-              </div>
-              <p className="text-3xl font-black text-white">{sales.totalEarnings} <span className="text-sm text-brand-orange font-bold">B-Coins</span></p>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
-                  <Download className="w-5 h-5 text-blue-400" />
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest text-white/30">Digital Sales</span>
-              </div>
-              <p className="text-2xl font-black text-white">{sales.digitalSales.units} <span className="text-sm text-white/30 font-bold">units</span></p>
-              <p className="text-sm text-blue-400 font-bold mt-1">{sales.digitalSales.revenue} B-Coins</p>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                  <ShoppingCart className="w-5 h-5 text-green-400" />
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest text-white/30">Physical Sales</span>
-              </div>
-              <p className="text-2xl font-black text-white">{sales.physicalSales.units} <span className="text-sm text-white/30 font-bold">units</span></p>
-              <p className="text-sm text-green-400 font-bold mt-1">{sales.physicalSales.revenue} B-Coins</p>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                  <Package className="w-5 h-5 text-purple-400" />
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest text-white/30">Products</span>
-              </div>
-              <p className="text-2xl font-black text-white">{sales.productBreakdown.length}</p>
-              <p className="text-sm text-purple-400 font-bold mt-1">Listed</p>
-            </CardContent>
-          </Card>
-        </Grid>
+        <SalesChart sales={sales} />
 
         <Grid gap="lg" className="lg:grid-cols-2">
           <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
             <CardContent className="p-6">
               <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-brand-orange" />
                 Product Breakdown
               </h3>
               {sales.productBreakdown.length === 0 ? (
@@ -172,7 +120,6 @@ export default function SalesPage() {
           <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
             <CardContent className="p-6">
               <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-brand-orange" />
                 Recent Transactions
               </h3>
               {sales.recentTransactions.length === 0 ? (
