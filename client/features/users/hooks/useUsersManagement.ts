@@ -190,6 +190,16 @@ export function useUsersManagement(pageCollegeId: string | null) {
       toast.error("Please fill in the required details");
       return;
     }
+
+    if (!form.dob) {
+      toast.error("Please select a Date of Birth");
+      return;
+    }
+
+    if (form.type === "student" && !form.classId) {
+      toast.error("Please select an enrolled course/class");
+      return;
+    }
     
     if (form.password && form.password.trim() !== "") {
       if (form.password !== form.confirmPassword) {

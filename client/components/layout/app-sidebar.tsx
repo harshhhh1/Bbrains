@@ -58,6 +58,18 @@ export function AppSidebar({ user, sidebarAccessOverride }: AppSidebarProps) {
     const resolvedRoles = React.useMemo(() => resolveRole(userRoles) as Role[], [userRoles])
     const groups = React.useMemo(() => getSidebarGroups(resolvedRoles, sidebarAccessOverride, hasPermission), [resolvedRoles, sidebarAccessOverride, hasPermission])
 
+    if (!mounted) {
+        return (
+            <Sidebar collapsible="icon" className="border-none">
+                <SidebarHeader className="bg-sidebar pt-4">
+                    <div className="h-2" />
+                </SidebarHeader>
+                <SidebarContent className="bg-sidebar px-3" />
+                <SidebarRail />
+            </Sidebar>
+        );
+    }
+
     return (
         <Sidebar collapsible="icon" className="border-none">
             <SidebarHeader className="bg-sidebar pt-4">

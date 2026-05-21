@@ -155,6 +155,7 @@ export function ManagerForm({ form, onChange, disabled, roles = [], courses = []
           />
           <FormInput
             label="Date of Birth"
+            required
             type="date"
             value={form.dob}
             onChange={(e) => updateField("dob", e.target.value)}
@@ -183,10 +184,13 @@ export function ManagerForm({ form, onChange, disabled, roles = [], courses = []
                 required={form.type === "student"}
                 value={form.classId}
                 onChange={(value) => updateField("classId", value)}
-                options={courses.map((c) => ({
-                  value: String(c.id),
-                  label: `${c.standard} - ${c.name}`,
-                }))}
+                options={[
+                  { value: "", label: "Select a class/course..." },
+                  ...courses.map((c) => ({
+                    value: String(c.id),
+                    label: `${c.standard} - ${c.name}`,
+                  }))
+                ]}
                 disabled={disabled}
               />
             </div>
