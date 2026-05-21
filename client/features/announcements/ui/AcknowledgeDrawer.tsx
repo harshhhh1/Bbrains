@@ -2,6 +2,17 @@
 
 import React from "react";
 import { 
+  Drawer, 
+  DrawerContent, 
+  DrawerHeader, 
+  DrawerTitle, 
+  DrawerDescription, 
+  DrawerClose, 
+  DrawerFooter 
+} from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
   Users,
   X,
   Loader2,
