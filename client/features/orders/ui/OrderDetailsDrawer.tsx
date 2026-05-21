@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Package, QrCode, BookOpen, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Order } from "@/services/api/client";
+import { resolveApiFileUrl } from "@/lib/file-url";
 
 interface OrderDetailsDrawerProps {
   order: Order | null;
@@ -65,7 +66,7 @@ export function OrderDetailsDrawer({
                     <div key={item.id} className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/60 shadow-sm group">
                       <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-muted shrink-0 border border-border/40 transition-colors group-hover:border-primary/30">
                         {item.product?.image ? (
-                          <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
+                          <Image src={resolveApiFileUrl(item.product.image)} alt={item.product.name} fill className="object-cover" />
                         ) : (
                           <Package className="w-6 h-6 text-muted-foreground/20 m-5" />
                         )}
