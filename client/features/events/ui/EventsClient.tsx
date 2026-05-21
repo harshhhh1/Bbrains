@@ -4,16 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import { 
   Calendar, 
   Plus, 
-  Search, 
-  Loader2, 
 } from "lucide-react";
 import { eventApi, Event } from "@/services/api/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  Card, 
-  CardContent, 
-} from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Grid, PageContainer, PageHeader } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
+import { SearchField, Toolbar } from "@/components/ui/toolbar";
 import { toast } from "sonner";
 import { CreateEventModal } from "@/features/events/ui/CreateEventModal";
 import { EventCard } from "@/features/events/ui/EventCard";
@@ -62,41 +59,35 @@ export function EventsClient() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-10">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-4xl font-black tracking-tight">School Events</h1>
-          <p className="text-muted-foreground mt-2 text-lg font-medium">
-            Announcements, seminars, and cultural meets.
-          </p>
-        </div>
-        {canCreateEvent && (
+    <PageContainer padding="spacious" gap="xl">
+      <PageHeader
+        title="School Events"
+        description="Announcements, seminars, and cultural meets."
+        titleClassName="text-4xl font-black tracking-tight"
+        descriptionClassName="text-lg font-medium"
+        actions={canCreateEvent && (
           <Button size="lg" className="rounded-2xl font-bold px-6 shadow-lg shadow-primary/20" onClick={() => setIsModalOpen(true)}>
             <Plus className="mr-2 h-5 w-5" />
             Host Event
           </Button>
         )}
-      </div>
+      />
 
-      <div className="flex flex-col md:flex-row items-center gap-4 bg-muted/30 p-4 rounded-3xl border border-border/50">
-        <div className="relative flex-1 group w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-          <input
+      <Toolbar className="rounded-3xl p-4">
+          <SearchField
+            wrapperClassName="group flex-1"
+            iconClassName="left-4 size-5 group-focus-within:text-primary"
             placeholder="Search events..."
-            className="w-full bg-card border border-border/60 shadow-inner rounded-2xl pl-12 pr-4 py-4 text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-muted-foreground"
+            className="rounded-2xl border-border/60 bg-card py-4 pl-12 pr-4 shadow-inner focus-visible:ring-primary/20"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
-      </div>
+      </Toolbar>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Calendar...</p>
-        </div>
+        <LoadingState label="Syncing Calendar..." className="py-20" iconClassName="size-10" />
       ) : filteredEvents.length > 0 ? (
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <Grid gap="lg" className="sm:grid-cols-2 lg:grid-cols-3">
           {filteredEvents.map((event) => (
             <EventCard 
               key={event.id} 
@@ -104,17 +95,14 @@ export function EventsClient() {
               onClick={handleEventClick} 
             />
           ))}
-        </div>
+        </Grid>
       ) : (
-        <Card className="border-dashed border-border/40 bg-muted/10 rounded-3xl">
-          <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-            <Calendar className="mb-6 h-16 w-16 text-muted-foreground/20" />
-            <h3 className="text-2xl font-bold">No Records Found</h3>
-            <p className="text-muted-foreground mt-2 max-w-xs">
-              {searchQuery ? "No events match your current filters." : "There are currently no events listed in the school calendar."}
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={<Calendar className="size-16" />}
+          title="No Records Found"
+          description={searchQuery ? "No events match your current filters." : "There are currently no events listed in the school calendar."}
+          className="rounded-3xl py-20"
+        />
       )}
 
       <CreateEventModal 
@@ -128,6 +116,6 @@ export function EventsClient() {
         isOpen={isDetailsOpen}
         onClose={() => setIsDetailsOpen(null as any)}
       />
-    </div>
+    </PageContainer>
   );
 }

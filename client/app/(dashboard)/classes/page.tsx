@@ -1,6 +1,6 @@
 "use client";
 
-import { DashboardContent } from "@/components/dashboard-content";
+import { Grid, PageContainer } from "@/components/layout/page-primitives";
 import { ClassFormDrawer } from "@/features/manager/classes/ui/ClassFormDrawer";
 import { ClassesHeader } from "@/features/manager/classes/ui/ClassesHeader";
 import { ClassesList } from "@/features/manager/classes/ui/ClassesList";
@@ -12,10 +12,10 @@ export default function ManagerClassesPage() {
   const page = useManagerClassesPage();
 
   return (
-    <DashboardContent className="space-y-6">
+    <PageContainer>
       <ClassesHeader onCreate={page.openCreateDialog} />
 
-      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+      <Grid gap="lg" className="xl:grid-cols-[1.05fr_0.95fr]">
         <ClassesList
           loading={page.loading}
           search={page.search}
@@ -29,7 +29,7 @@ export default function ManagerClassesPage() {
         />
 
         <ClassPreview selectedClass={page.selectedClass} />
-      </div>
+      </Grid>
 
       <ClassFormDrawer
         open={page.dialogOpen}
@@ -51,6 +51,6 @@ export default function ManagerClassesPage() {
         updateSubjectInSemester={page.updateSubjectInSemester}
       />
 
-    </DashboardContent>
+    </PageContainer>
   );
 }

@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useMemo, useRef } from 'react'
-import { FolderPlus, Upload, AlertCircle, RefreshCw, Search, LayoutGrid, List } from 'lucide-react'
+import { FolderPlus, Upload, AlertCircle } from 'lucide-react'
 import { useStudyMaterials } from '../hooks/useStudyMaterials'
 import { BreadcrumbNav } from './BreadcrumbNav'
 import { MaterialsGrid } from './MaterialsGrid'
 import { UploadZone } from './UploadZone'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { LoadingState } from '@/components/ui/loading-state'
+import { SearchField } from '@/components/ui/toolbar'
 import {
   Dialog,
   DialogContent,
@@ -17,7 +19,6 @@ import {
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { Separator } from '@/components/ui/separator'
-import { cn } from '@/lib/utils'
 
 interface StudyMaterialsPageProps {
   collegeId?: string
@@ -35,21 +36,15 @@ export function StudyMaterialsPage({ collegeId, courseId }: StudyMaterialsPagePr
     error,
     canEdit,
     navigateToFolder,
-    navigateBack,
     uploadFile,
     deleteItem,
     renameItem,
     getDownloadUrl,
-    reload
   } = useStudyMaterials(collegeId, courseId)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
   
-  // View mode state
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
-
-
   // Dialog states
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -150,22 +145,15 @@ export function StudyMaterialsPage({ collegeId, courseId }: StudyMaterialsPagePr
     <div className="flex flex-col h-full bg-background">
       {/* Search and Action Bar */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-4 border-b bg-dashboard-surface backdrop-blur-sm sticky top-0 z-10">
-        <div className="relative w-full md:w-50">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search in materials..."
-            className="pl-9 bg-muted/50 border-none focus-visible:ring-1"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        <SearchField
+          placeholder="Search in materials..."
+          className="pl-9 bg-muted/50 border-none focus-visible:ring-1"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          wrapperClassName="w-full md:w-50"
+        />
 
         <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-{/* 
-          <Button variant="outline" size="sm" onClick={reload} disabled={isLoading}>
-            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
-          </Button> */}
-
           {canEdit && (
             <>
               <Separator orientation="vertical" className="h-6" />
@@ -221,10 +209,7 @@ export function StudyMaterialsPage({ collegeId, courseId }: StudyMaterialsPagePr
 
         {/* Loading State */}
         {isLoading && (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <div className="h-10 w-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
-            <p className="text-sm text-muted-foreground animate-pulse">Fetching your materials...</p>
-          </div>
+          <LoadingState label="Fetching your materials..." className="py-20" />
         )}
 
         {/* Unified Materials Grid */}
@@ -287,7 +272,7 @@ export function StudyMaterialsPage({ collegeId, courseId }: StudyMaterialsPagePr
             </DialogTitle>
           </DialogHeader>
           <p className="text-sm text-muted-foreground py-2">
-            Are you sure you want to delete <span className="font-semibold text-foreground">"{targetPath.split('/').pop()}"</span>? This action cannot be undone.
+            Are you sure you want to delete <span className="font-semibold text-foreground">&quot;{targetPath.split('/').pop()}&quot;</span>? This action cannot be undone.
           </p>
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>

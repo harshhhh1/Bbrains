@@ -38,7 +38,7 @@ export interface ApiExam {
     examDate: string
     totalMarks: number | string
     course?: { id: number; name: string; standard?: string }
-    createdBy?: { username: string; userDetails?: any }
+    createdBy?: { username: string; userDetails?: string }
     results?: ApiExamResult[]
 }
 

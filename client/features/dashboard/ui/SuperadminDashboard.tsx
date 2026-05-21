@@ -1,38 +1,38 @@
-import { SuperadminMetrics } from "@/features/superadmin/components/superadmin-metrics";
-import { SuperadminActions } from "@/features/superadmin/components/superadmin-actions";
-import { CollegesQuickList } from "@/features/superadmin/components/colleges-quick-list";
-import { RecentAuditLogs } from "@/features/superadmin/components/recent-audit-logs";
-import { PendingActions } from "@/features/superadmin/components/pending-actions";
+import { Grid, PageContainer, PageHeader, Stack } from "@/components/layout/page-primitives";
 import { useUser } from "@/context/user-context";
-import { DashboardContent } from "@/components/dashboard-content";
+import { CollegesQuickList } from "@/features/superadmin/components/colleges-quick-list";
+import { PendingActions } from "@/features/superadmin/components/pending-actions";
+import { RecentAuditLogs } from "@/features/superadmin/components/recent-audit-logs";
+import { SuperadminActions } from "@/features/superadmin/components/superadmin-actions";
+import { SuperadminMetrics } from "@/features/superadmin/components/superadmin-metrics";
 
 export function SuperadminDashboard() {
-    const { user } = useUser();
-    const greetingName = user?.displayName || user?.firstName || user?.username || "Superadmin";
+  const { user } = useUser();
+  const greetingName = user?.displayName || user?.firstName || user?.username || "Superadmin";
 
-    return (
-        <DashboardContent className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Welcome back, {greetingName}! 👋</h1>
-                <p className="text-muted-foreground">Welcome to the Bbrains Officials control panel.</p>
-            </div>
+  return (
+    <PageContainer>
+      <PageHeader
+        title={`Welcome back, ${greetingName}!`}
+        description="Welcome to the Bbrains Officials control panel."
+      />
 
-            <SuperadminMetrics />
+      <SuperadminMetrics />
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <div className="md:col-span-1 lg:col-span-1 flex flex-col gap-6">
-                    <SuperadminActions />
-                    <PendingActions />
-                </div>
-                
-                <div className="md:col-span-1 lg:col-span-3">
-                    <CollegesQuickList />
-                </div>
-            </div>
+      <Grid gap="lg" className="md:grid-cols-2 lg:grid-cols-4">
+        <Stack gap="lg" className="md:col-span-1 lg:col-span-1">
+          <SuperadminActions />
+          <PendingActions />
+        </Stack>
 
-            <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-1">
-                <RecentAuditLogs />
-            </div>
-        </DashboardContent>
-    );
+        <div className="md:col-span-1 lg:col-span-3">
+          <CollegesQuickList />
+        </div>
+      </Grid>
+
+      <Grid gap="lg">
+        <RecentAuditLogs />
+      </Grid>
+    </PageContainer>
+  );
 }

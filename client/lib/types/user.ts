@@ -32,6 +32,7 @@ export interface ApiRole {
     id: number
     name: string
     description?: string
+    color?: string
 }
 
 export interface ApiAchievement {

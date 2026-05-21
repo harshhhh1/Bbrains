@@ -1,5 +1,8 @@
 import { FolderCard } from './FolderCard'
 import { FileCard } from './FileCard'
+import { Grid, Stack } from '@/components/layout/page-primitives'
+import { EmptyState } from '@/components/ui/empty-state'
+import { FilePlus2 } from 'lucide-react'
 import type { StudyMaterialFolder, StudyMaterialFile } from '../types/study-materials.types'
 
 interface MaterialsGridProps {
@@ -24,12 +27,12 @@ export function MaterialsGrid({
   onDelete
 }: MaterialsGridProps) {
   return (
-    <div className="space-y-8" onClick={() => onSelect(null)}>
+    <Stack gap="xl" onClick={() => onSelect(null)}>
       {/* Folders Section */}
       {folders.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider px-1">Folders</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <Grid className="sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {folders.map((folder) => (
               <FolderCard
                 key={folder.prefix}
@@ -41,7 +44,7 @@ export function MaterialsGrid({
                 onDelete={onDelete}
               />
             ))}
-          </div>
+          </Grid>
         </div>
       )}
 
@@ -49,7 +52,7 @@ export function MaterialsGrid({
       {files.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider px-1">Files</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <Grid className="sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {files.map((file) => (
               <FileCard
                 key={file.path}
@@ -61,31 +64,18 @@ export function MaterialsGrid({
                 onDelete={onDelete}
               />
             ))}
-          </div>
+          </Grid>
         </div>
       )}
 
       {folders.length === 0 && files.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <div className="bg-muted rounded-full p-6 mb-4">
-            <svg
-              className="w-12 h-12"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-          </div>
-          <p className="text-lg font-medium">Empty folder</p>
-          <p className="text-sm">Upload files or create folders to get started.</p>
-        </div>
+        <EmptyState
+          icon={<FilePlus2 className="size-12" />}
+          title="Empty folder"
+          description="Upload files or create folders to get started."
+          className="py-20"
+        />
       )}
-    </div>
+    </Stack>
   )
 }

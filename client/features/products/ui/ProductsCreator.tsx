@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingState } from "@/components/ui/loading-state";
+import { PageHeader, Stack } from "@/components/layout/page-primitives";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -132,15 +134,14 @@ export function ProductsCreator() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
-            My Products
-          </h1>
-          <p className="text-muted-foreground text-sm font-medium mt-1">Manage your marketplace listings</p>
-        </div>
-        <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto md:shrink-0">
+    <Stack gap="xl" className="animate-in fade-in duration-500">
+      <PageHeader
+        title="My Products"
+        description="Manage your marketplace listings"
+        titleClassName="text-3xl font-black tracking-tight"
+        descriptionClassName="font-medium"
+        actions={
+          <div className="flex w-full flex-col gap-3 sm:flex-row md:w-auto md:shrink-0">
           <Link href="/products/sales" className="w-full sm:w-auto">
             <Button variant="outline" className="h-12 w-full px-6 rounded-xl border-2 font-black uppercase tracking-widest text-[10px] hover:bg-white/5 sm:w-auto">
               <BarChart3 className="w-4 h-4 mr-2" />
@@ -161,29 +162,26 @@ export function ProductsCreator() {
           >
             <Plus className="w-5 h-5 mr-2" /> Add Product
           </Button>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-brand-orange" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Loading Products...</p>
-        </div>
+        <LoadingState label="Loading Products..." className="py-32" iconClassName="size-10 text-brand-orange" />
       ) : products.length === 0 ? (
-        <Card className="border-2 border-dashed border-border/50 bg-muted/20 rounded-[2rem] py-24">
-          <div className="flex flex-col items-center justify-center text-center px-6">
-            <div className="w-20 h-20 bg-muted rounded-3xl flex items-center justify-center mb-6">
-              <Package className="w-10 h-10 text-muted-foreground opacity-50" />
-            </div>
-            <h3 className="text-xl font-bold mb-2">No Products Yet</h3>
-            <p className="text-muted-foreground max-w-sm mb-8">Create your first listing to start selling</p>
+        <EmptyState
+          icon={<Package className="size-10" />}
+          title="No Products Yet"
+          description="Create your first listing to start selling"
+          className="rounded-[2rem] border-2 border-border/50 bg-muted/20 py-24"
+          action={
             <Button variant="outline" onClick={() => { setAddForm(resetForm()); setShowAddDialog(true); }} className="rounded-xl border-2 font-bold px-8">
               Create Product
             </Button>
-          </div>
-        </Card>
+          }
+        />
       ) : (
-        <div className="space-y-3">
+        <Stack gap="md">
           {products.map((product) => (
             <ProductCard
               key={product.id}
@@ -192,7 +190,7 @@ export function ProductsCreator() {
               onDelete={handleDeleteClick}
             />
           ))}
-        </div>
+        </Stack>
       )}
 
       <Drawer
@@ -384,6 +382,6 @@ export function ProductsCreator() {
           </div>
         </DrawerContent>
       </Drawer>
-    </div>
+    </Stack>
   );
 }

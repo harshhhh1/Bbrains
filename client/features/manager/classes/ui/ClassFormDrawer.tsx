@@ -1,18 +1,11 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
-import { CalendarDays, Loader2, Plus, Trash2, X } from "lucide-react";
+import { CalendarDays, Loader2, Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { DrawerClose } from "@/components/ui/drawer";
+import { DrawerShell } from "@/components/ui/drawer-shell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -67,8 +60,7 @@ export function ClassFormDrawer({
 
   return (
     <>
-      <Drawer
-        direction="right"
+      <DrawerShell
         open={open}
         onOpenChange={(nextOpen) => {
           onOpenChange(nextOpen);
@@ -76,26 +68,32 @@ export function ClassFormDrawer({
             onTimetableDialogOpenChange(false);
           }
         }}
+        width="lg"
+        title={editingClassId ? "Edit class" : "Create class"}
+        description="Define the standard, subject list, fee model, duration, class size, and a timetable for this class."
+        bodyClassName="space-y-4"
+        footer={
+          <>
+            <DrawerClose asChild>
+              <Button variant="outline" disabled={submitting}>
+                Cancel
+              </Button>
+            </DrawerClose>
+            <Button onClick={() => void onSubmit()} disabled={submitting}>
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Saving...
+                </>
+              ) : editingClassId ? (
+                "Save Changes"
+              ) : (
+                "Create Class"
+              )}
+            </Button>
+          </>
+        }
       >
-        <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-4xl before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
-          <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
-            <DrawerHeader className="border-b border-border/60 p-6 text-left">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-2">
-                  <DrawerTitle>{editingClassId ? "Edit class" : "Create class"}</DrawerTitle>
-                  <DrawerDescription>
-                    Define the standard, subject list, fee model, duration, class size, and a timetable for this class.
-                  </DrawerDescription>
-                </div>
-                <DrawerClose asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </DrawerClose>
-              </div>
-            </DrawerHeader>
-
-            <div className="flex-1 space-y-4 overflow-y-auto p-6">
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="class-name">Class Name</Label>
@@ -302,30 +300,7 @@ export function ClassFormDrawer({
                   </div>
                 </div>
               </div>
-            </div>
-
-            <DrawerFooter className="border-t border-border/60 p-6 sm:flex-row sm:justify-end">
-              <DrawerClose asChild>
-                <Button variant="outline" disabled={submitting}>
-                  Cancel
-                </Button>
-              </DrawerClose>
-              <Button onClick={() => void onSubmit()} disabled={submitting}>
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 size-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : editingClassId ? (
-                  "Save Changes"
-                ) : (
-                  "Create Class"
-                )}
-              </Button>
-            </DrawerFooter>
-          </div>
-        </DrawerContent>
-      </Drawer>
+      </DrawerShell>
 
       <TimetableEditorDialog
         key={`${timetableDialogOpen ? "open" : "closed"}:${editingClassId ?? "new"}:${form.timetable.length}:${subjectSuggestions.join("|")}`}

@@ -25,8 +25,8 @@ const createEventSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
   description: z.string().optional(),
   date: z.string().min(1, "Date is required"),
-  startdate: z.string().min(1, "Start date is required"),
-  enddate: z.string().min(1, "End date is required"),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().min(1, "End date is required"),
   location: z.string().max(100).optional(),
   type: z.string().max(50).optional(),
 });
@@ -53,8 +53,8 @@ export function CreateEventModal({ isOpen, onClose, onSuccess }: CreateEventModa
     resolver: zodResolver(createEventSchema),
     defaultValues: {
       date: new Date().toISOString().split('T')[0],
-      startdate: new Date().toISOString().split('T')[0],
-      enddate: new Date().toISOString().split('T')[0],
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date().toISOString().split('T')[0],
     }
   });
 
@@ -129,14 +129,14 @@ export function CreateEventModal({ isOpen, onClose, onSuccess }: CreateEventModa
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startdate">Start Date *</Label>
-              <Input id="startdate" type="date" {...register("startdate")} />
-              {errors.startdate && <p className="text-xs text-red-500">{errors.startdate.message}</p>}
+              <Label htmlFor="startDate">Start Date *</Label>
+              <Input id="startDate" type="date" {...register("startDate")} />
+              {errors.startDate && <p className="text-xs text-red-500">{errors.startDate.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="enddate">End Date *</Label>
-              <Input id="enddate" type="date" {...register("enddate")} />
-              {errors.enddate && <p className="text-xs text-red-500">{errors.enddate.message}</p>}
+              <Label htmlFor="endDate">End Date *</Label>
+              <Input id="endDate" type="date" {...register("endDate")} />
+              {errors.endDate && <p className="text-xs text-red-500">{errors.endDate.message}</p>}
             </div>
           </div>
 

@@ -4,6 +4,10 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { BriefcaseBusiness, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageContainer, PageHeader } from "@/components/layout/page-primitives";
+import { Toolbar } from "@/components/ui/toolbar";
 import { CrudDrawer } from "@/features/admin/ui/CrudDrawer";
 import { UserFilters } from "@/features/users/ui/UserFilters";
 import { UsersGrid } from "@/features/users/ui/UsersGrid";
@@ -65,24 +69,25 @@ export default function UsersPageClient() {
 
   if (!canManageUser) {
     return (
-      <div className="flex h-[calc(100vh-4.5rem)] flex-col items-center justify-center gap-3 text-muted-foreground">
-        <ShieldCheck className="size-10 opacity-40 text-destructive" />
-        <h2 className="text-lg font-semibold text-foreground">Access Denied</h2>
-        <p className="text-sm">You do not have permission to manage users.</p>
-      </div>
+      <PageContainer>
+        <EmptyState
+          icon={<ShieldCheck className="size-10 text-destructive" />}
+          title="Access Denied"
+          description="You do not have permission to manage users."
+          className="min-h-[calc(100vh-10rem)] border-0 bg-transparent"
+        />
+      </PageContainer>
     );
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-10">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Manage Users & Roles</h1>
-          <p className="text-muted-foreground mt-1">Create accounts and manage custom role assignments in one place</p>
-        </div>
-      </div>
+    <PageContainer padding="spacious" gap="xl">
+      <PageHeader
+        title="Manage Users & Roles"
+        description="Create accounts and manage custom role assignments in one place"
+      />
 
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between bg-muted/30 p-4 rounded-2xl border border-border/50">
+      <Toolbar className="lg:flex-row lg:items-center lg:justify-between">
         <UserFilters
           search={search}
           onSearchChange={setSearch}
@@ -90,24 +95,23 @@ export default function UsersPageClient() {
           onTypeFilterChange={setTypeFilter}
         />
         <div className="flex gap-2">
-          <button
+          <Button
             type="button"
             onClick={handleAddUser}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90"
           >
             <BriefcaseBusiness className="h-4 w-4" />
             Add User
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="secondary"
             onClick={() => setImportDialogOpen(true)}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-secondary px-4 text-sm font-medium text-secondary-foreground shadow transition-colors hover:bg-secondary/90"
           >
             <ShieldCheck className="h-4 w-4" />
             Import Users
-          </button>
+          </Button>
         </div>
-      </div>
+      </Toolbar>
 
       <UsersGrid
         users={users}
@@ -154,6 +158,6 @@ export default function UsersPageClient() {
         progress={importProgress}
         result={importResult}
       />
-    </div>
+    </PageContainer>
   );
 }

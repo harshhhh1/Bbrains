@@ -1,16 +1,12 @@
 "use client";
 
-import React from "react";
 import { 
-  Drawer, 
   DrawerClose, 
-  DrawerContent, 
-  DrawerDescription, 
-  DrawerFooter, 
-  DrawerHeader, 
-  DrawerTitle 
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { DrawerShell } from "@/components/ui/drawer-shell";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Stack } from "@/components/layout/page-primitives";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { X, ArrowDownLeft, Check, Loader2 } from "lucide-react";
 import { getInitials } from "@/features/wallet/model/utils";
@@ -34,34 +30,34 @@ export function PendingRequestsDrawer({
   respondingId
 }: PendingRequestsDrawerProps) {
   return (
-    <Drawer direction="right" open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-lg before:inset-0 before:rounded-none before:border-border before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
-        <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
-          <DrawerHeader className="border-b border-border/60 p-6 text-left">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                <DrawerTitle className="text-2xl font-black tracking-tight flex items-center gap-2">
-                  <ArrowDownLeft className="h-6 w-6 text-primary" />
-                  Asset Solicitations
-                </DrawerTitle>
-                <DrawerDescription className="font-medium">Pending requests for B-Coin transfers to other agents.</DrawerDescription>
-              </div>
-              <DrawerClose asChild>
-                <Button variant="ghost" size="icon" className="rounded-full bg-muted/40 hover:bg-muted transition-colors">
-                  <X className="h-4 w-4" />
-                </Button>
-              </DrawerClose>
-            </div>
-          </DrawerHeader>
-
-          <div className="flex-1 overflow-y-auto p-6">
+    <DrawerShell
+      open={open}
+      onOpenChange={onOpenChange}
+      width="md"
+      title={
+        <span className="flex items-center gap-2 text-2xl font-black tracking-tight">
+          <ArrowDownLeft className="size-6 text-primary" />
+          Asset Solicitations
+        </span>
+      }
+      description="Pending requests for B-Coin transfers to other agents."
+      footer={
+        <DrawerClose asChild>
+          <Button variant="ghost" className="h-12 w-full rounded-xl text-[10px] font-black uppercase tracking-widest">
+            Dismiss Registry
+          </Button>
+        </DrawerClose>
+      }
+      footerClassName="bg-muted/5 p-8"
+    >
             {requests.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-40">
-                <ArrowDownLeft className="w-16 h-16 text-muted-foreground mb-2" />
-                <p className="text-xs font-black uppercase tracking-[0.2em]">Registry Clean</p>
-              </div>
+              <EmptyState
+                icon={<ArrowDownLeft className="size-16" />}
+                title="Registry Clean"
+                className="h-full border-none bg-transparent opacity-40"
+              />
             ) : (
-              <div className="space-y-4">
+              <Stack>
                 {requests.map((request) => (
                   <div key={request.id} className="bg-card border border-border/60 rounded-3xl p-6 space-y-6 shadow-sm group hover:border-primary/20 transition-all">
                     <div className="flex items-center gap-4">
@@ -112,17 +108,8 @@ export function PendingRequestsDrawer({
                     </div>
                   </div>
                 ))}
-              </div>
+              </Stack>
             )}
-          </div>
-
-          <DrawerFooter className="border-t border-border/60 p-8 bg-muted/5">
-             <DrawerClose asChild>
-                <Button variant="ghost" className="w-full h-12 rounded-xl font-black uppercase tracking-widest text-[10px]">Dismiss Registry</Button>
-             </DrawerClose>
-          </DrawerFooter>
-        </div>
-      </DrawerContent>
-    </Drawer>
+    </DrawerShell>
   );
 }

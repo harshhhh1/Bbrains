@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { PageContainer } from "@/components/layout/page-primitives";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingState } from "@/components/ui/loading-state";
 import { ManagerOverviewClient } from "@/features/dashboard/ui/manager/ManagerOverviewClient";
 import { fetchManagerOverviewStats } from "@/features/dashboard/api/manager-overview";
 import { emptyManagerStats, type ManagerOverviewStats } from "@/features/dashboard/types/manager";
@@ -34,18 +36,14 @@ export function ManagerDashboard() {
     }, []);
 
     if (loading) {
-        return (
-            <div className="flex h-[400px] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/50" />
-            </div>
-        );
+        return <LoadingState label="Loading manager dashboard..." className="min-h-[400px]" />;
     }
 
     if (error) {
         return (
-            <div className="rounded-[1.5rem] border border-dashed border-border/70 p-6 text-sm text-muted-foreground m-6">
-                {error}
-            </div>
+            <PageContainer>
+                <EmptyState title="Manager overview unavailable" description={error} />
+            </PageContainer>
         );
     }
 

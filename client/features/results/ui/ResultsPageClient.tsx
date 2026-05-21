@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { DashboardContent } from "@/components/dashboard-content";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Grid, PageContainer, PageHeader, PageSection, SectionHeader } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
+import { SearchField } from "@/components/ui/toolbar";
 import {
   Select,
   SelectContent,
@@ -12,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { assessmentApi, dashboardApi, type StudentAssessmentResult } from "@/services/api/client";
-import { Loader2, Search, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { ResultCard } from "@/features/results/ui/ResultCard";
 import { ResultsStats } from "@/features/results/ui/ResultsStats";
@@ -91,36 +92,35 @@ export default function ResultsPage() {
 
   if (loading && !userRole) {
     return (
-      <DashboardContent>
-        <div className="py-40 flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground font-mono">Syncing Results...</p>
-        </div>
-      </DashboardContent>
+      <PageContainer width="lg" padding="spacious">
+        <LoadingState label="Syncing Results..." className="py-40" iconClassName="size-10" />
+      </PageContainer>
     );
   }
 
   return (
-    <DashboardContent className="mx-auto w-full max-w-6xl p-6 md:p-12 space-y-12">
-      <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-black tracking-tight text-foreground flex items-center gap-3">
-             <Trophy className="h-10 w-10 text-primary" />
-             Exam Results
-          </h1>
-          <p className="text-muted-foreground text-lg font-medium">Report card of test and examination results.</p>
-        </div>
-
-        <div className="relative w-full max-w-md group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-          <Input
+    <PageContainer width="lg" padding="spacious" gap="xl">
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            <Trophy className="size-10 text-primary" />
+            Exam Results
+          </span>
+        }
+        description="Report card of test and examination results."
+        titleClassName="text-4xl font-black tracking-tight"
+        descriptionClassName="text-lg font-medium"
+        actions={
+          <SearchField
+            wrapperClassName="group max-w-md"
+            iconClassName="left-4 size-5 text-muted-foreground/50 transition-colors group-focus-within:text-primary"
             className="h-14 rounded-2xl pl-12 pr-4 bg-muted/20 border-border/40 focus:ring-2 focus:ring-primary/20 transition-all font-bold text-lg placeholder:text-muted-foreground/30"
             placeholder="Search topic or subject..."
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
           />
-        </div>
-      </header>
+        }
+      />
 
       <ResultsStats 
         totalCount={results.length}
@@ -131,12 +131,12 @@ export default function ResultsPage() {
         loading={loading}
       />
 
-      <div className="space-y-8 pt-6 border-t border-border/50">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-           <div className="space-y-1">
-              <h2 className="text-xl font-black tracking-tight">Exam List</h2>
-              <p className="text-sm font-medium text-muted-foreground">Detailed breakdown of your exam scores.</p>
-           </div>
+      <PageSection className="border-t border-border/50 pt-6">
+        <SectionHeader
+          title="Exam List"
+          description="Detailed breakdown of your exam scores."
+          className="[&_h2]:text-xl [&_h2]:font-black"
+          actions={
            
            <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex flex-col gap-1.5">
@@ -168,24 +168,24 @@ export default function ResultsPage() {
                   </Select>
               </div>
            </div>
-        </div>
+          }
+        />
 
         {filteredResults.length === 0 ? (
-          <Card className="border-2 border-dashed border-border/40 bg-muted/10 rounded-[2.5rem] py-24">
-            <div className="flex flex-col items-center justify-center text-center px-6">
-              <Trophy className="w-16 h-16 text-muted-foreground/20 mb-6" />
-              <h3 className="text-xl font-bold">No Records Matched</h3>
-              <p className="text-muted-foreground mt-2 max-w-xs font-medium">Adjust your criteria or check back after the next results.</p>
-            </div>
-          </Card>
+          <EmptyState
+            icon={<Trophy className="size-16" />}
+            title="No Records Matched"
+            description="Adjust your criteria or check back after the next results."
+            className="rounded-[2.5rem] border-2 border-border/40 py-24"
+          />
         ) : (
-          <div className="grid gap-4 animate-in fade-in duration-700">
+          <Grid className="animate-in fade-in duration-700">
             {filteredResults.map((result) => (
               <ResultCard key={result.id} result={result} />
             ))}
-          </div>
+          </Grid>
         )}
-      </div>
-    </DashboardContent>
+      </PageSection>
+    </PageContainer>
   );
 }

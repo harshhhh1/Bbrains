@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { EmptyState } from "@/components/ui/empty-state"
+import { LoadingState } from "@/components/ui/loading-state"
+import { PageContainer, PageHeader, Stack } from "@/components/layout/page-primitives"
 import { LeaderboardEntryRow, TopThreePodium } from "@/features/leaderboard/ui/LeaderboardEntry"
 import { useLeaderboard } from "@/features/leaderboard/model/use-leaderboard"
 import { LeaderboardRewardsBanner, LeaderboardRewardsBannerSkeleton } from "@/features/leaderboard/ui/LeaderboardRewardsBanner"
@@ -95,13 +98,8 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-3xl md:p-8">
-      <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold tracking-tight">Leaderboard</h1>
-        <p className="text-muted-foreground">
-          See how you rank against other learners
-        </p>
-      </div>
+    <PageContainer width="sm" padding="sm">
+      <PageHeader title="Leaderboard" description="See how you rank against other learners" />
 
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <Tabs value={category} onValueChange={(v) => setCategory(v as LeaderboardCategory)}>
@@ -151,14 +149,9 @@ export default function LeaderboardPage() {
       ) : null}
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="mt-4 text-sm text-muted-foreground">Loading leaderboard...</p>
-        </div>
+        <LoadingState label="Loading leaderboard..." className="py-12" />
       ) : entries.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 rounded-lg border">
-          <p className="text-muted-foreground">No rankings yet for this category</p>
-        </div>
+        <EmptyState title="No rankings yet for this category" className="rounded-lg py-12" />
       ) : (
         <>
           {entries.length >= 3 && (
@@ -169,7 +162,7 @@ export default function LeaderboardPage() {
             />
           )}
 
-          <div className="space-y-2">
+          <Stack gap="sm">
             {entries.map((entry) => (
               <LeaderboardEntryRow
                 key={entry.userId}
@@ -178,7 +171,7 @@ export default function LeaderboardPage() {
                 sortBy={sortBy}
               />
             ))}
-          </div>
+          </Stack>
 
           {myPosition && !entries.find(e => e.userId === currentUserId) && (
             <div className="mt-6 rounded-lg border border-primary bg-primary/5 p-4 dark:bg-primary/10">
@@ -189,6 +182,6 @@ export default function LeaderboardPage() {
           )}
         </>
       )}
-    </div>
+    </PageContainer>
   )
 }

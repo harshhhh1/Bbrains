@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Grid, PageContainer, PageHeader, Stack } from "@/components/layout/page-primitives";
+import { SearchField } from "@/components/ui/toolbar";
+import { StatCard } from "@/components/ui/base-card";
 import {
   Drawer,
   DrawerClose,
@@ -23,16 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DashboardContent } from "@/components/dashboard-content";
 import {
-  Search,
   CreditCard,
-  ShoppingBag,
   Wallet,
   ArrowUpRight,
   ArrowDownLeft,
   Eye,
-  Filter,
   Calendar,
   TrendingUp,
   TrendingDown,
@@ -188,76 +187,51 @@ export default function PaymentHistoryPage() {
   };
 
   return (
-    <DashboardContent>
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <CreditCard className="w-6 h-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">B-Coins History</h1>
-              <p className="text-sm text-muted-foreground">View your virtual wallet transactions</p>
-            </div>
-          </div>
-        </div>
+    <PageContainer>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-3">
+            <span className="rounded-lg bg-primary/10 p-2">
+              <CreditCard className="size-6 text-primary" />
+            </span>
+            B-Coins History
+          </span>
+        }
+        description="View your virtual wallet transactions"
+      />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <ArrowUpRight className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Received</p>
-                  <p className="text-xl font-bold text-green-600">{totalReceived} B-Coins</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-destructive/10">
-                  <ArrowDownLeft className="w-5 h-5 text-destructive" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Spent</p>
-                  <p className="text-xl font-bold text-destructive">{totalSpent} B-Coins</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Receipt className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Transactions</p>
-                  <p className="text-xl font-bold text-foreground">{filteredPayments.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Grid className="md:grid-cols-3">
+          <StatCard
+            label="Total Received"
+            value={`${totalReceived} B-Coins`}
+            icon={<ArrowUpRight className="size-5 text-green-600" />}
+            accentClassName="text-xl text-green-600"
+          />
+          <StatCard
+            label="Total Spent"
+            value={`${totalSpent} B-Coins`}
+            icon={<ArrowDownLeft className="size-5 text-destructive" />}
+            accentClassName="text-xl text-destructive"
+          />
+          <StatCard
+            label="Total Transactions"
+            value={filteredPayments.length}
+            icon={<Receipt className="size-5" />}
+            accentClassName="text-xl"
+          />
+        </Grid>
 
         <Card>
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <CardTitle className="text-lg">All Payments</CardTitle>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
+              <div className="flex flex-col gap-2 sm:flex-row">
+                  <SearchField
                     placeholder="Search payments..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 h-9 w-full sm:w-50"
                   />
-                </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-32.5 h-9">
                     <SelectValue placeholder="Status" />
@@ -288,12 +262,13 @@ export default function PaymentHistoryPage() {
                 ))}
               </div>
             ) : filteredPayments.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <CreditCard className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>No payment history found</p>
-              </div>
+              <EmptyState
+                icon={<CreditCard className="size-12" />}
+                title="No payment history found"
+                className="border-0 bg-transparent py-12"
+              />
             ) : (
-              <div className="space-y-2">
+              <Stack gap="sm">
                 {filteredPayments.map((payment) => (
                   <div
                     key={payment.id}
@@ -345,7 +320,7 @@ export default function PaymentHistoryPage() {
                     </div>
                   </div>
                 ))}
-              </div>
+              </Stack>
             )}
           </CardContent>
         </Card>
@@ -446,8 +421,7 @@ export default function PaymentHistoryPage() {
             </div>
           </DrawerContent>
         </Drawer>
-      </div>
-    </DashboardContent>
+    </PageContainer>
   );
 }
 

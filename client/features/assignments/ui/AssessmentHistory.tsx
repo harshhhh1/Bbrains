@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Stack } from "@/components/layout/page-primitives";
 import { PenSquare, Target, Trophy } from "lucide-react";
 import type { Assessment } from "@/services/api/client";
 
@@ -19,7 +19,7 @@ function fmtDate(value: string) {
   });
 }
 
-function assessmentLabel(type: "test" | "exam") {
+function assessmentLabel() {
   return "Class Test";
 }
 
@@ -32,7 +32,7 @@ function averagePercentage(assessment: Assessment) {
 
 export function AssessmentHistory({ assessments, onEdit }: AssessmentHistoryProps) {
   return (
-    <div className="space-y-4">
+    <Stack>
       {assessments.map((assessment) => (
         <div
           key={assessment.id}
@@ -41,7 +41,7 @@ export function AssessmentHistory({ assessments, onEdit }: AssessmentHistoryProp
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="font-black uppercase tracking-widest text-[9px] px-2 py-0.5 border-primary/20 text-primary bg-primary/5">
-                {assessmentLabel(assessment.assessmentType)}
+                {assessmentLabel()}
               </Badge>
               <Badge variant="secondary" className="font-bold text-[10px]">
                 {assessment.subject}
@@ -81,6 +81,6 @@ export function AssessmentHistory({ assessments, onEdit }: AssessmentHistoryProp
           </div>
         </div>
       ))}
-    </div>
+    </Stack>
   );
 }

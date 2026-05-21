@@ -17,7 +17,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PinDialog } from "@/features/market/ui/PinDialog";
-import { DashboardContent } from "@/components/dashboard-content";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Grid, PageContainer, Stack } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
 
 import { resolveApiFileUrl } from "@/lib/file-url";
 
@@ -160,22 +162,26 @@ export default function MarketProductPageClient() {
 
   if (loading) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Loading product details...</p>
-      </div>
+      <PageContainer>
+        <LoadingState label="Loading product details..." className="min-h-[80vh]" iconClassName="size-10" />
+      </PageContainer>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-[80vh] flex flex-col items-center justify-center gap-6">
-        <AlertTriangle className="w-16 h-16 text-primary" />
-        <h2 className="text-2xl font-black text-foreground tracking-tight">Item Not Found</h2>
-        <Button variant="outline" asChild className="rounded-xl border-border hover:bg-muted">
-          <Link href="/market">Return to Market</Link>
-        </Button>
-      </div>
+      <PageContainer>
+        <EmptyState
+          icon={<AlertTriangle className="size-16 text-primary" />}
+          title="Item Not Found"
+          className="min-h-[80vh] border-0 bg-transparent"
+          action={
+            <Button variant="outline" asChild className="rounded-xl border-border hover:bg-muted">
+              <Link href="/market">Return to Market</Link>
+            </Button>
+          }
+        />
+      </PageContainer>
     );
   }
 
@@ -185,7 +191,7 @@ export default function MarketProductPageClient() {
   const sellerName = sellerDetails?.firstName ? `${sellerDetails.firstName} ${sellerDetails.lastName || ""}` : product.creator?.username || "Verified Buyer";
 
   return (
-    <DashboardContent className="mx-auto w-full max-w-[1400px] p-6 md:p-12 space-y-12">
+    <PageContainer maxWidth="max-w-[1400px]" padding="spacious" gap="xl">
       <div className="hidden md:flex items-center gap-4 translate-x-[-8px]">
         <Link href="/market">
           <Button variant="ghost" className="rounded-2xl h-12 px-5 hover:bg-muted text-muted-foreground group">
@@ -197,8 +203,8 @@ export default function MarketProductPageClient() {
         <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest">Item Details</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-16 items-start">
-        <div className="md:col-span-7 space-y-6">
+      <Grid gap="lg" className="items-start md:grid-cols-12 lg:gap-16">
+        <Stack gap="lg" className="md:col-span-7">
           <div className="relative aspect-[4/5] md:aspect-square rounded-[3rem] overflow-hidden bg-card border border-border group shadow-2xl">
             {allImages[selectedIndex] ? (
               <div className="relative h-full w-full">
@@ -257,10 +263,10 @@ export default function MarketProductPageClient() {
               ))}
             </div>
           )}
-        </div>
+        </Stack>
 
-        <div className="md:col-span-5 space-y-10 md:sticky md:top-24">
-          <div className="space-y-6">
+        <Stack gap="xl" className="md:col-span-5 md:sticky md:top-24">
+          <Stack gap="lg">
             <div className="flex items-center justify-between">
               <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-black uppercase tracking-widest px-3 py-1 h-7 rounded-lg">
                 Premium Protocol
@@ -360,12 +366,12 @@ export default function MarketProductPageClient() {
             </div>
 
 
-          </div>
-        </div>
-      </div>
+          </Stack>
+        </Stack>
+      </Grid>
 
-      <div className="max-w-4xl mx-auto space-y-20 border-t border-border pt-20">
-        <div className="space-y-6">
+      <Stack gap="xl" className="max-w-4xl mx-auto border-t border-border pt-20">
+        <Stack gap="lg">
           <div className="flex items-center gap-4">
               <div className="h-8 w-2 rounded-full bg-primary" />
               <h2 className="text-3xl font-black text-foreground tracking-tight">Product Description</h2>
@@ -373,9 +379,9 @@ export default function MarketProductPageClient() {
           <p className="text-xl text-muted-foreground leading-relaxed font-medium">
              {product.description || "No additional details provided for this item."}
           </p>
-        </div>
+        </Stack>
 
-        <div className="space-y-12">
+        <Stack gap="xl">
           <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                   <div className="h-8 w-2 rounded-full bg-primary" />
@@ -474,8 +480,8 @@ export default function MarketProductPageClient() {
                   ))
               )}
           </div>
-        </div>
-      </div>
+        </Stack>
+      </Stack>
 
       <PinDialog 
         open={showPin} 
@@ -484,7 +490,7 @@ export default function MarketProductPageClient() {
         isProcessing={isProcessing} 
         description={`Paying for order of ${product.name} for ${Number(product.price) * quantity} B-Coins.`}
       />
-    </DashboardContent>
+    </PageContainer>
   );
 }
 

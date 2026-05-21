@@ -20,6 +20,46 @@ export function UserCard({ user, onEdit, onDelete, onView, isLast }: UserCardPro
   const displayName = user.userDetails?.displayName || `${firstName} ${lastName}`.trim() || user.username;
   const initials = (displayName.charAt(0) || user.username.charAt(0)) + (lastName.charAt(0) || "");
 
+  const displayRoles = (user.roles || []).filter(
+    (entry) => entry?.role?.name?.toLowerCase() !== user.type?.toLowerCase()
+  );
+
+  const actionButtons = (
+    <>
+      {onView && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 hover:bg-primary/10 hover:text-primary transition-colors shrink-0"
+          onClick={() => onView(user)}
+          title="View Details"
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      )}
+      {onEdit && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 hover:bg-amber-500/10 hover:text-amber-500 transition-colors shrink-0"
+          onClick={() => onEdit(user)}
+          title="Edit User"
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
+        onClick={() => onDelete(user.id)}
+        title="Delete User"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </>
+  );
+
   return (
     <div className={`group flex items-center gap-4 p-4 hover:bg-muted/50 transition-all ${!isLast ? 'border-b border-border/40' : ''}`}>
       <Avatar className="h-12 w-12 border-2 border-background shadow-sm shrink-0">
@@ -43,107 +83,43 @@ export function UserCard({ user, onEdit, onDelete, onView, isLast }: UserCardPro
           {user.userDetails?.phone && (
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
               <Phone className="h-3 w-3 shrink-0" />
-              <span>{user.userDetails.phone}</span>
+              <span>{user.userDetails.phone} </span>
             </div>
-          )}
+          )||<div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+              <Phone className="h-3 w-3 shrink-0" />
+              <span>Null </span>
+            </div>}
         </div>
 
         <div className="flex flex-wrap gap-1 items-center">
-          <Badge variant="outline" className="capitalize text-[10px] px-1.5 py-0 h-5">
+          <Badge variant="default" className="capitalize text-[10px] px-1.5 py-0 h-5">
             {user.type}
           </Badge>
-          {(() => {
-            const displayRoles = (user.roles || []).filter(
-              (entry) => entry?.role?.name?.toLowerCase() !== user.type?.toLowerCase()
-            );
-            return (
-              <>
-                {displayRoles.slice(0, 3).map((entry) => (
-                  entry?.role?.name ? (
-                    <Badge 
-                      key={`${user.id}-${entry.role.id}`} 
-                      variant="secondary"
-                      className="text-[10px] font-medium bg-primary/5 text-primary border-primary/10 h-5 px-1.5"
-                    >
-                      {entry.role.name}
-                    </Badge>
-                  ) : null
-                ))}
-                {displayRoles.length > 3 && (
-                  <span className="text-[10px] text-muted-foreground">+{displayRoles.length - 3}</span>
-                )}
-              </>
-            );
-          })()}
+          
+          {displayRoles.slice(0, 3).map((entry) => (
+            entry?.role?.name ? (
+              <Badge 
+                key={`${user.id}-${entry.role.id}`} 
+                variant="default"
+                style={{ backgroundColor: entry.role.color || undefined }}
+              >
+                {entry.role.name}
+              </Badge>
+            ) : null
+          ))}
+          
+          {displayRoles.length > 3 && (
+            <span className="text-[10px] text-muted-foreground">+{displayRoles.length - 3}</span>
+          )}
         </div>
 
         <div className="hidden lg:flex items-center gap-1">
-          {onView && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-primary/10 hover:text-primary transition-colors shrink-0"
-              onClick={() => onView(user)}
-              title="View Details"
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-          )}
-          {onEdit && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:bg-amber-500/10 hover:text-amber-500 transition-colors shrink-0"
-              onClick={() => onEdit(user)}
-              title="Edit User"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
-            onClick={() => onDelete(user.id)}
-            title="Delete User"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          {actionButtons}
         </div>
       </div>
 
       <div className="flex lg:hidden gap-1 shrink-0">
-        {onView && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-primary/10 hover:text-primary transition-colors"
-            onClick={() => onView(user)}
-            title="View Details"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-        )}
-        {onEdit && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-amber-500/10 hover:text-amber-500 transition-colors"
-            onClick={() => onEdit(user)}
-            title="Edit User"
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-colors"
-          onClick={() => onDelete(user.id)}
-          title="Delete User"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {actionButtons}
       </div>
     </div>
   );

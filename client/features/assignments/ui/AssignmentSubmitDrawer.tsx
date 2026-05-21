@@ -1,17 +1,17 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/ui/drawer"
+import { DrawerClose } from "@/components/ui/drawer"
+import { DrawerShell } from "@/components/ui/drawer-shell"
 import { Textarea } from "@/components/ui/textarea"
 import { ChatImagePreview } from "@/components/chat-image-preview"
-import { FileText, Loader2, RotateCcw, Upload, X } from "lucide-react"
+import { FileText, Loader2, RotateCcw, Upload } from "lucide-react"
 import { getImageMimeType, isImageFile } from "@/features/assignments/model"
 import type { Assignment } from "@/services/api/client"
 import { toast } from "sonner"
 import { assignmentApi } from "@/services/api/client"
 import React, { useState, useEffect } from "react"
 import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload"
-import { useNotifications } from "@/components/providers/notification-provider"
 
 interface AssignmentSubmitDrawerProps {
   assignment: Assignment | null
@@ -30,7 +30,6 @@ export function AssignmentSubmitDrawer({
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null)
 
   const { uploadFile } = useCloudinaryUpload()
-  const { registerIncomingAssignmentNotification } = useNotifications()
 
   useEffect(() => {
     if (assignment) {
@@ -100,37 +99,45 @@ export function AssignmentSubmitDrawer({
   }
 
   return (
-    <Drawer
-      direction="right"
+    <DrawerShell
       open={!!assignment}
       onOpenChange={(open) => {
         if (!open && !submitting) {
           onClose()
         }
       }}
+      width="md"
+      title={assignment?.submission?.reviewStatus === "rework" ? "Resubmit Assignment" : "Submit Assignment"}
+      description={
+        <>
+          Upload your work for{" "}
+          <span className="font-semibold text-foreground">{assignment?.title}</span>.
+        </>
+      }
+      bodyClassName="space-y-4"
+      footer={
+        <>
+          <DrawerClose asChild>
+            <Button variant="ghost" disabled={submitting}>
+              Cancel
+            </Button>
+          </DrawerClose>
+          <Button className="rounded-2xl" onClick={handleFileSubmit} disabled={!selectedFile || submitting}>
+            {assignment?.submission?.reviewStatus === "rework" ? (
+              <RotateCcw className="mr-2 size-4" />
+            ) : (
+              <Upload className="mr-2 size-4" />
+            )}
+            {submitting
+              ? "Submitting..."
+              : assignment?.submission?.reviewStatus === "rework"
+                ? "Resubmit Assignment"
+                : "Submit Assignment"}
+          </Button>
+        </>
+      }
+      footerClassName="bg-background/95"
     >
-      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-xl before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
-        <div className="flex h-dvh max-h-dvh flex-col overflow-hidden">
-          <DrawerHeader className="border-b border-border/60 p-6 text-left">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                <DrawerTitle className="text-xl font-bold">
-                  {assignment?.submission?.reviewStatus === "rework" ? "Resubmit Assignment" : "Submit Assignment"}
-                </DrawerTitle>
-                <DrawerDescription>
-                  Upload your work for{" "}
-                  <span className="font-semibold text-foreground">{assignment?.title}</span>.
-                </DrawerDescription>
-              </div>
-              <DrawerClose asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <X className="h-4 w-4" />
-                </Button>
-              </DrawerClose>
-            </div>
-          </DrawerHeader>
-
-          <div className="flex-1 space-y-4 overflow-y-auto p-6">
             {assignment?.submission?.reviewRemark ? (
               <div className="rounded-2xl border border-orange-200 bg-orange-50/60 p-4 text-sm dark:border-orange-900 dark:bg-orange-950/20">
                 <p className="mb-1 font-medium text-foreground">Teacher remark</p>
@@ -180,29 +187,6 @@ export function AssignmentSubmitDrawer({
                 Uploading your file...
               </div>
             ) : null}
-          </div>
-
-          <DrawerFooter className="border-t border-border/60 bg-background/95 p-6 sm:flex-row sm:justify-end">
-            <DrawerClose asChild>
-              <Button variant="ghost" disabled={submitting}>
-                Cancel
-              </Button>
-            </DrawerClose>
-            <Button className="rounded-2xl" onClick={handleFileSubmit} disabled={!selectedFile || submitting}>
-              {assignment?.submission?.reviewStatus === "rework" ? (
-                <RotateCcw className="mr-2 h-4 w-4" />
-              ) : (
-                <Upload className="mr-2 h-4 w-4" />
-              )}
-              {submitting
-                ? "Submitting..."
-                : assignment?.submission?.reviewStatus === "rework"
-                  ? "Resubmit Assignment"
-                  : "Submit Assignment"}
-            </Button>
-          </DrawerFooter>
-        </div>
-      </DrawerContent>
-    </Drawer>
+    </DrawerShell>
   )
 }

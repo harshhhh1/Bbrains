@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { Pencil, Trash2, Upload, FolderPlus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface ContextMenuProps {
   x: number
@@ -23,6 +24,7 @@ export function ContextMenu({
   onClose
 }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
+  const itemClassName = "mx-1 flex w-[calc(100%-8px)] items-center rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent"
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -47,14 +49,14 @@ export function ContextMenu({
           </div>
           <button
             onClick={onUpload}
-            className="flex items-center w-full px-3 py-2 text-sm hover:bg-accent transition-colors mx-1 rounded-md w-[calc(100%-8px)]"
+            className={itemClassName}
           >
             <Upload className="h-4 w-4 mr-3 text-blue-500" />
             Upload File
           </button>
           <button
             onClick={onCreateFolder}
-            className="flex items-center w-full px-3 py-2 text-sm hover:bg-accent transition-colors mx-1 rounded-md w-[calc(100%-8px)]"
+            className={itemClassName}
           >
             <FolderPlus className="h-4 w-4 mr-3 text-blue-500" />
             New Folder
@@ -62,14 +64,14 @@ export function ContextMenu({
           <div className="my-1 border-t border-border/50" />
           <button
             onClick={onRename}
-            className="flex items-center w-full px-3 py-2 text-sm hover:bg-accent transition-colors mx-1 rounded-md w-[calc(100%-8px)]"
+            className={itemClassName}
           >
             <Pencil className="h-4 w-4 mr-3 text-muted-foreground" />
             Rename
           </button>
           <button
             onClick={onDelete}
-            className="flex items-center w-full px-3 py-2 text-sm hover:bg-accent hover:text-destructive transition-colors mx-1 rounded-md w-[calc(100%-8px)]"
+            className={cn(itemClassName, "hover:text-destructive")}
           >
             <Trash2 className="h-4 w-4 mr-3 text-destructive/80" />
             Delete

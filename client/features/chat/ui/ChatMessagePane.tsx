@@ -5,6 +5,9 @@ import { ArrowDown, Hash, Loader2, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { Stack } from "@/components/layout/page-primitives";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingState } from "@/components/ui/loading-state";
 import { MessageInput } from "@/features/chat/ui/MessageInput";
 import { MessageItem } from "@/features/chat/ui/MessageItem";
 import type { Message } from "@/features/chat/api/data";
@@ -50,7 +53,7 @@ type ChatMessagePaneProps = {
   onReply: (message: Message) => void;
   onCopy: (content: string) => void;
   onEdit: (message: Message) => void;
-  onDelete: (messageId: string) => Promise<any>;
+  onDelete: (messageId: string) => Promise<unknown>;
   onOpenProfile: (userId: string) => void;
   onMention: (username: string) => void;
   onCopyLink: (messageId: string) => void;
@@ -129,18 +132,16 @@ export function ChatMessagePane({
           <div className="space-y-1">
             {isSearchMode ? (
               isSearching ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  <span className="ml-2 text-sm text-muted-foreground">Searching...</span>
-                </div>
+                <LoadingState label="Searching..." className="py-12" iconClassName="size-6 text-muted-foreground" />
               ) : searchResults.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                  <Search className="mb-2 h-10 w-10" />
-                  <p className="text-sm font-medium">No results found</p>
-                  <p className="text-xs">Try a different search term</p>
-                </div>
+                <EmptyState
+                  icon={<Search className="size-10" />}
+                  title="No results found"
+                  description="Try a different search term"
+                  className="border-none bg-transparent py-12"
+                />
               ) : (
-                <div className="space-y-2">
+                <Stack gap="sm">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Search className="h-4 w-4" />
                     <span>{searchResults.length} results for &quot;{searchQuery}&quot;</span>
@@ -158,19 +159,17 @@ export function ChatMessagePane({
                       <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{chatMessage.content}</p>
                     </button>
                   ))}
-                </div>
+                </Stack>
               )
             ) : loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-sm text-muted-foreground">Loading messages...</span>
-              </div>
+              <LoadingState label="Loading messages..." className="py-12" iconClassName="size-6 text-muted-foreground" />
             ) : messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <Hash className="mb-2 h-10 w-10" />
-                <p className="text-sm font-medium">No messages yet</p>
-                <p className="text-xs">Be first to say something!</p>
-              </div>
+              <EmptyState
+                icon={<Hash className="size-10" />}
+                title="No messages yet"
+                description="Be first to say something!"
+                className="border-none bg-transparent py-12"
+              />
             ) : (
               <>
                 {loadingMore ? (

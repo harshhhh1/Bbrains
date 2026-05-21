@@ -2,17 +2,10 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer"
+import { DrawerClose } from "@/components/ui/drawer"
+import { DrawerShell } from "@/components/ui/drawer-shell"
 import { ChatImagePreview } from "@/components/chat-image-preview"
-import { Calendar, Download, FileText, X } from "lucide-react"
+import { Calendar, Download, FileText } from "lucide-react"
 import { resolveApiFileUrl } from "@/lib/file-url"
 import type { Assignment } from "@/services/api/client"
 import {
@@ -34,39 +27,39 @@ export function AssignmentViewDialog({ assignment, onClose }: AssignmentViewDial
   const submissionFileUrl = resolveApiFileUrl(assignment?.submission?.filePath)
 
   return (
-    <Drawer open={!!assignment} onOpenChange={(open) => !open && onClose()} direction="right">
-      <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-xl before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
-        <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
-          <DrawerHeader className="border-b border-border/60 p-6 text-left">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                <DrawerTitle className="text-2xl font-black tracking-tight">{assignment?.title}</DrawerTitle>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary">{assignment?.course?.name || "General"}</Badge>
-                  {assignment ? (
-                    <>
-                      <Badge variant={getStatusBadgeVariant(getAssignmentStatus(assignment))}>
-                        {getStatusLabel(getAssignmentStatus(assignment))}
-                      </Badge>
-                      <Badge variant="outline">
-                        {assignment.rewardPoints ?? 0} point{(assignment.rewardPoints ?? 0) === 1 ? "" : "s"}
-                      </Badge>
-                    </>
-                  ) : null}
-                </div>
-                <DrawerDescription className="text-sm font-medium text-muted-foreground mt-2">
-                  Review task details, your submission, and teacher feedback.
-                </DrawerDescription>
-              </div>
-              <DrawerClose asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <X className="h-4 w-4" />
-                </Button>
-              </DrawerClose>
-            </div>
-          </DrawerHeader>
-
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+    <DrawerShell
+      open={!!assignment}
+      onOpenChange={(open) => !open && onClose()}
+      width="md"
+      title={<span className="text-2xl font-black tracking-tight">{assignment?.title}</span>}
+      description={
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary">{assignment?.course?.name || "General"}</Badge>
+            {assignment ? (
+              <>
+                <Badge variant={getStatusBadgeVariant(getAssignmentStatus(assignment))}>
+                  {getStatusLabel(getAssignmentStatus(assignment))}
+                </Badge>
+                <Badge variant="outline">
+                  {assignment.rewardPoints ?? 0} point{(assignment.rewardPoints ?? 0) === 1 ? "" : "s"}
+                </Badge>
+              </>
+            ) : null}
+          </div>
+          <p className="text-sm font-medium text-muted-foreground">
+            Review task details, your submission, and teacher feedback.
+          </p>
+        </div>
+      }
+      bodyClassName="space-y-6"
+      footer={
+        <DrawerClose asChild>
+          <Button variant="outline" className="h-12 w-full rounded-xl font-bold">Close View</Button>
+        </DrawerClose>
+      }
+      footerClassName="bg-muted/5"
+    >
             <div className="space-y-4">
               <div>
                 <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-2">Description</h4>
@@ -179,15 +172,6 @@ export function AssignmentViewDialog({ assignment, onClose }: AssignmentViewDial
                 </div>
               ) : null}
             </div>
-          </div>
-
-          <DrawerFooter className="border-t border-border/60 p-6 bg-muted/5">
-            <DrawerClose asChild>
-              <Button variant="outline" className="w-full h-12 rounded-xl font-bold">Close View</Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </div>
-      </DrawerContent>
-    </Drawer>
+    </DrawerShell>
   )
 }

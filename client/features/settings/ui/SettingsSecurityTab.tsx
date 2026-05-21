@@ -2,12 +2,13 @@
 
 import { AlertCircle, KeyRound, Loader2, LogOut, ShieldCheck, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Grid, Stack } from "@/components/layout/page-primitives";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/features/settings/model/settings";
 import type { SavingState } from "@/features/settings/types/settings";
-import { PinSlots } from "@/features/settings/ui/settings-ui";
+import { MetricCard, PinSlots, SectionCard } from "@/features/settings/ui/settings-ui";
 import { authApi, setAuthToken } from "@/services/api/client";
 
 type SettingsSecurityTabProps = {
@@ -89,25 +90,19 @@ export function SettingsSecurityTab({
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+    <Grid className="lg:grid-cols-[1.1fr_0.9fr]" gap="lg">
       {/* ─── LEFT: Password + Wallet PIN ─── */}
-      <div className="space-y-6">
+      <Stack gap="lg">
         {/* Password section */}
-        <div className="rounded-3xl border border-border/40 bg-card p-6 md:p-8">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <KeyRound className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold tracking-tight">Password</h2>
-              <p className="text-xs text-muted-foreground/70">Rotate your password regularly</p>
-            </div>
-          </div>
-
+        <SectionCard
+          icon={<KeyRound className="size-5" />}
+          title="Password"
+          description="Rotate your password regularly"
+        >
           <div className="mb-5 flex items-start gap-3 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-amber-600 dark:text-amber-400">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <p className="text-xs leading-5">
-              Use a password you don't reuse anywhere else. Current password is required.
+              Use a password you do not reuse anywhere else. Current password is required.
             </p>
           </div>
 
@@ -159,22 +154,14 @@ export function SettingsSecurityTab({
               )}
             </Button>
           </div>
-        </div>
+        </SectionCard>
 
         {/* Wallet PIN section */}
-        <div className="rounded-3xl border border-border/40 bg-card p-6 md:p-8">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
-              <Wallet className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold tracking-tight">Wallet PIN</h2>
-              <p className="text-xs text-muted-foreground/70">
-                {isPinSet ? "Update your 6-digit PIN" : "Create a 6-digit PIN for payments"}
-              </p>
-            </div>
-          </div>
-
+        <SectionCard
+          icon={<Wallet className="size-5" />}
+          title="Wallet PIN"
+          description={isPinSet ? "Update your 6-digit PIN" : "Create a 6-digit PIN for payments"}
+        >
           <div className="grid gap-5">
             {isPinSet ? (
               <SecField label="Current PIN" hint="Required before replacing wallet PIN">
@@ -209,23 +196,17 @@ export function SettingsSecurityTab({
               )}
             </Button>
           </div>
-        </div>
-      </div>
+        </SectionCard>
+      </Stack>
 
       {/* ─── RIGHT: Security overview + Logout ─── */}
-      <div className="space-y-6">
+      <Stack gap="lg">
         {/* Security overview card */}
-        <div className="rounded-3xl border border-border/40 bg-card p-6 md:p-8">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
-              <ShieldCheck className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold tracking-tight">Security Overview</h2>
-              <p className="text-xs text-muted-foreground/70">Account status at a glance</p>
-            </div>
-          </div>
-
+        <SectionCard
+          icon={<ShieldCheck className="size-5" />}
+          title="Security Overview"
+          description="Account status at a glance"
+        >
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-2xl bg-muted/20 p-4">
               <div>
@@ -234,22 +215,10 @@ export function SettingsSecurityTab({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-muted/20 p-4 text-center">
-                <p className="text-lg font-bold text-foreground">
-                  {isPinSet ? "Active" : "Missing"}
-                </p>
-                <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                  Wallet PIN
-                </p>
-              </div>
-              <div className="rounded-2xl bg-muted/20 p-4 text-center">
-                <p className="text-lg font-bold text-foreground">{formatCurrency(walletBalance)}</p>
-                <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                  Balance
-                </p>
-              </div>
-            </div>
+            <Grid columns={2} gap="sm">
+              <MetricCard label="Wallet PIN" value={isPinSet ? "Active" : "Missing"} note="Wallet actions" />
+              <MetricCard label="Balance" value={formatCurrency(walletBalance)} note="Available funds" />
+            </Grid>
 
             <Separator className="my-2" />
 
@@ -269,7 +238,7 @@ export function SettingsSecurityTab({
               ))}
             </div>
           </div>
-        </div>
+        </SectionCard>
 
         {/* Logout button */}
         <Button
@@ -280,7 +249,7 @@ export function SettingsSecurityTab({
           <LogOut className="mr-2 h-4 w-4" />
           Sign Out
         </Button>
-      </div>
-    </div>
+      </Stack>
+    </Grid>
   );
 }

@@ -5,6 +5,7 @@ import type { Member } from "@/features/chat/api/data"
 import { ROLE_ORDER, ROLE_LABELS } from "@/features/chat/api/data"
 import { Crown, ArrowLeft } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Stack } from "@/components/layout/page-primitives"
 
 const MemberRow = React.memo(function MemberRow({
     member,
@@ -101,7 +102,7 @@ export const Memberssidebar = React.memo(function MembersSidebar({ members, onCl
                 <h3 className="font-semibold text-gray-900 dark:text-white">Members list</h3>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            <Stack className="flex-1 overflow-y-auto p-4" gap="lg">
                 {members.length === 0 ? (
                     <div className="text-sm text-gray-500 dark:text-gray-400">No members found.</div>
                 ) : null}
@@ -129,7 +130,7 @@ export const Memberssidebar = React.memo(function MembersSidebar({ members, onCl
                 {offlineMembers.length > 0 ? (
                     <div className="pt-2">
                         <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Offline</h4>
-                        <div className="space-y-6">
+                        <Stack gap="lg">
                             {ROLE_ORDER.map((role) =>
                                 groupedOffline[role].length > 0 ? (
                                     <div key={`offline-${role}`}>
@@ -149,10 +150,10 @@ export const Memberssidebar = React.memo(function MembersSidebar({ members, onCl
                                     </div>
                                 ) : null
                             )}
-                        </div>
+                        </Stack>
                     </div>
                 ) : null}
-            </div>
+            </Stack>
         </aside>
     )
 })

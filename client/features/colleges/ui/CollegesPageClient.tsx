@@ -2,8 +2,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2, Building2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Building2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Grid, PageContainer } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
 import { SectionHeader } from "@/features/admin/ui/SectionHeader";
 import { api } from "@/services/api/client";
 import { AddCollegeModal } from "@/features/colleges/ui/AddCollegeModal";
@@ -51,16 +53,11 @@ export default function CollegesPage() {
   }, [user, userLoading, router]);
 
   if (userLoading || !user || user.type !== "superadmin") {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <Loader2 className="size-10 animate-spin text-brand-purple/40" />
-        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Verifying Authority...</p>
-      </div>
-    );
+    return <LoadingState label="Verifying Authority..." className="min-h-[60vh]" iconClassName="size-10 text-brand-purple/40" />;
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-10">
+    <PageContainer padding="spacious" gap="xl">
       <SectionHeader
         title="School Network"
         subtitle="Manage affiliated colleges and campus configurations."
@@ -69,24 +66,20 @@ export default function CollegesPage() {
       />
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Loader2 className="size-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Directory...</p>
-        </div>
+        <LoadingState label="Syncing Directory..." className="py-20" iconClassName="size-10" />
       ) : colleges.length === 0 ? (
-        <Card className="border-dashed border-border/40 bg-muted/10 rounded-3xl">
-          <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-            <Building2 className="mb-6 size-16 text-muted-foreground/30" />
-            <h3 className="text-xl font-bold">No Institutions Linked</h3>
-            <p className="text-muted-foreground mt-2 max-w-xs">Begin by adding your first affiliated campus to the digital ecosystem.</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={<Building2 className="size-16" />}
+          title="No Institutions Linked"
+          description="Begin by adding your first affiliated campus to the digital ecosystem."
+          className="rounded-3xl py-20"
+        />
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <Grid gap="lg" className="sm:grid-cols-2 lg:grid-cols-3">
           {colleges.map((college) => (
             <CollegeCard key={college.id} college={college} />
           ))}
-        </div>
+        </Grid>
       )}
 
       <AddCollegeModal
@@ -94,6 +87,6 @@ export default function CollegesPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={fetchColleges}
       />
-    </div>
+    </PageContainer>
   );
 }

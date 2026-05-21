@@ -1,7 +1,8 @@
 "use client";
 
-import { Loader2, User, ShieldCheck } from "lucide-react";
-import { DashboardContent } from "@/components/dashboard-content";
+import { User, ShieldCheck } from "lucide-react";
+import { PageContainer } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SettingsHero } from "@/features/settings/ui/SettingsHero";
 import { SettingsProfileTab } from "@/features/settings/ui/SettingsProfileTab";
@@ -14,17 +15,14 @@ export default function SettingsPage() {
 
   if (settings.loading) {
     return (
-      <DashboardContent maxWidth="max-w-6xl">
-        <div className="flex min-h-[70vh] flex-col items-center justify-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading settings workspace...</p>
-        </div>
-      </DashboardContent>
+      <PageContainer width="lg">
+        <LoadingState label="Loading settings workspace..." className="min-h-[70vh]" iconClassName="size-10" />
+      </PageContainer>
     );
   }
 
   return (
-    <DashboardContent maxWidth="max-w-6xl" className="space-y-8">
+    <PageContainer width="lg" gap="lg">
       <SettingsHero
         user={settings.user}
         form={settings.form}
@@ -104,6 +102,6 @@ export default function SettingsPage() {
           />
         </TabsContent>
       </Tabs>
-    </DashboardContent>
+    </PageContainer>
   );
 }

@@ -8,11 +8,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { EmptyState } from "@/components/ui/empty-state"
+import { PageContainer, PageHeader, Stack } from "@/components/layout/page-primitives"
+import { LoadingState } from "@/components/ui/loading-state"
 import type { Product } from "@/features/market/approvals/types"
 import { fetchPendingProducts, approveRejectProduct } from "@/features/market/approvals/api/data"
 import { dashboardApi, type User as ApiUser } from "@/services/api/client"
 import { useHasPermission } from "@/components/providers/permissions-provider"
-import { DashboardContent } from "@/components/dashboard-content"
 
 interface PendingProduct extends Product {
     creatorName: string
@@ -83,28 +85,26 @@ export default function ApprovalsPage() {
     }
 
     if (loadingAuth || loading) {
-        return (
-            <div className="flex h-full items-center justify-center">
-                <Loader2 className="size-8 animate-spin text-primary" />
-            </div>
-        )
+        return <LoadingState label={null} className="h-full" iconClassName="size-8" />
     }
 
     if (!hasAccess) {
         return (
-            <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
-                <ShieldCheck className="size-10 opacity-40" />
-                <p className="text-sm font-medium">Access Denied</p>
-                <p className="text-xs">Only teachers and admins can access this page.</p>
-                <Link href="/market">
+            <PageContainer width="md">
+                <EmptyState
+                    icon={<ShieldCheck className="size-10" />}
+                    title="Access Denied"
+                    description="Only teachers and admins can access this page."
+                    action={<Link href="/market">
                     <Button size="sm" variant="outline">Back to Market</Button>
-                </Link>
-            </div>
+                </Link>}
+                />
+            </PageContainer>
         )
     }
 
     return (
-        <DashboardContent className="max-w-4xl mx-auto">
+        <PageContainer width="md">
             <div className="flex h-full w-full flex-col overflow-hidden">
                 <div className="shrink-0 space-y-2 border-b border-border px-4 py-4">
                     <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export default function ApprovalsPage() {
                     </div>
                 </div>
 
-                <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted">
+                <Stack gap="md" className="min-h-0 flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted">
                     {products.length > 0 ? (
                         products.map((product) => {
                             const isProcessing = processing === product.id
@@ -182,14 +182,15 @@ export default function ApprovalsPage() {
                             )
                         })
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                            <Package className="mb-3 size-10 opacity-40" />
-                            <p className="text-sm font-medium">No pending items</p>
-                            <p className="mt-1 text-xs">All products have been reviewed</p>
-                        </div>
+                        <EmptyState
+                            icon={<Package className="size-10" />}
+                            title="No pending items"
+                            description="All products have been reviewed"
+                            className="border-0 bg-transparent py-20"
+                        />
                     )}
-                </div>
+                </Stack>
             </div>
-        </DashboardContent>
+        </PageContainer>
     )
 }

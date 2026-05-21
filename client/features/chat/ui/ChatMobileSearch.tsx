@@ -1,8 +1,9 @@
 "use client";
 
 import type { RefObject } from "react";
-import { Loader2, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { LoadingState } from "@/components/ui/loading-state";
 import type { Message } from "@/features/chat/api/data";
 
 type ChatMobileSearchProps = {
@@ -47,10 +48,7 @@ export function ChatMobileSearch({
       <div className="mt-3 max-h-64 space-y-2 overflow-y-auto">
         {searchQuery.trim() ? (
           isSearching ? (
-            <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Searching...
-            </div>
+            <LoadingState label="Searching..." className="py-6" iconClassName="size-4" />
           ) : searchResults.length === 0 ? (
             <div className="py-6 text-center text-sm text-muted-foreground">No messages found.</div>
           ) : (
