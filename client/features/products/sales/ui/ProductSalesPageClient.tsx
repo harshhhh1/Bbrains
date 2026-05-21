@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BarChart3, TrendingUp, Star, Package, ArrowLeft, Loader2, Download, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardContent } from "@/components/dashboard-content";
+import { Grid, PageContainer, PageHeader, Stack } from "@/components/layout/page-primitives";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingState } from "@/components/ui/loading-state";
 import { marketApi, SalesData } from "@/services/api/client";
 import Link from "next/link";
 
@@ -41,45 +43,44 @@ export default function SalesPage() {
 
   if (loading) {
     return (
-      <DashboardContent>
-        <div className="py-32 flex flex-col items-center justify-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-brand-orange" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Loading Sales Data...</p>
-        </div>
-      </DashboardContent>
+      <PageContainer>
+        <LoadingState label="Loading Sales Data..." className="py-32" iconClassName="size-10 text-brand-orange" />
+      </PageContainer>
     );
   }
 
   if (!sales) {
     return (
-      <DashboardContent>
-        <div className="py-32 text-center">
-          <p className="text-white/40">No sales data available</p>
-        </div>
-      </DashboardContent>
+      <PageContainer>
+        <EmptyState title="No sales data available" className="py-32" />
+      </PageContainer>
     );
   }
 
   return (
-    <DashboardContent>
-      <div className="space-y-8 animate-in fade-in duration-500">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-2">
+    <PageContainer gap="lg">
+      <Stack gap="xl" className="animate-in fade-in duration-500">
+        <PageHeader
+          title={
+            <span className="flex items-center gap-2">
               <TrendingUp className="w-8 h-8 text-brand-orange" />
               Sales Analytics
-            </h1>
-            <p className="text-muted-foreground text-sm font-medium mt-1">Track your revenue and performance</p>
-          </div>
+            </span>
+          }
+          description="Track your revenue and performance"
+          titleClassName="text-3xl font-black tracking-tight"
+          descriptionClassName="font-medium"
+          actions={
           <Link href="/products">
             <Button variant="outline" className="h-10 px-4 rounded-xl border-2 font-bold text-xs hover:bg-white/5">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Products
             </Button>
           </Link>
-        </div>
+          }
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Grid className="md:grid-cols-2 lg:grid-cols-4">
           <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-3">
@@ -130,9 +131,9 @@ export default function SalesPage() {
               <p className="text-sm text-purple-400 font-bold mt-1">Listed</p>
             </CardContent>
           </Card>
-        </div>
+        </Grid>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Grid gap="lg" className="lg:grid-cols-2">
           <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
             <CardContent className="p-6">
               <h3 className="text-lg font-black text-white mb-4 flex items-center gap-2">
@@ -142,7 +143,7 @@ export default function SalesPage() {
               {sales.productBreakdown.length === 0 ? (
                 <p className="text-sm text-white/30 text-center py-8">No sales yet</p>
               ) : (
-                <div className="space-y-3">
+                <Stack gap="md">
                   {sales.productBreakdown.map((p) => (
                     <div key={p.productId} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
                       <div className="flex-1 min-w-0">
@@ -163,7 +164,7 @@ export default function SalesPage() {
                       <span className="font-bold text-brand-orange text-sm">{p.revenue} B-Coins</span>
                     </div>
                   ))}
-                </div>
+                </Stack>
               )}
             </CardContent>
           </Card>
@@ -177,7 +178,7 @@ export default function SalesPage() {
               {sales.recentTransactions.length === 0 ? (
                 <p className="text-sm text-white/30 text-center py-8">No transactions yet</p>
               ) : (
-                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                <Stack gap="md" className="max-h-[500px] overflow-y-auto pr-2">
                   {sales.recentTransactions.map((t, idx) => (
                     <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5">
                       <div className="flex-1 min-w-0">
@@ -190,12 +191,12 @@ export default function SalesPage() {
                       <span className="font-bold text-green-400 text-sm">+{t.amount} B-Coins</span>
                     </div>
                   ))}
-                </div>
+                </Stack>
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </DashboardContent>
+        </Grid>
+      </Stack>
+    </PageContainer>
   );
 }

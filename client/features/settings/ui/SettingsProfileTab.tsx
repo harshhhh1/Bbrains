@@ -2,13 +2,15 @@
 
 import type { Dispatch, SetStateAction } from "react";
 import { AlertCircle, BadgeCheck, Loader2, Pencil, Save, Trophy, User } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Grid, Stack } from "@/components/layout/page-primitives";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { formatCurrency, getInitials } from "@/features/settings/model/settings";
+import { formatCurrency } from "@/features/settings/model/settings";
 import type { ProfileFormState, SavingState, SettingsUser } from "@/features/settings/types/settings";
+import { MetricCard, SectionCard } from "@/features/settings/ui/settings-ui";
 import type { UserAchievement } from "@/services/api/client";
 
 type SettingsProfileTabProps = {
@@ -94,7 +96,6 @@ export function SettingsProfileTab({
   usernameError,
   isCheckingUsername,
   canSaveProfile,
-  displayName,
   roleLabel,
   gradeLabel,
   isPinSet,
@@ -106,19 +107,13 @@ export function SettingsProfileTab({
   const achievements = (user?.userAchievements as UserAchievement[] | undefined) || [];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+    <Grid className="lg:grid-cols-[1.1fr_0.9fr]" gap="lg">
       {/* ─── LEFT: Profile card ─── */}
-      <div className="rounded-3xl border border-border/40 bg-card p-6 md:p-8">
-        <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <User className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold tracking-tight">Profile Details</h2>
-            <p className="text-xs text-muted-foreground/70">Update your personal information</p>
-          </div>
-        </div>
-
+      <SectionCard
+        icon={<User className="size-5" />}
+        title="Profile Details"
+        description="Update your personal information"
+      >
         <div className="divide-y divide-border/30">
           <EditableRow label="Username">
             <div className="relative">
@@ -219,46 +214,30 @@ export function SettingsProfileTab({
             )}
           </Button>
         </div>
-      </div>
+      </SectionCard>
 
       {/* ─── RIGHT: Achievements ─── */}
-      <div className="space-y-6">
+      <Stack gap="lg">
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-2xl border border-border/40 bg-card p-4 text-center">
-            <p className="text-2xl font-black tracking-tight text-foreground">Lv {level}</p>
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Level</p>
-          </div>
-          <div className="rounded-2xl border border-border/40 bg-card p-4 text-center">
-            <p className="text-2xl font-black tracking-tight text-foreground">{achievementCount}</p>
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Badges</p>
-          </div>
-          <div className="rounded-2xl border border-border/40 bg-card p-4 text-center">
-            <p className="text-2xl font-black tracking-tight text-foreground">{formatCurrency(walletBalance)}</p>
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Wallet</p>
-          </div>
-        </div>
+        <Grid className="grid-cols-3" gap="sm">
+          <MetricCard label="Level" value={`Lv ${level}`} note={roleLabel} />
+          <MetricCard label="Badges" value={String(achievementCount)} note={gradeLabel} />
+          <MetricCard label="Wallet" value={formatCurrency(walletBalance)} note={isPinSet ? "PIN active" : "PIN missing"} />
+        </Grid>
 
         {/* Achievements grid */}
-        <div className="rounded-3xl border border-border/40 bg-card p-6 md:p-8">
-          <div className="mb-6 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-
-              <div>
-                <h2 className="text-lg font-bold tracking-tight">Achievements</h2>
-                <p className="text-xs text-muted-foreground/70">{achievements.length} badges earned</p>
-              </div>
-            </div>
-          </div>
-
+        <SectionCard
+          icon={<Trophy className="size-5" />}
+          title="Achievements"
+          description={`${achievements.length} badges earned`}
+        >
           {achievements.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/50 bg-muted/10 py-12 text-center">
-              <Trophy className="mb-3 h-10 w-10 text-muted-foreground/30" />
-              <p className="text-sm font-medium text-muted-foreground/60">No achievements yet</p>
-              <p className="mt-1 text-xs text-muted-foreground/40">
-                Keep exploring to unlock your first badge!
-              </p>
-            </div>
+            <EmptyState
+              icon={<Trophy className="size-10" />}
+              title="No achievements yet"
+              description="Keep exploring to unlock your first badge!"
+              className="rounded-2xl py-12"
+            />
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {achievements.map((item) => (
@@ -266,8 +245,8 @@ export function SettingsProfileTab({
               ))}
             </div>
           )}
-        </div>
-      </div>
-    </div>
+        </SectionCard>
+      </Stack>
+    </Grid>
   );
 }

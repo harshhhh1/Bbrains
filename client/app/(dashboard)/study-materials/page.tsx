@@ -4,6 +4,8 @@ import { StudyMaterialsPage } from '@/features/study-materials/ui/StudyMaterials
 import { useUser } from '@/hooks/use-user'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { PageContainer } from '@/components/layout/page-primitives'
+import { LoadingState } from '@/components/ui/loading-state'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
@@ -37,19 +39,19 @@ export default function StudyMaterialsRoute() {
 
   // Prevent hydration mismatch - don't render on server
   if (!isClient) {
-    return <div className="container mx-auto py-6">Loading...</div>
+    return <LoadingState label="Loading..." className="py-6" />
   }
 
   if (!user?.collegeId) {
-    return <div className="container mx-auto py-6">Loading user data...</div>
+    return <LoadingState label="Loading user data..." className="py-6" />
   }
 
   return (
-    <div className="container mx-auto py-6">
+    <PageContainer padding="sm">
       <StudyMaterialsPage 
         collegeId={user?.collegeId ? String(user.collegeId) : undefined}
         courseId={user?.type === 'student' ? courseId : undefined}
       />
-    </div>
+    </PageContainer>
   )
 }

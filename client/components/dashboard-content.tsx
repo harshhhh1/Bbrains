@@ -1,21 +1,26 @@
 "use client"
 
 import React from 'react'
+import { PageContainer } from "@/components/layout/page-primitives"
 
 interface DashboardContentProps {
     children: React.ReactNode
     className?: string
     maxWidth?: string
+    padding?: "none" | "sm" | "default" | "spacious"
+    gap?: "none" | "sm" | "default" | "lg" | "xl"
 }
 
 export function DashboardContent({ 
     children, 
     className = "", 
-    maxWidth = "max-w-7xl" 
+    maxWidth = "max-w-7xl",
+    padding = "default",
+    gap = "none",
 }: DashboardContentProps) {
     return (
-        <div className={`${maxWidth} mx-auto w-full p-4 md:p-6 pb-24 md:pb-8 ${className}`}>
+        <PageContainer maxWidth={maxWidth} padding={padding} gap={gap} className={className}>
             {children}
-        </div>
+        </PageContainer>
     )
 }

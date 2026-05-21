@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { AlertCircle, ArrowUpRight, ArrowDownLeft, QrCode, ScanLine, Inbox } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle, ArrowUpRight, ArrowDownLeft, QrCode, Inbox } from "lucide-react";
+import { BaseCard } from "@/components/ui/base-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DashboardContent } from "@/components/dashboard-content";
+import { Grid, PageContainer, PageHeader, Stack } from "@/components/layout/page-primitives";
 
 // API and Types
 import { walletApi, transactionApi, dashboardApi, Transaction, WalletData, User, MoneyRequest } from "@/services/api/client";
@@ -76,9 +76,8 @@ export default function WalletPage() {
   const progressPercent = Math.min(Math.floor(((xpValue % 1000) / 1000) * 100), 100);
 
   return (
-    <DashboardContent>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Wallet</h1>
+    <PageContainer>
+      <PageHeader title="Wallet" />
 
         <WalletHero 
           walletBalance={walletBalance} 
@@ -95,12 +94,10 @@ export default function WalletPage() {
           </div>
         )}
 
-        <div className="space-y-6">
+        <Stack gap="lg">
           {/* Quick Actions Card */}
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="font-semibold text-foreground mb-4">Quick Actions</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <BaseCard title="Quick Actions" contentClassName="p-6 pt-0">
+              <Grid className="grid-cols-2 sm:grid-cols-4" gap="sm">
                 <Button variant="outline" className="h-auto py-4 flex flex-col gap-2" onClick={() => setShowSendDialog(true)}>
                   <ArrowUpRight className="w-6 h-6 text-destructive" />
                   <span className="text-sm">Send Money</span>
@@ -122,9 +119,8 @@ export default function WalletPage() {
                   <QrCode className="w-6 h-6 text-primary" />
                   <span className="text-sm">Show QR</span>
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </Grid>
+          </BaseCard>
 
           <SpendingsChart transactions={transactions} />
 
@@ -133,7 +129,7 @@ export default function WalletPage() {
             loading={loading} 
             error={error} 
           />
-        </div>
+        </Stack>
 
         {/* Global Dialogs isolated into a separate component for cleanliness */}
         <WalletDialogs
@@ -154,7 +150,6 @@ export default function WalletPage() {
           onScanSuccess={handleScanSuccess}
           onTransferSuccess={fetchData}
         />
-      </div>
-    </DashboardContent>
+    </PageContainer>
   );
 }

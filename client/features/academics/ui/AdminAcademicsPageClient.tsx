@@ -1,6 +1,7 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { PageContainer } from "@/components/layout/page-primitives";
+import { Toolbar } from "@/components/ui/toolbar";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AcademicsControls } from "@/features/academics/ui/AcademicsControls";
 import { AcademicsHeader } from "@/features/academics/ui/AcademicsHeader";
@@ -44,12 +45,12 @@ export default function AcademicsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <AcademicsHeader />
 
 
       <Tabs value={tab} onValueChange={setTab} className="flex-col gap-4">
-        <div className="rounded-2xl border border-border/70 bg-card/70 p-3 md:p-4">
+        <Toolbar className="bg-card/70 p-3 md:p-4">
           <AcademicsControls
             tab={tab}
             search={search}
@@ -57,7 +58,7 @@ export default function AcademicsPage() {
             onAddClick={handleAddClick}
             canAdd={canCreateCourse || canManageCourse}
           />
-        </div>
+        </Toolbar>
 
         <TabsContent value="courses" className="mt-0 pt-2">
           <CoursesTable
@@ -89,7 +90,7 @@ export default function AcademicsPage() {
         course={selectedCourse}
         onSuccess={refreshData}
       />
-    </div>
+    </PageContainer>
 
   );
 }

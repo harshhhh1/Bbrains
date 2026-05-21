@@ -1,13 +1,16 @@
 import { Trophy } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
+import { PageContainer } from "@/components/layout/page-primitives"
 
 export function AchievementsEmptyState() {
   return (
-    <div className="flex h-full flex-col items-center justify-center space-y-4 p-8 text-center">
-      <Trophy className="h-16 w-16 text-muted-foreground/30" />
-      <h2 className="text-xl font-semibold">No Achievements Yet</h2>
-      <p className="text-muted-foreground">
-        Keep exploring the platform to unlock your first achievement.
-      </p>
-    </div>
+    <PageContainer>
+      <EmptyState
+        icon={<Trophy className="size-16" />}
+        title="No Achievements Yet"
+        description="Keep exploring the platform to unlock your first achievement."
+        className="h-full border-0 bg-transparent p-8"
+      />
+    </PageContainer>
   )
 }

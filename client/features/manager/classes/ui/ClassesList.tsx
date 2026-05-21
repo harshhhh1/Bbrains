@@ -1,11 +1,14 @@
 "use client";
 
-import { BookOpen, CalendarDays, IndianRupee, Loader2, Users } from "lucide-react";
+import { BookOpen, CalendarDays, IndianRupee, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Grid } from "@/components/layout/page-primitives";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingState } from "@/components/ui/loading-state";
+import { SearchField } from "@/components/ui/toolbar";
 import type { Course } from "@/services/api/client";
 import { formatCurrency } from "@/features/manager/classes/model/classes";
 
@@ -42,22 +45,19 @@ export function ClassesList({
               Every class can carry its own standard, subjects, fee model, duration, and timetable.
             </CardDescription>
           </div>
-          <Input
+          <SearchField
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search classes, standards, or subjects"
-            className="md:max-w-xs"
+            wrapperClassName="md:max-w-xs"
           />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
-            Loading classes...
-          </div>
+          <LoadingState label="Loading classes..." className="py-8" iconClassName="size-4" />
         ) : filteredClasses.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No classes found yet.</p>
+          <EmptyState title="No classes found yet." className="py-8" />
         ) : (
           filteredClasses.map((course) => {
             const enrolled = course._count?.enrollments ?? course.enrolledStudents ?? 0;
@@ -108,7 +108,7 @@ export function ClassesList({
                   </div>
                 </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <Grid className="mt-4 sm:grid-cols-2 xl:grid-cols-4" gap="sm">
                   <div className="rounded-xl bg-muted/40 p-3">
                     <div className="flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
                       <IndianRupee className="size-3.5" />
@@ -141,7 +141,7 @@ export function ClassesList({
                     </div>
                     <p className="mt-2 text-lg font-semibold text-foreground">{course.timetable?.length || 0}</p>
                   </div>
-                </div>
+                </Grid>
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border/40 pt-4">
                   <Button

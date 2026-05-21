@@ -3,7 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingState } from "@/components/ui/loading-state";
+import { SearchField } from "@/components/ui/toolbar";
+import { PageContainer, PageHeader, Stack } from "@/components/layout/page-primitives";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,14 +18,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  Search,
   ShoppingCart,
   Package,
-  Loader2,
-  Store,
 } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardContent } from "@/components/dashboard-content";
 import { marketApi, Product, type CartItem } from "@/services/api/client";
 import { MarketProductCard } from "@/features/market/ui/MarketProductCard";
 import { CartDrawer } from "@/features/market/ui/CartDrawer";
@@ -159,15 +158,14 @@ export default function MarketPage() {
   };
 
   return (
-    <DashboardContent className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-10">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-2">
-          <h1 className="text-5xl font-black tracking-tighter flex items-center gap-4 text-foreground">
-            Marketplace
-          </h1>
-          <p className="text-muted-foreground font-medium text-lg">Discover the best tools and resources for your academic journey.</p>
-        </div>
-        <div className="flex items-center gap-3">
+    <PageContainer padding="spacious" gap="xl">
+      <PageHeader
+        title="Marketplace"
+        description="Discover the best tools and resources for your academic journey."
+        titleClassName="text-5xl font-black tracking-tighter"
+        descriptionClassName="text-lg font-medium"
+        actions={
+          <>
           <Link href="/products">
             <Button variant="outline" className="h-12 px-6 rounded-xl border-2 font-black uppercase tracking-widest text-[10px]">
               <Package className="w-4 h-4 mr-2" />
@@ -186,32 +184,30 @@ export default function MarketPage() {
               </span>
             )}
           </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
-      <div className="relative group max-w-2xl bg-muted/30 p-4 rounded-3xl border border-border/50">
-        <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-        <input
+      <SearchField
+        wrapperClassName="group max-w-2xl rounded-3xl border border-border/50 bg-muted/30 p-4"
+        iconClassName="left-8 size-5 text-muted-foreground/50 transition-colors group-focus-within:text-primary"
+        className="h-14 rounded-2xl border-border/60 bg-card pl-12 pr-4 text-lg font-bold placeholder:text-muted-foreground/30 focus-visible:ring-primary/20"
           placeholder="Search for items, tools, or resources..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full h-14 pl-12 pr-4 rounded-2xl bg-card border border-border/60 focus:ring-2 focus:ring-primary/20 outline-none transition-all font-bold text-lg placeholder:text-muted-foreground/30"
-        />
-      </div>
+      />
 
       {loading ? (
-        <div className="py-40 flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Fetching marketplace...</p>
-        </div>
+        <LoadingState label="Fetching marketplace..." className="py-40" iconClassName="size-10" />
       ) : filteredProducts.length === 0 ? (
-        <div className="py-32 text-center bg-muted/10 rounded-[2.5rem] border-2 border-dashed border-border/40">
-          <Package className="w-16 h-16 text-muted-foreground/20 mx-auto mb-6" />
-          <h3 className="text-2xl font-bold tracking-tight">List Empty</h3>
-          <p className="text-muted-foreground font-medium mt-2">No items match your search parameters.</p>
-        </div>
+        <EmptyState
+          icon={<Package className="size-16" />}
+          title="List Empty"
+          description="No items match your search parameters."
+          className="rounded-[2.5rem] border-2 border-border/40 py-32"
+        />
       ) : (
-        <div className="space-y-8">
+        <Stack gap="xl">
           {filteredProducts.map((product) => (
             <MarketProductCard
               key={product.id}
@@ -223,7 +219,7 @@ export default function MarketPage() {
               isProcessing={processingItems.has(product.id)}
             />
           ))}
-        </div>
+        </Stack>
       )}
 
       <CartDrawer
@@ -276,6 +272,6 @@ export default function MarketPage() {
         isProcessing={isProcessing}
         description="Enter your secure credentials to pay for these items."
       />
-    </DashboardContent>
+    </PageContainer>
   );
 }

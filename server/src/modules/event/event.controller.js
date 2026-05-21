@@ -7,8 +7,8 @@ const createEventSchema = z.object({
     description: z.string().optional(),
     date: z.string().transform((str) => new Date(str)),
     banner: z.string().url().optional(),
-    startdate: z.string().transform((str) => new Date(str)),
-    enddate: z.string().transform((str) => new Date(str)),
+    startDate: z.string().transform((str) => new Date(str)),
+    endDate: z.string().transform((str) => new Date(str)),
     location: z.string().max(100).optional(),
     type: z.string().max(50).optional()
 });

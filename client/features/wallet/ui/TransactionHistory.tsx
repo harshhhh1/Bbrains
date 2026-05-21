@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Stack } from "@/components/layout/page-primitives";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SearchField } from "@/components/ui/toolbar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Search, AlertCircle, TrendingUp, TrendingDown, Share2, Download, Calendar, MessageSquare, ArrowUpRight } from "lucide-react";
+import { Search, AlertCircle, TrendingUp, TrendingDown, Share2, Download, ArrowUpRight } from "lucide-react";
 import { Transaction } from "@/services/api/client";
 import { format, isToday, isYesterday, parseISO } from "date-fns";
 
@@ -30,7 +32,7 @@ export function TransactionHistory({ transactions, loading, error }: Transaction
       if (isToday(date)) return `Today, ${format(date, "hh:mm a")}`;
       if (isYesterday(date)) return `Yesterday, ${format(date, "hh:mm a")}`;
       return format(date, "MMM dd, yyyy • hh:mm a");
-    } catch (e) {
+    } catch {
       return dateStr;
     }
   };
@@ -57,20 +59,19 @@ export function TransactionHistory({ transactions, loading, error }: Transaction
         <CardHeader className="px-0 pt-0 pb-4 border-b border-border/50">
           <div className="flex items-center justify-between gap-4">
             <CardTitle className="text-xl font-bold tracking-tight">Recent Activity</CardTitle>
-            <div className="relative w-full max-w-[240px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-              <Input 
+            <SearchField
                 placeholder="Search activity..." 
                 value={txnSearch} 
                 onChange={(e) => setTxnSearch(e.target.value)} 
                 className="pl-9 h-9 text-xs rounded-full bg-muted/30 border-none focus-visible:ring-1 focus-visible:ring-primary/20" 
-              />
-            </div>
+                wrapperClassName="w-full max-w-[240px]"
+                iconClassName="size-3.5"
+            />
           </div>
         </CardHeader>
         <CardContent className="px-0 pt-2">
           {loading ? (
-            <div className="space-y-4 pt-4">
+            <Stack className="pt-4">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="flex items-center justify-between px-2">
                   <div className="flex items-center gap-3">
@@ -83,21 +84,21 @@ export function TransactionHistory({ transactions, loading, error }: Transaction
                   <Skeleton className="h-4 w-12" />
                 </div>
               ))}
-            </div>
+            </Stack>
           ) : error ? (
-            <div className="flex flex-col items-center justify-center gap-2 py-12 text-sm text-destructive bg-destructive/5 rounded-3xl border border-destructive/10 mt-4">
-              <AlertCircle className="h-8 w-8 opacity-20" />
-              <p className="font-medium">{error}</p>
-            </div>
+            <EmptyState
+              icon={<AlertCircle className="size-8" />}
+              title={error}
+              className="mt-4 rounded-3xl border-destructive/10 bg-destructive/5 py-12 text-destructive"
+            />
           ) : filteredTxns.length === 0 ? (
-            <div className="py-20 text-sm text-muted-foreground text-center border-2 border-dashed border-muted/50 rounded-[32px] mt-4 flex flex-col items-center gap-3">
-              <div className="p-4 bg-muted/30 rounded-full">
-                <Search className="w-6 h-6 opacity-20" />
-              </div>
-              <p className="font-medium italic">No transactions found for this search</p>
-            </div>
+            <EmptyState
+              icon={<Search className="size-6" />}
+              title="No transactions found for this search"
+              className="mt-4 rounded-[32px] border-2 border-muted/50 py-20"
+            />
           ) : (
-            <div className="space-y-4 pt-2">
+            <Stack className="pt-2">
               {filteredTxns.map((txn) => {
                 const credit = isCredit(txn.type);
                 const user = txn.relatedUser || txn.user;
@@ -163,7 +164,7 @@ export function TransactionHistory({ transactions, loading, error }: Transaction
                   </Card>
                 );
               })}
-            </div>
+            </Stack>
           )}
         </CardContent>
         {filteredTxns.length > 5 && (

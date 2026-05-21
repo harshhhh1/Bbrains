@@ -117,7 +117,7 @@ export function SuggestionsPortal() {
                                 <label className="pb-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Details</label>
                                 <Textarea 
                                     placeholder="Describe your suggestion in detail..." 
-                                    className="rounded-xl min-h-[150px] resize-none"
+                                    className="rounded-xl min-h-37.5 resize-none"
                                     value={formData.content}
                                     onChange={e => setFormData({ ...formData, content: e.target.value })}
                                     required
@@ -127,7 +127,7 @@ export function SuggestionsPortal() {
                         </CardContent>
                         <CardFooter>
                             <Button 
-                                className="w-full rounded-xl bg-brand-orange hover:bg-brand-orange/90 font-bold h-11"
+                                className="w-full rounded-xl bg-primary hover:opacity-90 font-bold h-11"
                                 disabled={submitting || !formData.title || !formData.content}
                             >
                                 {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
 import { OverviewClient } from "@/features/dashboard/ui/admin/OverviewClient";
 import { fetchOverviewStats } from "@/features/dashboard/api/admin-overview";
 import { emptyStats, type OverviewStats } from "@/features/dashboard/types/admin";
@@ -27,11 +27,7 @@ export function AdminDashboard() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex h-[400px] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground/50" />
-      </div>
-    );
+    return <LoadingState label="Loading admin dashboard..." className="min-h-[400px]" />;
   }
 
   return <OverviewClient stats={stats} />;

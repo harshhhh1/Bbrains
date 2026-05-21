@@ -1,8 +1,8 @@
 "use client"
 
-import { DashboardContent } from "@/components/dashboard-content"
+import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
+import { LoadingState } from "@/components/ui/loading-state"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2 } from "lucide-react"
 import { TeacherGradingView } from "@/features/grading/ui/TeacherGradingView"
 import { AssignmentsAdminView } from "@/features/assignments/ui/AssignmentsAdminView"
 import { useAssignments } from "@/features/assignments/model/use-assignments"
@@ -31,27 +31,21 @@ export default function AssignmentsPage() {
 
   if (loading && !userRole) {
     return (
-      <DashboardContent className="space-y-6">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading assignments...
-        </div>
-      </DashboardContent>
+      <PageContainer>
+        <LoadingState label="Loading assignments..." className="py-8" iconClassName="size-4" />
+      </PageContainer>
     )
   }
 
   // Admin / Manager / Teacher View (Management Hub)
   if (userRole === "admin" || userRole === "superadmin" || userRole === "manager" || userRole === "teacher") {
     return (
-      <DashboardContent className="space-y-6">
+      <PageContainer>
         <Tabs defaultValue="manage" className="flex-col space-y-6">
-          <div className="space-y-4">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground">Assignments Hub</h1>
-              <p className="text-muted-foreground text-sm">
-                Manage institutional assignments, review submissions, and publish results.
-              </p>
-            </div>
+          <PageHeader
+            title="Assignments Hub"
+            description="Manage institutional assignments, review submissions, and publish results."
+            actions={
           <TabsList className="bg-muted/50 p-1">
             <TabsTrigger value="manage" className="gap-2">
               <BookOpen className="size-3.5" />
@@ -62,7 +56,8 @@ export default function AssignmentsPage() {
               Review
             </TabsTrigger>
           </TabsList>
-        </div>
+            }
+          />
         
         <TabsContent value="manage" className="mt-0 border-none p-0 outline-none">
           <AssignmentsAdminView />
@@ -73,12 +68,12 @@ export default function AssignmentsPage() {
         </TabsContent>
       </Tabs>
 
-      </DashboardContent>
+      </PageContainer>
     )
   }
 
   return (
-    <DashboardContent className="space-y-6">
+    <PageContainer>
       <StudentAssignmentsView
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -101,6 +96,6 @@ export default function AssignmentsPage() {
         onClose={() => setSubmitAssignmentTarget(null)}
         onSuccess={loadAssignments}
       />
-    </DashboardContent>
+    </PageContainer>
   )
 }

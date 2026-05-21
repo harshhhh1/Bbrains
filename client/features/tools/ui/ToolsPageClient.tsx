@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calculator, Wrench, Sparkles } from "lucide-react";
-import { DashboardContent } from "@/components/dashboard-content"
+import { Calculator, Sparkles } from "lucide-react";
+import { Grid, PageContainer, PageHeader } from "@/components/layout/page-primitives"
 
 export default function ToolsPage() {
   const [display, setDisplay] = useState("0");
@@ -65,11 +65,10 @@ export default function ToolsPage() {
   ];
 
   return (
-    <DashboardContent>
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Tools</h1>
+    <PageContainer>
+        <PageHeader title="Tools" />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Grid gap="lg" className="md:grid-cols-2 lg:grid-cols-3">
           {/* Calculator */}
           <Card>
             <CardHeader className="pb-3">
@@ -121,8 +120,7 @@ export default function ToolsPage() {
               </p>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </DashboardContent>
+        </Grid>
+    </PageContainer>
   );
 }

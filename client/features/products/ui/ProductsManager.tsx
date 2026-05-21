@@ -13,8 +13,11 @@ import type { ApiProduct } from "@/features/products/types"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search, Pencil, Trash2, CheckCircle, XCircle, Package, Loader2, ImageIcon } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
+import { LoadingState } from "@/components/ui/loading-state"
+import { Stack } from "@/components/layout/page-primitives"
+import { SearchField } from "@/components/ui/toolbar"
+import { Pencil, Trash2, CheckCircle, XCircle, Package, Loader2, ImageIcon } from "lucide-react"
 
 interface ProductsManagerProps {
     initialProducts: ApiProduct[]
@@ -143,37 +146,29 @@ export function ProductsManager({ initialProducts }: ProductsManagerProps) {
     }
 
     if (loading) {
-        return (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading products...
-            </div>
-        )
+        return <LoadingState label="Loading products..." className="py-8" iconClassName="size-4" />
     }
 
     return (
-        <div className="space-y-4">
+        <Stack>
             <SectionHeader title="Products" subtitle={`${products.length} total items in market`} />
 
-            <div className="relative w-full max-w-md">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
+            <SearchField
+                wrapperClassName="max-w-md"
                     className="rounded-xl pl-9"
                     placeholder="Search products..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
-            </div>
 
             {filteredProducts.length === 0 ? (
-                <Card className="border-dashed border-border/70">
-                    <CardContent className="flex flex-col items-center justify-center py-10 text-center text-sm text-muted-foreground">
-                        <Package className="size-8 mb-2 opacity-40" />
-                        {searchQuery ? "No products match your search." : "No products found."}
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={<Package className="size-8" />}
+                    title={searchQuery ? "No products match your search." : "No products found."}
+                    className="py-10"
+                />
             ) : (
-                <div className="space-y-3">
+                <Stack gap="md">
                     {filteredProducts.map((product) => (
                         <Card key={product.id} className="border-border/60 overflow-hidden group hover:border-border transition-colors">
                             <CardContent className="p-0">
@@ -275,7 +270,7 @@ export function ProductsManager({ initialProducts }: ProductsManagerProps) {
                             </CardContent>
                         </Card>
                     ))}
-                </div>
+                </Stack>
             )}
 
             <CrudDrawer
@@ -296,6 +291,6 @@ export function ProductsManager({ initialProducts }: ProductsManagerProps) {
                 title="Delete Product"
                 description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
             />
-        </div>
+        </Stack>
     )
 }

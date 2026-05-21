@@ -32,7 +32,8 @@ import {
   Edit,
 } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardContent } from "@/components/dashboard-content";
+import { Grid, PageContainer, Stack } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
 import { marketApi, Product } from "@/services/api/client";
 import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload";
 import { cn } from "@/lib/utils";
@@ -141,12 +142,9 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <DashboardContent>
-        <div className="py-32 flex flex-col items-center justify-center gap-4">
-          <Loader2 className="w-10 h-10 animate-spin text-brand-orange" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground animate-pulse">Loading Product...</p>
-        </div>
-      </DashboardContent>
+      <PageContainer>
+        <LoadingState label="Loading Product..." className="py-32" iconClassName="size-10 text-brand-orange" />
+      </PageContainer>
     );
   }
 
@@ -165,8 +163,8 @@ export default function ProductDetailPage() {
   const rejectionReason = product.metadata?.rejectionReason;
 
   return (
-    <DashboardContent>
-      <div className="space-y-8 animate-in fade-in duration-500">
+    <PageContainer gap="lg">
+      <Stack gap="xl" className="animate-in fade-in duration-500">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.push("/products")} className="h-10 w-10 rounded-xl">
@@ -198,8 +196,8 @@ export default function ProductDetailPage() {
           </Card>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <Grid gap="lg" className="lg:grid-cols-3">
+          <Stack gap="lg" className="lg:col-span-2">
             <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
               <CardContent className="p-6">
                 <h3 className="text-sm font-black uppercase tracking-widest text-white/30 mb-4">Product Images</h3>
@@ -260,9 +258,9 @@ export default function ProductDetailPage() {
                 <p className="text-sm text-white/70 leading-relaxed">{product.description || "No description provided."}</p>
               </CardContent>
             </Card>
-          </div>
+          </Stack>
 
-          <div className="space-y-6">
+          <Stack gap="lg">
             <Card className="rounded-2xl border-white/5 bg-white/[0.02]">
               <CardContent className="p-6 space-y-4">
                 <h3 className="text-sm font-black uppercase tracking-widest text-white/30">Details</h3>
@@ -328,8 +326,8 @@ export default function ProductDetailPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </Stack>
+        </Grid>
 
         <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
           <AlertDialogContent className="rounded-3xl border-white/10 bg-slate-950/95 backdrop-blur-2xl p-8 shadow-2xl">
@@ -349,7 +347,7 @@ export default function ProductDetailPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
-    </DashboardContent>
+      </Stack>
+    </PageContainer>
   );
 }

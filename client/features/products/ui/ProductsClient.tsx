@@ -1,14 +1,14 @@
 "use client"
 
-import React, { useState } from "react"
 import { useUser } from "@/hooks/use-user"
 import { useHasPermission } from "@/components/providers/permissions-provider"
 import { ProductsCreator } from "@/features/products/ui/ProductsCreator"
 import { ProductsManager } from "@/features/products/ui/ProductsManager"
 import { ProductsApprovals } from "@/features/products/ui/ProductsApprovals"
-import { DashboardContent } from "@/components/dashboard-content"
+import { PageContainer, PageHeader } from "@/components/layout/page-primitives"
+import { LoadingState } from "@/components/ui/loading-state"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, ShoppingBag, ShieldCheck, ListChecks } from "lucide-react"
+import { ShoppingBag, ShieldCheck, ListChecks } from "lucide-react"
 import type { ApiProduct } from "@/features/products/types"
 
 interface ProductsClientProps {
@@ -29,50 +29,47 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
     const isManagerial = ["admin", "superadmin", "teacher", "manager"].includes(userRole)
 
     if (userLoading) {
-        return (
-            <div className="flex h-[400px] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-        )
+        return <LoadingState label="Loading marketplace hub..." className="min-h-100" />
     }
 
     // Students only see "My Products" (Creator view)
     if (!isManagerial) {
         return (
-            <DashboardContent>
+            <PageContainer>
                 <ProductsCreator />
-            </DashboardContent>
+            </PageContainer>
         )
     }
 
     // Staff/Admin see tabs to switch between views
     return (
-        <DashboardContent>
+        <PageContainer>
             <Tabs defaultValue="my-products" className="space-y-6">
-                <div className="flex items-center justify-between border-b pb-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Marketplace Hub</h1>
-                        <p className="text-muted-foreground text-sm">Manage your listings, approvals{canManageProducts ? ", and the global catalog." : "."}</p>
-                    </div>
-                    <TabsList className="bg-muted/50 p-1">
-                        <TabsTrigger value="my-products" className="gap-2">
-                            <ShoppingBag className="size-3.5" />
-                            My Products
-                        </TabsTrigger>
-                        {canApproveProducts && (
-                            <TabsTrigger value="approvals" className="gap-2">
-                                <ListChecks className="size-3.5" />
-                                Approvals
+                <PageHeader
+                    className="border-b pb-4"
+                    title="Marketplace Hub"
+                    description={`Manage your listings, approvals${canManageProducts ? ", and the global catalog." : "."}`}
+                    actions={
+                        <TabsList className="bg-muted/50 p-1">
+                            <TabsTrigger value="my-products" className="gap-2">
+                                <ShoppingBag className="size-3.5" />
+                                My Products
                             </TabsTrigger>
-                        )}
-                        {canManageProducts && (
-                            <TabsTrigger value="catalog" className="gap-2">
-                                <ShieldCheck className="size-3.5" />
-                                Global Catalog
-                            </TabsTrigger>
-                        )}
-                    </TabsList>
-                </div>
+                            {canApproveProducts && (
+                                <TabsTrigger value="approvals" className="gap-2">
+                                    <ListChecks className="size-3.5" />
+                                    Approvals
+                                </TabsTrigger>
+                            )}
+                            {canManageProducts && (
+                                <TabsTrigger value="catalog" className="gap-2">
+                                    <ShieldCheck className="size-3.5" />
+                                    Global Catalog
+                                </TabsTrigger>
+                            )}
+                        </TabsList>
+                    }
+                />
 
                 <TabsContent value="my-products" className="mt-0 border-none p-0 outline-none">
                     <ProductsCreator />
@@ -90,6 +87,6 @@ export function ProductsClient({ initialProducts }: ProductsClientProps) {
                     </TabsContent>
                 )}
             </Tabs>
-        </DashboardContent>
+        </PageContainer>
     )
 }

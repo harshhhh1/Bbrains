@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Grid, PageContainer, PageHeader } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, Loader2, BookOpen } from "lucide-react";
+import { Package } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardContent } from "@/components/dashboard-content";
 import { libraryApi, LibraryItem } from "@/services/api/client";
 import { LibraryItemRow } from "@/features/library/ui/LibraryItemRow";
 
@@ -54,32 +55,28 @@ export default function LibraryPage() {
 
   if (loading) {
     return (
-      <DashboardContent>
-        <div className="py-40 flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Library...</p>
-        </div>
-      </DashboardContent>
+      <PageContainer width="md" padding="spacious">
+        <LoadingState label="Syncing Library..." className="py-40" iconClassName="size-10" />
+      </PageContainer>
     );
   }
 
   return (
-    <DashboardContent className="mx-auto w-full max-w-5xl p-6 md:p-12 space-y-10">
-      <header>
-        <h1 className="text-4xl font-black tracking-tight flex items-center gap-3">
-          Your Library
-        </h1>
-        <p className="text-muted-foreground text-lg font-medium mt-2">Access your digital items and assigned items.</p>
-      </header>
+    <PageContainer width="md" padding="spacious" gap="xl">
+      <PageHeader
+        title="Your Library"
+        description="Access your digital items and assigned items."
+        titleClassName="text-4xl font-black tracking-tight"
+        descriptionClassName="text-lg font-medium"
+      />
 
       {items.length === 0 ? (
-        <Card className="border-2 border-dashed border-border/40 bg-muted/10 rounded-[2.5rem] py-32">
-          <div className="flex flex-col items-center justify-center text-center px-6">
-            <Package className="w-16 h-16 text-muted-foreground/20 mb-6" />
-            <h3 className="text-2xl font-bold">List Empty</h3>
-            <p className="text-muted-foreground mt-2 max-w-xs font-medium">Bought study items will be shown here.</p>
-          </div>
-        </Card>
+        <EmptyState
+          icon={<Package className="size-16" />}
+          title="List Empty"
+          description="Bought study items will be shown here."
+          className="rounded-[2.5rem] border-2 border-border/40 py-32"
+        />
       ) : (
         <Tabs defaultValue="digital" className="space-y-8">
           <TabsList className="bg-muted/40 border border-border/40 rounded-2xl p-1.5 h-auto">
@@ -95,7 +92,7 @@ export default function LibraryPage() {
             {digitalItems.length === 0 ? (
               <p className="text-center text-muted-foreground/40 py-20 font-bold uppercase tracking-widest text-sm">No digital records found</p>
             ) : (
-              <div className="grid gap-4">
+              <Grid>
                 {digitalItems.map((item) => (
                   <LibraryItemRow 
                     key={item.id} 
@@ -104,7 +101,7 @@ export default function LibraryPage() {
                     onDownload={handleDownload} 
                   />
                 ))}
-              </div>
+              </Grid>
             )}
           </TabsContent>
 
@@ -112,7 +109,7 @@ export default function LibraryPage() {
             {physicalItems.length === 0 ? (
               <p className="text-center text-muted-foreground/40 py-20 font-bold uppercase tracking-widest text-sm">No physical items assigned</p>
             ) : (
-              <div className="grid gap-4">
+              <Grid>
                 {physicalItems.map((item) => (
                   <LibraryItemRow 
                     key={item.id} 
@@ -121,11 +118,11 @@ export default function LibraryPage() {
                     onDownload={() => {}} 
                   />
                 ))}
-              </div>
+              </Grid>
             )}
           </TabsContent>
         </Tabs>
       )}
-    </DashboardContent>
+    </PageContainer>
   );
 }

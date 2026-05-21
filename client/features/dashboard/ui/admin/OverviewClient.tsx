@@ -1,7 +1,7 @@
 "use client"
 
 import { useUser } from "@/context/user-context"
-import { DashboardContent } from "@/components/dashboard-content"
+import { Grid, PageContainer, PageHeader } from "@/components/layout/page-primitives"
 import type { OverviewStats } from "@/features/dashboard/types/admin"
 import { AdminRevenueChart } from "./components/AdminRevenueChart"
 import { AdminUserDistribution } from "./components/AdminUserDistribution"
@@ -27,32 +27,23 @@ export function OverviewClient({ stats }: OverviewClientProps) {
     }).format(new Date())
 
     return (
-        <DashboardContent maxWidth="max-w-[96rem]" className="space-y-6">
-            {/* HEADER */}
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                        Welcome back, {greetingName}
-                    </h1>
-                    <p className="text-sm text-muted-foreground">{currentDate}</p>
-                </div>
-            </div>
+        <PageContainer width="2xl">
+            <PageHeader title={`Welcome back, ${greetingName}`} description={currentDate} />
 
-            {/* CHARTS ROW */}
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <Grid className="lg:grid-cols-3">
                 <AdminRevenueChart finance={stats.finance} />
                 <AdminUserDistribution people={stats.people} />
-            </div>
+            </Grid>
 
-            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <Grid className="items-start lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
                 <AdminQuickActions />
                 <AdminAnnouncements announcements={stats.announcements} />
-            </div>
+            </Grid>
 
-            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+            <Grid className="items-start lg:grid-cols-2">
                 <AdminRecentActivity auditLogs={stats.auditLogs} />
                 <AdminProfileCard admin={stats.admin} finance={stats.finance} />
-            </div>
-        </DashboardContent>
+            </Grid>
+        </PageContainer>
     )
 }

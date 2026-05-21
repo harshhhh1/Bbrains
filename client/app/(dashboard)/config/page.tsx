@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { LoadingState } from "@/components/ui/loading-state";
 import { ConfigClient } from "@/features/admin/config/ui/ConfigClient";
 import { fetchConfigs } from "@/features/admin/config/api/data";
 import type { SystemConfig } from "@/services/api/client";
@@ -31,11 +31,7 @@ export default function ConfigPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex justify-center py-8">
-        <Loader2 className="size-6 animate-spin text-muted-foreground/50" />
-      </div>
-    );
+    return <LoadingState label={null} className="py-8" iconClassName="size-6 text-muted-foreground/50" />;
   }
 
   return <ConfigClient initialConfigs={configs} />;

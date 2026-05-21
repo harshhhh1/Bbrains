@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { Loader2, Calendar as CalendarIcon, Search } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Grid, PageContainer, PageSection, Stack } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
+import { SearchField } from "@/components/ui/toolbar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
@@ -168,16 +170,11 @@ export default function AttendancePage() {
   const hasAssignedClass = Boolean(assignedCourse?.id);
 
   if (loading && students.length === 0) {
-    return (
-      <div className="py-40 flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-        <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing List...</p>
-      </div>
-    );
+    return <LoadingState label="Syncing List..." className="py-40" iconClassName="size-10" />;
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl p-6 md:p-12 space-y-12">
+    <PageContainer padding="spacious" gap="xl">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <SectionHeader 
           title="Attendance Portal" 
@@ -202,38 +199,35 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <Grid className="grid-cols-2 md:grid-cols-5">
         <AttendanceStatCard label="Total" value={stats.total} color="bg-blue-500/10 text-blue-600" />
         <AttendanceStatCard label="Present" value={stats.present} color="bg-emerald-500/10 text-emerald-600" />
         <AttendanceStatCard label="Absent" value={stats.absent} color="bg-rose-500/10 text-rose-600" />
         <AttendanceStatCard label="Late" value={stats.late} color="bg-amber-500/10 text-amber-600" />
         <AttendanceStatCard label="Pending" value={stats.unmarked} color="bg-muted text-muted-foreground" />
-      </div>
+      </Grid>
 
-      <div className="space-y-6">
+      <PageSection>
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <h2 className="text-2xl font-black tracking-tight">Enrolled Students</h2>
             <p className="text-muted-foreground font-medium">Student list for current academic cycle.</p>
           </div>
-          <div className="relative w-full md:max-w-xs group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary transition-colors" />
-            <Input
+          <SearchField
+              wrapperClassName="group md:max-w-xs"
+              iconClassName="left-4 text-muted-foreground/50 transition-colors group-focus-within:text-primary"
               placeholder="Search students..."
               className="pl-10 h-11 rounded-xl bg-card border-border/40 focus:ring-2 focus:ring-primary/20"
               value={searchQuery}
               disabled={!hasAssignedClass}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-          </div>
         </div>
 
         {filteredStudents.length === 0 ? (
-          <div className="py-20 text-center rounded-[2.5rem] border-2 border-dashed border-border/40 bg-muted/20">
-            <p className="text-muted-foreground font-bold italic opacity-40">No matching records in list.</p>
-          </div>
+          <EmptyState title="No matching records in list." className="rounded-[2.5rem] border-2 border-border/40 bg-muted/20 py-20" />
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <Stack>
             {filteredStudents.map((student) => (
               <AttendanceStudentCard 
                 key={student.id} 
@@ -243,9 +237,9 @@ export default function AttendancePage() {
                 onViewHistory={() => viewHistory(student)}
               />
             ))}
-          </div>
+          </Stack>
         )}
-      </div>
+      </PageSection>
 
       <AttendanceHistoryDrawer 
         open={historyOpen}
@@ -254,6 +248,6 @@ export default function AttendancePage() {
         records={historyRecords}
         studentName={`${selectedStudent?.userDetails?.firstName} ${selectedStudent?.userDetails?.lastName}`}
       />
-    </div>
+    </PageContainer>
   );
 }

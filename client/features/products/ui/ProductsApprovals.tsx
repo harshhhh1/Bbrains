@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback } from "react"
 import { getAuthedClient } from "@/services/api/client"
 import { Loader2, CheckCircle, XCircle, Package, ArrowRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/ui/empty-state"
+import { LoadingState } from "@/components/ui/loading-state"
+import { Stack } from "@/components/layout/page-primitives"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -117,30 +120,20 @@ export function ProductsApprovals() {
     }
 
     return (
-        <div className="space-y-6">
+        <Stack gap="lg">
             <SectionHeader title="Product Approvals" subtitle={`${products.length} pending review`} />
             
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-4">
-                    <Loader2 className="size-10 animate-spin text-brand-purple" />
-                    <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground animate-pulse">
-                        Loading products...
-                    </p>
-                </div>
+                <LoadingState label="Loading products..." className="py-20" iconClassName="size-10 text-brand-purple" />
             ) : products.length === 0 ? (
-                <Card className="border-2 border-dashed border-border/50 bg-muted/10 rounded-[2rem] py-20">
-                    <div className="flex flex-col items-center justify-center text-center px-6">
-                        <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mb-4">
-                            <CheckCircle className="w-8 h-8 text-muted-foreground opacity-50" />
-                        </div>
-                        <h3 className="text-xl font-bold mb-2">All Caught Up!</h3>
-                        <p className="text-muted-foreground max-w-sm">
-                            There are no products pending approval at the moment.
-                        </p>
-                    </div>
-                </Card>
+                <EmptyState
+                    icon={<CheckCircle className="size-8" />}
+                    title="All Caught Up!"
+                    description="There are no products pending approval at the moment."
+                    className="rounded-[2rem] border-2 border-border/50 py-20"
+                />
             ) : (
-                <div className="space-y-4">
+                <Stack>
                     {products.map((product) => {
                         const productType = product.metadata?.productType || product.productType || "physical";
 
@@ -214,7 +207,7 @@ export function ProductsApprovals() {
                             </Card>
                         )
                     })}
-                </div>
+                </Stack>
             )}
 
             <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
@@ -379,6 +372,6 @@ export function ProductsApprovals() {
                     </div>
                 </DrawerContent>
             </Drawer>
-        </div>
+        </Stack>
     )
 }

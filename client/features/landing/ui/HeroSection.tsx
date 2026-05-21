@@ -55,7 +55,7 @@ export function HeroSection() {
 
         <div className="relative">
           <div className="relative z-10 p-4 -rotate-2 hover:rotate-0 transition-all duration-300">
-            <HandCard variant="yellow" decoration="tack" className="p-2 sm:p-4 aspect-square max-w-[420px] mx-auto flex items-center justify-center bg-white">
+            <HandCard variant="yellow" decoration="tack" className="p-2 sm:p-4 aspect-square max-w-105 mx-auto flex items-center justify-center bg-white">
               <div className="w-full h-full rounded-wobblyMd border-2 border-hand-pencil/40 border-dashed flex flex-col items-center justify-center p-8 text-center gap-4 group">
                 <Sparkles className="w-16 h-16 text-hand-blue group-hover:scale-110 transition-transform" strokeWidth={2} />
                 <h2 className="font-kalam text-3xl font-bold">{floatingCard.title}</h2>

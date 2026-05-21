@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Grid, PageContainer, PageHeader } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, Loader2, ShoppingCart, CheckCircle2, Clock, type LucideIcon } from "lucide-react";
+import { Package, ShoppingCart, CheckCircle2, Clock, type LucideIcon } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardContent } from "@/components/dashboard-content";
 import { orderApi, Order } from "@/services/api/client";
 import Link from "next/link";
 import { OrderCard } from "@/features/orders/ui/OrderCard";
@@ -47,35 +48,33 @@ export default function OrdersPage() {
 
   if (loading) {
     return (
-      <DashboardContent>
-        <div className="py-40 flex flex-col items-center justify-center gap-3">
-          <Loader2 className="w-10 h-10 animate-spin text-primary/40" />
-          <p className="text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing History...</p>
-        </div>
-      </DashboardContent>
+      <PageContainer width="md" padding="spacious">
+        <LoadingState label="Syncing History..." className="py-40" iconClassName="size-10" />
+      </PageContainer>
     );
   }
 
   return (
-    <DashboardContent className="mx-auto w-full max-w-5xl p-6 md:p-12 space-y-10">
-      <header>
-        <h1 className="text-4xl font-black tracking-tight flex items-center gap-3">
-          Order History
-        </h1>
-        <p className="text-muted-foreground text-lg font-medium mt-2">Monitor order status and pickup codes.</p>
-      </header>
+    <PageContainer width="md" padding="spacious" gap="xl">
+      <PageHeader
+        title="Order History"
+        description="Monitor order status and pickup codes."
+        titleClassName="text-4xl font-black tracking-tight"
+        descriptionClassName="text-lg font-medium"
+      />
 
       {orders.length === 0 ? (
-        <Card className="border-2 border-dashed border-border/40 bg-muted/10 rounded-[2.5rem] py-32">
-          <div className="flex flex-col items-center justify-center text-center px-6">
-            <Package className="w-16 h-16 text-muted-foreground/20 mb-6" />
-            <h3 className="text-2xl font-bold tracking-tight">No Orders Found</h3>
-            <p className="text-muted-foreground mt-2 max-w-xs font-medium mb-8">Initiate your first purchase at the campus marketplace.</p>
+        <EmptyState
+          icon={<Package className="size-16" />}
+          title="No Orders Found"
+          description="Initiate your first purchase at the campus marketplace."
+          className="rounded-[2.5rem] border-2 border-border/40 py-32"
+          action={
             <Link href="/market">
               <Button size="lg" className="rounded-2xl font-black uppercase tracking-widest text-xs px-10 shadow-lg shadow-primary/20">Access Market</Button>
             </Link>
-          </div>
-        </Card>
+          }
+        />
       ) : (
         <Tabs defaultValue="all" className="space-y-8">
           <TabsList className="bg-muted/40 border border-border/40 rounded-2xl p-1.5 h-auto">
@@ -90,7 +89,8 @@ export default function OrdersPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="grid gap-3 animate-in fade-in duration-500">
+          <TabsContent value="all" className="mt-0">
+            <Grid gap="sm" className="animate-in fade-in duration-500">
             {orders.map((order) => (
               <OrderCard 
                 key={order.id} 
@@ -100,9 +100,11 @@ export default function OrdersPage() {
                 onShowQR={(o) => { setSelectedOrder(o); setIsQROpen(true); }} 
               />
             ))}
+            </Grid>
           </TabsContent>
 
-          <TabsContent value="physical" className="grid gap-3 animate-in fade-in duration-500">
+          <TabsContent value="physical" className="mt-0">
+            <Grid gap="sm" className="animate-in fade-in duration-500">
             {orders.filter(o => o.orderType !== 'digital').map((order) => (
               <OrderCard 
                 key={order.id} 
@@ -112,9 +114,11 @@ export default function OrdersPage() {
                 onShowQR={(o) => { setSelectedOrder(o); setIsQROpen(true); }} 
               />
             ))}
+            </Grid>
           </TabsContent>
 
-          <TabsContent value="digital" className="grid gap-3 animate-in fade-in duration-500">
+          <TabsContent value="digital" className="mt-0">
+            <Grid gap="sm" className="animate-in fade-in duration-500">
             {orders.filter(o => o.orderType === 'digital').map((order) => (
               <OrderCard 
                 key={order.id} 
@@ -124,6 +128,7 @@ export default function OrdersPage() {
                 onShowQR={(o) => { setSelectedOrder(o); setIsQROpen(true); }} 
               />
             ))}
+            </Grid>
           </TabsContent>
         </Tabs>
       )}
@@ -141,6 +146,6 @@ export default function OrdersPage() {
         isOpen={isQROpen}
         onClose={() => setIsQROpen(false)}
       />
-    </DashboardContent>
+    </PageContainer>
   );
 }

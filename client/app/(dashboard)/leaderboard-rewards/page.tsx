@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save, Shield } from "lucide-react";
 import { useHasPermission } from "@/components/providers/permissions-provider";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Grid, PageContainer, PageHeader } from "@/components/layout/page-primitives";
 import type { RewardTier } from "@/lib/types/api";
 
 export default function LeaderboardRewardsAdminPage() {
@@ -101,24 +103,25 @@ export default function LeaderboardRewardsAdminPage() {
 
   if (!canManageInstitution) {
     return (
-      <div className="flex h-[calc(100vh-4.5rem)] flex-col items-center justify-center gap-3 text-muted-foreground">
-        <Shield className="size-10 opacity-40 text-destructive" />
-        <h2 className="text-lg font-semibold text-foreground">Access Denied</h2>
-        <p className="text-sm">You do not have permission to manage leaderboard rewards.</p>
-      </div>
+      <PageContainer>
+        <EmptyState
+          icon={<Shield className="size-10 text-destructive" />}
+          title="Access Denied"
+          description="You do not have permission to manage leaderboard rewards."
+          className="min-h-[calc(100vh-10rem)] border-0 bg-transparent"
+        />
+      </PageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-4xl p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Leaderboard Rewards</h1>
-        <p className="text-muted-foreground">
-          Configure XP and coin rewards for top performers
-        </p>
-      </div>
+    <PageContainer width="md">
+      <PageHeader
+        title="Leaderboard Rewards"
+        description="Configure XP and coin rewards for top performers"
+      />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <Grid gap="lg" className="md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Weekly Rewards</CardTitle>
@@ -264,7 +267,7 @@ export default function LeaderboardRewardsAdminPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </Grid>
 
       <Card className="mt-6">
         <CardHeader>
@@ -281,6 +284,6 @@ export default function LeaderboardRewardsAdminPage() {
           </ul>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

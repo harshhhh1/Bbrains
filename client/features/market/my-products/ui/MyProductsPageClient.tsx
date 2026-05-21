@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { DashboardGrid, PageContainer, PageHeader, Stack } from "@/components/layout/page-primitives";
+import { LoadingState } from "@/components/ui/loading-state";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -20,7 +23,6 @@ import { toast } from "sonner";
 import { marketApi, Product } from "@/services/api/client";
 import { useCloudinaryUpload } from "@/hooks/use-cloudinary-upload";
 import Image from "next/image";
-import { DashboardContent } from "@/components/dashboard-content";
 import { cn } from "@/lib/utils";
 import { useHasPermission } from "@/components/providers/permissions-provider";
 
@@ -181,17 +183,19 @@ export default function MyProductsPage() {
   };
 
   return (
-    <DashboardContent>
-      <div className="animate-in space-y-8 fade-in duration-500">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <h1 className="flex items-center gap-2 text-3xl font-black tracking-tight text-foreground">
+    <PageContainer>
+      <Stack gap="xl" className="animate-in fade-in duration-500">
+        <PageHeader
+          title={
+            <span className="flex items-center gap-2">
               <Package className="h-8 w-8 text-primary" />
               Inventory Control
-            </h1>
-            <p className="mt-1 text-sm font-medium text-muted-foreground">Manage and track your campus marketplace listings</p>
-          </div>
-          {canCreateProduct && (
+            </span>
+          }
+          description="Manage and track your campus marketplace listings"
+          titleClassName="text-3xl font-black tracking-tight"
+          descriptionClassName="font-medium"
+          actions={canCreateProduct && (
             <Button
               onClick={() => {
                 resetForm();
@@ -202,30 +206,24 @@ export default function MyProductsPage() {
               <Plus className="mr-2 h-5 w-5" /> List New Product
             </Button>
           )}
-        </div>
+        />
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center gap-4 py-32">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="animate-pulse text-sm font-black uppercase tracking-widest text-muted-foreground">Syncing Inventory...</p>
-          </div>
+          <LoadingState label="Syncing Inventory..." className="py-32" iconClassName="size-10" />
         ) : products.length === 0 ? (
-          <Card className="rounded-[2rem] border-2 border-dashed border-border/50 bg-muted/20 py-24">
-            <div className="flex flex-col items-center justify-center px-6 text-center">
-              <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-muted">
-                <Package className="h-10 w-10 text-muted-foreground opacity-50" />
-              </div>
-              <h3 className="mb-2 text-xl font-bold">No Products Found</h3>
-              <p className="mb-8 max-w-sm text-muted-foreground">You haven&apos;t listed any products yet. Start selling to the campus community today!</p>
-              {canCreateProduct && (
+          <EmptyState
+            icon={<Package className="size-10" />}
+            title="No Products Found"
+            description="You haven't listed any products yet. Start selling to the campus community today!"
+            className="rounded-[2rem] border-2 border-border/50 bg-muted/20 py-24"
+            action={canCreateProduct && (
                 <Button variant="outline" onClick={() => setShowAddDialog(true)} className="rounded-xl border-2 px-8 font-bold">
                   Create Your First Listing
                 </Button>
-              )}
-            </div>
-          </Card>
+            )}
+          />
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <DashboardGrid className="sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" gap="lg">
             {products.map((product) => (
               <Card key={product.id} className="group overflow-hidden rounded-[2rem] border-border bg-muted backdrop-blur-sm transition-all duration-300 hover:border-primary/30">
                 <div className="relative flex aspect-square items-center justify-center overflow-hidden border-border bg-muted/30 p-4">
@@ -281,7 +279,7 @@ export default function MyProductsPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </DashboardGrid>
         )}
 
         <Drawer open={showAddDialog} onOpenChange={(open) => { if (!open) { setShowAddDialog(false); resetForm(); } }} direction="right">
@@ -537,7 +535,7 @@ export default function MyProductsPage() {
             </div>
           </DrawerContent>
         </Drawer>
-      </div>
-    </DashboardContent>
+      </Stack>
+    </PageContainer>
   );
 }
