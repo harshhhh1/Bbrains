@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Navbar } from "@/features/landing/ui/Navbar";
 import { HeroSection } from "@/features/landing/ui/HeroSection";
 import { StatsBanner } from "@/features/landing/ui/StatsBanner";
+import { FeaturesSection } from "@/features/landing/ui/FeaturesSection";
 import { RoleSwitcher } from "@/features/landing/ui/RoleSwitcher";
 import { CtaSection } from "@/features/landing/ui/CtaSection";
 import { FooterSection } from "@/features/landing/ui/FooterSection";
@@ -15,9 +16,14 @@ export function LandingPage() {
   const { currentTheme, themes } = useTheme()
 
   useEffect(() => {
-    setMounted(true)
+    requestAnimationFrame(() => {
+      setMounted(true);
+    });
+  }, []);
+
+  useEffect(() => {
     const root = document.documentElement
-    
+
     // Save original status
     const hadDark = root.classList.contains('dark')
     const originalTheme = root.getAttribute('data-theme')
@@ -38,7 +44,7 @@ export function LandingPage() {
       if (originalTheme) {
         root.setAttribute('data-theme', originalTheme)
       }
-      
+
       const activeDef = themes.find(t => t.id === currentTheme)
       if (activeDef) {
         Object.entries(activeDef.variables).forEach(([key, value]) => {
@@ -71,6 +77,7 @@ export function LandingPage() {
       <Navbar />
       <HeroSection />
       <StatsBanner />
+      <FeaturesSection />
       <RoleSwitcher />
       <CtaSection />
       <FooterSection />

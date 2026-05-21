@@ -11,13 +11,14 @@ export function Navbar() {
       <div className="max-w-5xl mx-auto px-6 h-20 flex items-center justify-between">
         <Link href="/" className="flex items-center group" aria-label="BBrains Logo">
           <Image
-            src="/logo-dark.png"
+            src="/brain.svg"
             alt="Bbrains Logo"
             width={100}
             height={50}
-            className="h-18 w-auto max-w-60 group-hover:scale-105 transition-transform"
+            className="h-10 w-auto max-w-60 group-hover:scale-105 transition-transform"
             priority
           />
+          <span className="text-3xl font-patrick font-medium"> &nbsp; &nbsp;  BBrains</span>
         </Link>
         <div className="flex items-center gap-4">
           {links.map((link, idx) => (
