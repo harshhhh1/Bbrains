@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { CreditCard } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
@@ -16,7 +17,7 @@ export function WalletHero({ walletBalance, xp, level, nextLevel, progressPercen
   const formatPoints = (amount: number) => Number(amount ?? 0).toLocaleString();
 
   return (
-    <section className="relative overflow-hidden rounded-[30px] border border-border bg-gradient-to-br from-background via-card/50 to-muted/20 p-6 shadow-sm dark:from-slate-900/50 dark:via-slate-900/20 dark:to-slate-950/40">
+    <section className="relative overflow-hidden rounded-[30px] border border-border p-6 shadow-sm dark:from-slate-900/50 dark:via-slate-900/20 dark:to-slate-950/40">
 
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <div>
@@ -33,7 +34,7 @@ export function WalletHero({ walletBalance, xp, level, nextLevel, progressPercen
               <div>
                 <p className="text-[10px] uppercase tracking-[0.2em] text-slate-300">Available Coins</p>
                 <div className="mt-3 flex items-center gap-2">
-                   <img src="/bcoin.svg" className="h-10 w-10 drop-shadow-lg" alt="" />
+                   <Image src="/bcoin.svg" width={40} height={40} className="drop-shadow-lg" alt="Coin icon" />
                    <p className="text-4xl font-bold">{formatPoints(walletBalance)}</p>
                 </div>
               </div>
