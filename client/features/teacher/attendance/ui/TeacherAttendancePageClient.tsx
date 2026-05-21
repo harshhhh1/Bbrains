@@ -199,13 +199,6 @@ export default function AttendancePage() {
         </div>
       </div>
 
-      <Grid className="grid-cols-2 md:grid-cols-5">
-        <AttendanceStatCard label="Total" value={stats.total} color="bg-blue-500/10 text-blue-600" />
-        <AttendanceStatCard label="Present" value={stats.present} color="bg-emerald-500/10 text-emerald-600" />
-        <AttendanceStatCard label="Absent" value={stats.absent} color="bg-rose-500/10 text-rose-600" />
-        <AttendanceStatCard label="Late" value={stats.late} color="bg-amber-500/10 text-amber-600" />
-        <AttendanceStatCard label="Pending" value={stats.unmarked} color="bg-muted text-muted-foreground" />
-      </Grid>
 
       <PageSection>
         <div className="flex items-center justify-between">
