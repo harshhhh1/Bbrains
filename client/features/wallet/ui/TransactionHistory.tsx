@@ -13,7 +13,7 @@ import { SearchField } from "@/components/ui/toolbar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Search, AlertCircle, TrendingUp, TrendingDown, Share2, Download, ArrowUpRight } from "lucide-react";
 import { Transaction } from "@/services/api/client";
-import { format, isToday, isYesterday, parseISO } from "date-fns";
+import { formatDateTime } from "@/lib/date-utils";
 
 interface TransactionHistoryProps {
   transactions: Transaction[];
@@ -27,14 +27,7 @@ export function TransactionHistory({ transactions, loading, error }: Transaction
 
   const formatTxnDate = (dateStr: string | undefined) => {
     if (!dateStr) return "Unknown date";
-    try {
-      const date = parseISO(dateStr);
-      if (isToday(date)) return `Today, ${format(date, "hh:mm a")}`;
-      if (isYesterday(date)) return `Yesterday, ${format(date, "hh:mm a")}`;
-      return format(date, "MMM dd, yyyy • hh:mm a");
-    } catch {
-      return dateStr;
-    }
+    return formatDateTime(dateStr);
   };
 
   const filteredTxns = transactions.filter((t) => {

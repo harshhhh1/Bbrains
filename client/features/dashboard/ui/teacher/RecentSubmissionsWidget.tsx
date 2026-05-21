@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, ArrowRight, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 
+import { formatRelativeTime } from "@/lib/date-utils";
+
 interface Submission {
   id: number;
   submittedAt: string;
@@ -30,17 +32,7 @@ export function RecentSubmissionsWidget({ submissions }: RecentSubmissionsWidget
   }, []);
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffHours < 1) return "Just now";
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString();
+    return formatRelativeTime(dateString);
   };
 
   const getStatusBadge = (status: string) => {

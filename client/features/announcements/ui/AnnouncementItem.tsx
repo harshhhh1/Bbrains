@@ -8,7 +8,7 @@ import {
   Loader2,
   Users
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatRelativeTime } from "@/lib/date-utils";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Image from "next/image";
 import type { Announcement, User as ProfileUser } from "@/services/api/client";
@@ -74,7 +74,7 @@ export function AnnouncementItem({
               )}
             </div>
             <p className="text-[11px] text-muted-foreground">
-              {formatDistanceToNow(new Date(announcement.createdAt), { addSuffix: true })}
+              {formatRelativeTime(announcement.createdAt)}
             </p>
           </div>
         </div>

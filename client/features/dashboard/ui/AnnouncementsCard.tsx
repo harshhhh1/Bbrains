@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { announcementApi, Announcement } from "@/services/api/client";
 import Link from "next/link";
 
+import { formatRelativeTime } from "@/lib/date-utils";
+
 interface AnnouncementsCardProps {
   initialAnnouncements?: Announcement[];
   collegeId?: string | number;
@@ -44,17 +46,7 @@ export function AnnouncementsCard({ initialAnnouncements, collegeId }: Announcem
   }, [initialAnnouncements]);
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffHours < 1) return "Just now";
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return date.toLocaleDateString();
+    return formatRelativeTime(dateString);
   };
 
   return (

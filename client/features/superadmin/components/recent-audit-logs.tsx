@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { superadminService, AuditLog } from "@/services/api/superadmin.service";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { formatDistanceToNow } from "date-fns";
+import { formatRelativeTime } from "@/lib/date-utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function RecentAuditLogs() {
@@ -63,7 +63,7 @@ export function RecentAuditLogs() {
                     </span>
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
+                    {formatRelativeTime(log.createdAt)}
                   </p>
                 </div>
               </div>

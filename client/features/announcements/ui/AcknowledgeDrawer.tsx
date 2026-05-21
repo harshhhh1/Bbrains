@@ -7,18 +7,7 @@ import {
   Loader2,
   Calendar
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { Button } from "@/components/ui/button";
+import { formatRelativeTime } from "@/lib/date-utils";
 
 interface AcknowledgedUser {
   userId: string;
@@ -95,7 +84,7 @@ export function AcknowledgeDrawer({
                         </p>
                         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                           <Calendar className="h-2.5 w-2.5" />
-                          {formatDistanceToNow(new Date(ack.createdAt), { addSuffix: true })}
+                          {formatRelativeTime(ack.createdAt)}
                         </div>
                       </div>
                     </div>

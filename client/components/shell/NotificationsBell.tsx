@@ -14,10 +14,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { formatDistanceToNow } from "date-fns"
-import { cn } from "@/lib/utils"
+import { formatRelativeTime } from "@/lib/date-utils"
 import { useRouter } from "next/navigation"
 import { useNotifications } from "@/components/providers/notification-provider"
+import { cn } from "@/lib/utils"
 import type { Notification } from "@/services/api/client"
 
 export function NotificationsBell() {
@@ -153,7 +153,7 @@ export function NotificationsBell() {
                                                 {n.title}
                                             </p>
                                             <span className="text-[10px] text-muted-foreground shrink-0">
-                                                {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
+                                                {formatRelativeTime(n.createdAt)}
                                             </span>
                                         </div>
                                         {n.message && (

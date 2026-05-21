@@ -1,3 +1,4 @@
+import { getDateLabel } from "@/lib/date-utils"
 import type { Member } from "@/features/chat/api/data"
 
 // ─── Status Dot ───────────────────────────────────────────────────────────────
@@ -46,7 +47,7 @@ export function DateSeparator({ date }: { date: string }) {
                 <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
             </div>
             <span className="relative bg-ui-light-bg dark:bg-ui-dark-bg px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                {date}
+                {getDateLabel(date)}
             </span>
         </div>
     )
