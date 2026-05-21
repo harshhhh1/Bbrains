@@ -1,3 +1,4 @@
+import { getInitials as sharedGetInitials } from "@/lib/format-utils"
 import type { ApiMessage, ApiMember, Message, Member } from "@/features/chat/api/data"
 import { AVATAR_COLORS } from "@/features/chat/api/data"
 import type { ChatMemberProfile } from "@/services/api/client"
@@ -5,7 +6,7 @@ import type { ChatMemberProfile } from "@/services/api/client"
 // ─── String Helpers ───────────────────────────────────────────────────────────
 
 export function getInitials(name: string): string {
-    return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    return sharedGetInitials(name)
 }
 
 export function getAvatarColor(name: string): string {

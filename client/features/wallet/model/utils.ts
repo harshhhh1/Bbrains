@@ -1,3 +1,4 @@
+import { getInitials as sharedGetInitials } from "@/lib/format-utils"
 import type { ApiTransaction, Transaction, TransactionType } from "@/features/wallet/api/data"
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
@@ -11,7 +12,7 @@ export function formatDate(dateStr: string) {
 }
 
 export function getInitials(name: string) {
-    return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)
+    return sharedGetInitials(name)
 }
 
 export function generateTxnId() {

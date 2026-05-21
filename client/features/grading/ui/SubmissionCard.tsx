@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { AlertTriangle, CheckCircle, ClipboardCheck, Eye, FileText, MessageSquareMore, RotateCcw, XCircle } from "lucide-react"
 import type { ApiAssignment, ApiSubmission } from "@/lib/types/api"
 
+import { getInitials as sharedGetInitials } from "@/lib/format-utils"
+
 function fmtDate(value: string) {
   return new Date(value).toLocaleDateString("en-IN", {
     day: "numeric",
@@ -20,13 +22,7 @@ function fmtDate(value: string) {
 }
 
 function getInitials(username: string) {
-  if (!username) return "?"
-  return username
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2)
+  return sharedGetInitials(username)
 }
 
 interface SubmissionCardProps {

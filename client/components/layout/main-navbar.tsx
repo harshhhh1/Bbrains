@@ -28,6 +28,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+import { toTitleCase } from "@/lib/format-utils"
+
 type NavbarUser = {
     id?: string
     imageUrl?: string
@@ -41,12 +43,6 @@ type NavbarUser = {
     collegeName?: string
     coins?: number
     isImpersonating?: boolean
-}
-
-function toTitleCase(value: string) {
-    return value
-        .replace(/[-_]/g, " ")
-        .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
 function buildPathLabels(pathname: string) {

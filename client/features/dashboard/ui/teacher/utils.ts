@@ -1,11 +1,8 @@
+import { formatCurrency as sharedFormatCurrency } from "@/lib/format-utils";
 import type { AttendanceRecord, AttendanceData } from "@/services/api/client";
 
 export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return sharedFormatCurrency(amount);
 }
 
 export function formatLongDate(date: Date) {

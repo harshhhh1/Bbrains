@@ -1,13 +1,7 @@
+import { formatCurrency as sharedFormatCurrency } from "@/lib/format-utils"
+
 export function formatCurrency(amount: number, currency: string) {
-    try {
-        return new Intl.NumberFormat("en-IN", {
-            style: "currency",
-            currency,
-            maximumFractionDigits: 0,
-        }).format(amount)
-    } catch {
-        return `INR ${amount.toLocaleString("en-IN")}`
-    }
+    return sharedFormatCurrency(amount, currency)
 }
 
 export function formatDate(value: string) {

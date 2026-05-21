@@ -11,6 +11,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { transformLeaderboard } from "@/features/dashboard/model/utils";
 import { LeaderboardLikeEntry, TransformedLeaderboardEntry } from "@/features/dashboard/types";
 
+import { getInitials, formatRank } from "@/lib/format-utils";
+
 interface LeaderboardCardProps {
   initialLeaderboard?: TransformedLeaderboardEntry[];
   initialMyPosition?: TransformedLeaderboardEntry | null;
@@ -60,27 +62,6 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
     fetchLeaderboard();
   }, [fetchLeaderboard, sortBy, initialLeaderboard]);
 
-  const getInitials = (firstName?: string, lastName?: string, username?: string) => {
-    if (firstName && lastName) {
-      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-    }
-    if (firstName) return firstName.charAt(0).toUpperCase();
-    if (username) return username.slice(0, 2).toUpperCase();
-    return "?";
-  };
-
-  const getRankSuffix = (rank: number) => {
-    if (rank >= 11 && rank <= 13) return "th";
-    switch (rank % 10) {
-      case 1: return "st";
-      case 2: return "nd";
-      case 3: return "rd";
-      default: return "th";
-    }
-  };
-
-  const formatRank = (rank: number) => `${rank}${getRankSuffix(rank)}`;
-
   const isUserInTop = myPosition && leaderboard.some(user => user.id === myPosition.id);
 
   const RankItem = ({ user, isMe = false }: { user: TransformedLeaderboardEntry; isMe?: boolean }) => (
@@ -99,7 +80,7 @@ export const LeaderboardCard = memo(function LeaderboardCard({ initialLeaderboar
         <Avatar className="h-8 w-8 border">
           <AvatarImage src={user.avatar} alt={user.username} />
           <AvatarFallback name={user.username} className="text-[10px] bg-primary/5 text-primary">
-            {getInitials(user.firstName, user.lastName, user.username)}
+            {getInitials(user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username)}
           </AvatarFallback>
         </Avatar>
         <div className="flex flex-col">

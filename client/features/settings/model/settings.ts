@@ -1,3 +1,4 @@
+import { getInitials as sharedGetInitials, formatCurrency as sharedFormatCurrency } from "@/lib/format-utils";
 import type { ProfileFormState, SettingsUser } from "@/features/settings/types/settings";
 
 export function readUserField(
@@ -9,16 +10,11 @@ export function readUserField(
 }
 
 export function getInitials(user: SettingsUser | null) {
-  const username = user?.username || "U";
-  return username[0].toUpperCase();
+  return sharedGetInitials(user?.username);
 }
 
 export function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
+  return sharedFormatCurrency(amount);
 }
 
 export function getRoleLabel(type?: string) {

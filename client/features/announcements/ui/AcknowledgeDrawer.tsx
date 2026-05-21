@@ -46,7 +46,7 @@ export function AcknowledgeDrawer({
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="right">
       <DrawerContent className="p-0 data-[vaul-drawer-direction=right]:w-full data-[vaul-drawer-direction=right]:sm:max-w-md before:inset-0 before:rounded-none before:border-white/10 before:bg-background sm:p-0 sm:before:rounded-l-[2rem]">
-        <div className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden">
+        <div className="flex h-dvh max-h-dvh flex-col overflow-hidden">
           <DrawerHeader className="border-b border-border/60 p-6 text-left">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">

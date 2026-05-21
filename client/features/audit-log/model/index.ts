@@ -1,6 +1,7 @@
+import { getInitials as sharedGetInitials } from "@/lib/format-utils"
+
 export function getInitials(username: string) {
-    if (!username) return "?"
-    return username.slice(0, 2).toUpperCase()
+    return sharedGetInitials(username)
 }
 
 export function fmtDate(value: string) {

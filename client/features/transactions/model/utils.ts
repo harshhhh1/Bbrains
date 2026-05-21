@@ -1,13 +1,10 @@
+import { formatCurrency as sharedFormatCurrency } from "@/lib/format-utils"
 import type { Transaction, User } from "@/services/api/client"
 
 export type PersonalTransactionKind = "fees" | "salary"
 
 export function formatCurrency(amount: number | string) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Number(amount || 0))
+  return sharedFormatCurrency(amount)
 }
 
 export function formatDate(value: string) {
