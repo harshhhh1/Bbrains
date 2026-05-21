@@ -189,9 +189,15 @@ export function ProductsApprovals() {
 
                                             <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t border-border/20">
                                                 <div className="flex items-center gap-2">
-                                                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] font-bold uppercase tracking-wider">
-                                                        Pending Review
-                                                    </Badge>
+                                                    {product.metadata?.editStatus === 'pending' ? (
+                                                        <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-[10px] font-bold uppercase tracking-wider font-mono">
+                                                            Edit Request
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-[10px] font-bold uppercase tracking-wider">
+                                                            Pending Review
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                                 <Button 
                                                     onClick={() => handleViewDetails(product)}
@@ -232,8 +238,12 @@ export function ProductsApprovals() {
                                     ) : (
                                         <Package className="size-24 text-muted-foreground/20" />
                                     )}
-                                    <Badge className="absolute top-4 left-4 bg-amber-500/10 text-amber-600 border-amber-500/20 font-bold uppercase tracking-wider text-[10px]">
-                                        Pending Review
+                                    <Badge className={cn("absolute top-4 left-4 font-bold uppercase tracking-wider text-[10px] border",
+                                        metadata.editStatus === 'pending' 
+                                            ? "bg-blue-500/10 text-blue-600 border-blue-500/20" 
+                                            : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                    )}>
+                                        {metadata.editStatus === 'pending' ? "Edit Request" : "Pending Review"}
                                     </Badge>
                                 </div>
 
@@ -254,6 +264,13 @@ export function ProductsApprovals() {
                                             Created by <span className="text-brand-purple font-bold">@{selectedProduct.creator?.username}</span>
                                         </p>
                                     </div>
+
+                                    {metadata.editStatus === 'pending' && (
+                                        <div className="bg-blue-500/10 border border-blue-500/20 text-blue-700 dark:text-blue-400 p-4 rounded-2xl text-xs space-y-1">
+                                            <span className="font-bold block uppercase tracking-wider">Proposed Changes</span>
+                                            <span>The creator has requested to update this approved product. Approving this request will overwrite the live product with these new details.</span>
+                                        </div>
+                                    )}
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-muted/30 rounded-2xl p-4 border border-border/30">

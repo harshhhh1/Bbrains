@@ -10,12 +10,12 @@ const productSchema = z.object({
   description: z.string().max(255).optional(),
   price: z.number().positive(),
   stock: z.number().int().nonnegative().optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().optional(),
   productType: z.enum(['digital', 'physical']).default('physical'),
   fileUrl: z.string().url().optional(),
   fileType: z.string().optional(),
   category: z.string().max(50).optional(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string(), z.any()).optional()
 });
 
 const cartItemSchema = z.object({

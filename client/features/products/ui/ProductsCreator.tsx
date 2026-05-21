@@ -107,7 +107,9 @@ export function ProductsCreator() {
       price: product.price.toString(),
       stock: product.stock.toString(),
       imageUrl: product.image || "",
-      images: product.images || [],
+      images: (product.metadata as any)?.images?.length 
+        ? (product.metadata as any).images 
+        : (product.image ? [product.image] : []),
       productType: product.productType || "physical",
       fileUrl: product.metadata?.fileUrl || "",
       fileType: product.metadata?.fileType || "",

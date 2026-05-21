@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,20 +51,44 @@ export function ProductForm({ mode, initialProduct, initialForm, onSubmit, isSub
   const [form, setForm] = useState<ProductFormData>(() => {
     if (initialForm) return initialForm;
     if (initialProduct) {
+      const meta = initialProduct.metadata || {};
       return {
         name: initialProduct.name,
         description: initialProduct.description || "",
         price: initialProduct.price.toString(),
         stock: initialProduct.stock.toString(),
         imageUrl: initialProduct.image || "",
-        images: initialProduct.images || [],
+        images: Array.isArray(meta.images) 
+          ? (meta.images as string[]) 
+          : (initialProduct.image ? [initialProduct.image] : []),
         productType: initialProduct.productType || "physical",
-        fileUrl: initialProduct.metadata?.fileUrl || "",
-        fileType: initialProduct.metadata?.fileType || "",
+        fileUrl: (meta.fileUrl as string) || "",
+        fileType: (meta.fileType as string) || "",
       };
     }
     return defaultForm;
   });
+
+  useEffect(() => {
+    if (initialForm) {
+      setForm(initialForm);
+    } else if (initialProduct) {
+      const meta = initialProduct.metadata || {};
+      setForm({
+        name: initialProduct.name,
+        description: initialProduct.description || "",
+        price: initialProduct.price.toString(),
+        stock: initialProduct.stock.toString(),
+        imageUrl: initialProduct.image || "",
+        images: Array.isArray(meta.images) 
+          ? (meta.images as string[]) 
+          : (initialProduct.image ? [initialProduct.image] : []),
+        productType: initialProduct.productType || "physical",
+        fileUrl: (meta.fileUrl as string) || "",
+        fileType: (meta.fileType as string) || "",
+      });
+    }
+  }, [initialForm, initialProduct]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
