@@ -1,5 +1,5 @@
 import { getAuthToken } from "@/services/api/client"
-import type { ManagerOverviewStats } from "@/features/dashboard/types/manager"
+import type { ManagerOverviewStats } from "@/features/manager/dashboard/types/manager"
 
 const getBaseUrl = () => {
     if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL

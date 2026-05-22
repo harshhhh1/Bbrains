@@ -3,6 +3,7 @@
 import { useUser } from "@/context/user-context"
 import { Grid, PageContainer, PageHeader } from "@/components/layout/page-primitives"
 import type { OverviewStats } from "@/features/dashboard/types/admin"
+import { DailyRewardCard } from "@/features/dashboard/ui/DailyRewardCard"
 import { AdminRevenueChart } from "./components/AdminRevenueChart"
 import { AdminUserDistribution } from "./components/AdminUserDistribution"
 import { AdminQuickActions } from "./components/AdminQuickActions"
@@ -33,6 +34,7 @@ export function OverviewClient({ stats }: OverviewClientProps) {
             <Grid className="lg:grid-cols-3">
                 <AdminRevenueChart finance={stats.finance} />
                 <AdminUserDistribution people={stats.people} />
+                <DailyRewardCard />
             </Grid>
 
             <Grid className="items-start lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

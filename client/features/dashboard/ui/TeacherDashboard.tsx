@@ -3,6 +3,7 @@
 import React from "react";
 
 import { AnnouncementsCard } from "@/features/dashboard/ui/AnnouncementsCard";
+import { DailyRewardCard } from "@/features/dashboard/ui/DailyRewardCard";
 import { Grid, PageContainer, Stack } from "@/components/layout/page-primitives";
 import { LoadingState } from "@/components/ui/loading-state";
 
@@ -40,7 +41,7 @@ export function TeacherDashboard() {
 
   return (
     <PageContainer width="2xl" gap="sm">
-      <Grid>
+      <Grid className="lg:grid-cols-2">
         <ClassFocusCard
           selectedCourseId={selectedCourseId}
           setSelectedCourseId={setSelectedCourseId}
@@ -48,6 +49,7 @@ export function TeacherDashboard() {
           incomeReceived={incomeReceived}
           formatCurrency={formatCurrency}
         />
+        <DailyRewardCard />
       </Grid>
 
       <Grid className="xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.8fr)]">
