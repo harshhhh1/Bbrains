@@ -16,8 +16,22 @@ export function fmtDate(value: string) {
 
 export function formatChange(change?: Record<string, unknown>) {
     if (!change) return null
-    const before = change.before
-    const after = change.after
-    if (!before && !after) return null
-    return { before, after }
+
+    if ("before" in change || "after" in change) {
+        const before = change.before ?? null
+        const after = change.after ?? null
+        if (before == null && after == null) return null
+        return { before, after }
+    }
+
+    if ("oldLevel" in change || "newLevel" in change) {
+        return { before: change.oldLevel ?? null, after: change.newLevel ?? null }
+    }
+
+    const keys = Object.keys(change)
+    if (keys.length === 1 && "changes" in change) {
+        return { before: null, after: change.changes }
+    }
+
+    return { before: null, after: change }
 }

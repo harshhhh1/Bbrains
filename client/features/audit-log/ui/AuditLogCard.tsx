@@ -26,7 +26,9 @@ const CategoryIcon = ({ category, className }: { category: LogCategory; classNam
 export function AuditLogCard({ log }: AuditLogCardProps) {
     const [isExpanded, setIsExpanded] = useState(false)
     const change = formatChange(log.change)
-    const hasDetails = !!change
+    const hasChange = !!change
+    const hasReason = !!log.reason
+    const hasDetails = hasChange || hasReason
 
     return (
         <div className="group border-b border-border/40 last:border-0">
@@ -98,23 +100,39 @@ export function AuditLogCard({ log }: AuditLogCardProps) {
             {/* Collapsible Details */}
             {hasDetails && isExpanded && (
                 <div className="px-4 pb-4 animate-in fade-in slide-in-from-top-1 duration-200">
-                    <div className="ml-12 pl-4 border-l-2 border-muted grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Old Value</p>
-                            <div className="bg-muted/40 rounded-md p-2.5 overflow-hidden">
-                                <pre className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all leading-relaxed">
-                                    {change.before ? JSON.stringify(change.before, null, 2) : "—"}
-                                </pre>
+                    <div className="ml-12 pl-4 border-l-2 border-muted space-y-3">
+                        {hasReason && (
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Reason</p>
+                                <div className="bg-muted/40 rounded-md p-2.5">
+                                    <p className="text-sm text-foreground">{log.reason}</p>
+                                </div>
                             </div>
-                        </div>
-                        <div className="space-y-1.5">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">New Value</p>
-                            <div className="bg-brand-purple/5 rounded-md p-2.5 overflow-hidden border border-brand-purple/10">
-                                <pre className="text-xs font-mono text-foreground whitespace-pre-wrap break-all leading-relaxed">
-                                    {change.after ? JSON.stringify(change.after, null, 2) : "—"}
-                                </pre>
+                        )}
+                        {hasChange && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                                        {change.before != null ? "Before" : "Details"}
+                                    </p>
+                                    <div className="bg-muted/40 rounded-md p-2.5 overflow-hidden">
+                                        <pre className="text-xs font-mono text-muted-foreground whitespace-pre-wrap break-all leading-relaxed">
+                                            {change.before != null ? JSON.stringify(change.before, null, 2) : change.after != null ? JSON.stringify(change.after, null, 2) : "—"}
+                                        </pre>
+                                    </div>
+                                </div>
+                                {change.before != null && (
+                                    <div className="space-y-1.5">
+                                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">After</p>
+                                        <div className="bg-brand-purple/5 rounded-md p-2.5 overflow-hidden border border-brand-purple/10">
+                                            <pre className="text-xs font-mono text-foreground whitespace-pre-wrap break-all leading-relaxed">
+                                                {change.after != null ? JSON.stringify(change.after, null, 2) : "—"}
+                                            </pre>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             )}
