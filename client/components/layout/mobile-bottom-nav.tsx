@@ -92,7 +92,7 @@ export function MobileBottomNav({ user }: MobileBottomNavProps) {
 
                 <div className="w-px h-8 bg-border/40 self-center shrink-0" />
 
-                <div className="flex-1 flex items-center overflow-x-auto scrollbar-hide px-2">
+                <div suppressHydrationWarning className="flex-1 flex items-center overflow-x-auto scrollbar-hide px-2">
                     {navItems.map((item) => {
                         const hasSubItems = item.subItems && item.subItems.length > 0
                         const isActive = pathname === item.url ||
@@ -129,7 +129,6 @@ export function MobileBottomNav({ user }: MobileBottomNavProps) {
 
                         const NavButton = (
                             <div
-                                suppressHydrationWarning
                                 className="flex flex-col items-center justify-center shrink-0 h-full gap-1 select-none touch-manipulation cursor-pointer"
                                 style={{ minWidth: 64 }}
                                 onPointerDown={startTimer}

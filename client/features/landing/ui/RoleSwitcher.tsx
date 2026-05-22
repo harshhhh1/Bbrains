@@ -3,9 +3,46 @@
 import { useState } from "react";
 import { landingData, Feature } from "@/data/landing";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+
+import studentDashboardPreview from "../images/student-dashboard-preview.png";
+import xpAndLevelling from "../images/xp-and-levelling.png";
+import digitalWallet from "../images/digital-wallet.png";
+import campusMarket from "../images/campus-market.png";
+import leaderboard from "../images/leaderboard.png";
+import coursesAndAssignment from "../images/courses-and-assignment.png";
+import realTimeChat from "../images/real-time-chat.png";
+import assignmentGrading from "../images/assignment-grading.png";
+import studentTracking from "../images/student-tracking.png";
+import auditlog from "../images/auditlog.png";
+import rolesAndPermission from "../images/roles-and-permission.png";
+import analyticsDashboard from "../images/analytics-dashboard.png";
+import academicsManagement from "../images/academics-management.png";
+import financeTracking from "../images/finance-tracking.png";
+import institutionSettings from "../images/institution-settings.png";
+import userManagement from "../images/user-management.png";
+
+const featureImages: Record<string, any> = {
+  "dashboard": studentDashboardPreview,
+  "gamification": xpAndLevelling,
+  "wallet": digitalWallet,
+  "market": campusMarket,
+  "leaderboard": leaderboard,
+  "courses": coursesAndAssignment,
+  "chat": realTimeChat,
+  "grading": assignmentGrading,
+  "students-view": studentTracking,
+  "audit-log": auditlog,
+  "roles-permissions": rolesAndPermission,
+  "analytics": analyticsDashboard,
+  "academics": academicsManagement,
+  "finance": financeTracking,
+  "institution": institutionSettings,
+  "user-management": userManagement,
+};
 
 export function RoleSwitcher() {
-  const roles = landingData.roles;
+  const roles = landingData.roles.filter(r => r.id !== 'managers');
   const [activeRole, setActiveRole] = useState(roles[0].id);
   const currentRole = roles.find(r => r.id === activeRole)!;
 
@@ -99,12 +136,15 @@ export function RoleSwitcher() {
                     </ul>
                   </div>
 
-                  <div className="mt-4 flex items-center gap-2 text-sm font-patrick text-hand-blue opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span>Screenshot placeholder:</span>
-                    <span className="bg-hand-cream px-2 py-1 rounded text-hand-pencil/60">
-                      {feature.screenshotAlt}
-                    </span>
-                  </div>
+                  {!isComingSoon && featureImages[feature.id] && (
+                    <div className="mt-6 rounded-lg overflow-hidden border-2 border-hand-pencil/20 relative shadow-md">
+                      <Image 
+                        src={featureImages[feature.id]} 
+                        alt={feature.screenshotAlt}
+                        className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
