@@ -39,6 +39,7 @@ import assessmentRouter from "./modules/assessment/assessment.routes.js";
 import examRouter, { courseSemestersRouter } from "./modules/exam/exam.routes.js";
 import sidebarAccessRouter from "./modules/sidebaraccess/sidebaraccess.routes.js";
 import studyMaterialsRouter from "./modules/study-materials/study-materials.routes.js";
+import { distributeWeeklyRewards, distributeMonthlyRewards } from "./modules/leaderboard-reward/leaderboard-reward.service.js";
 import prisma from "./utils/prisma.js";
 
 // Middleware imports
@@ -142,7 +143,6 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-import { distributeWeeklyRewards, distributeMonthlyRewards } from "./modules/leaderboard-reward/leaderboard-reward.service.js";
 
 const server = http.createServer(app);
 initChatSocket(server);

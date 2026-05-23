@@ -82,18 +82,23 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
     };
   }, [user, supabase]);
 
-  // Utility to check permission
-  const hasPermission = (key: string) => {
-    // If the user has a superadmin role, they inherently have all permissions
-    const isSuperAdmin = roles.some((r) => r?.name?.toLowerCase() === "superadmin") || user?.type === "superadmin" || user?.originalType === "superadmin";
-    if (isSuperAdmin) return true;
-    
-    // If the user has administrator permission, they bypass all other permission checks
-    const hasAdminPermission = permissions.includes("administrator");
-    if (hasAdminPermission) return true;
-    
-    return permissions.includes(key);
-  };
+    // Utility to check permission
+    const hasPermission = (key: string) => {
+        // While loading, never grant permission to ensure SSR and client
+        // first render produce identical trees (avoids hydration mismatch).
+        // Actual permissions are checked after fetch completes.
+        if (isLoading) return false;
+
+        // If the user has a superadmin role, they inherently have all permissions
+        const isSuperAdmin = roles.some((r) => r?.name?.toLowerCase() === "superadmin") || user?.type === "superadmin" || user?.originalType === "superadmin";
+        if (isSuperAdmin) return true;
+
+        // If the user has administrator permission, they bypass all other permission checks
+        const hasAdminPermission = permissions.includes("administrator");
+        if (hasAdminPermission) return true;
+
+        return permissions.includes(key);
+    };
 
   return (
     <PermissionsContext.Provider value={{ permissions, roles, isLoading, hasPermission }}>

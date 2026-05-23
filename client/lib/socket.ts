@@ -8,7 +8,6 @@ export const getSocket = async (): Promise<Socket> => {
 
     const token = await getAuthToken();
     const baseUrl = getBaseUrl();
-    // Socket.io usually runs on the same port as the API
     const socketUrl = baseUrl;
 
     socket = io(socketUrl, {

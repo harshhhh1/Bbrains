@@ -41,7 +41,6 @@ export function AuditLogClient({ initialLogs }: AuditLogClientProps) {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-                    <div className="h-9 w-[1px] bg-border/40 mx-1 hidden sm:block" />
                     <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 px-1">
                             <Filter className="size-3" />
